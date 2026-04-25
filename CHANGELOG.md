@@ -1,5 +1,21 @@
 # Changelog
 
+## Unreleased
+
+### Fixed
+
+- Rational scalars and rates are now accepted everywhere they are documented to
+  work: `Amount#*`, `Amount#/`, `Amount#to(rate:)`, `Amount.register_default_rate`,
+  and `display_units[unit][:scale]`. Previously each of these called
+  `BigDecimal(value.to_s)`, which raises `ArgumentError` for `Rational#to_s`
+  (`"3/2"`). All five sites now go through a single internal helper,
+  `Amount.coerce_decimal`, that handles `BigDecimal`, `Rational`, and string-or-
+  numeric inputs uniformly.
+- `Amount.load` wraps a missing `:atomic` or `:symbol` key as
+  `Amount::InvalidInput` (`"amount payload missing key: atomic"`) instead of
+  leaking a raw `KeyError`. This matches the AR adapter's `Type#cast_hash`
+  behavior so callers can rescue a single error class.
+
 ## 0.0.2 - 2026-04-26
 
 ### Fixed

@@ -151,7 +151,7 @@ class Amount
 
       @lock.synchronize do
         ensure_unlocked!
-        @default_rates[[from, to]] = BigDecimal(rate.to_s)
+        @default_rates[[from, to]] = Amount.coerce_decimal(rate)
       end
     end
 
