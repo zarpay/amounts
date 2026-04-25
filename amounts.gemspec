@@ -39,5 +39,5 @@ Gem::Specification.new do |spec|
   spec.executables = ["console", "setup"]
   spec.require_paths = ["lib"]
 
-  spec.add_runtime_dependency "bigdecimal"
+  spec.add_dependency "bigdecimal"
 end
