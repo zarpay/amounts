@@ -87,13 +87,13 @@ class Amount
       def failure_message(option_name, other)
         case option_name
         when :greater_than
-          "must be greater than #{other.to_s}"
+          "must be greater than #{other}"
         when :greater_than_or_equal_to
-          "must be greater than or equal to #{other.to_s}"
+          "must be greater than or equal to #{other}"
         when :less_than
-          "must be less than #{other.to_s}"
+          "must be less than #{other}"
         when :less_than_or_equal_to
-          "must be less than or equal to #{other.to_s}"
+          "must be less than or equal to #{other}"
         else
           "is invalid"
         end
