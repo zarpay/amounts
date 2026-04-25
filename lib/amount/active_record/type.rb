@@ -77,12 +77,11 @@ class Amount
       private
 
       def cast_hash(value)
-        if value.key?(:atomic) || value.key?("atomic")
+        value = value.transform_keys(&:to_sym)
+        if value.key?(:atomic)
           ::Amount.load(value)
         else
-          symbol = value.fetch(:symbol) { value.fetch("symbol", fixed_symbol) }
-          amount_value = value.fetch(:value) { value.fetch("value") }
-          ::Amount.new(amount_value, symbol)
+          ::Amount.new(value.fetch(:value), value.fetch(:symbol, fixed_symbol))
         end
       rescue KeyError
         raise ::Amount::InvalidInput, "hash input must contain atomic/symbol or value/symbol"
