@@ -56,7 +56,7 @@ class Amount
         COMPARATORS.each do |option_name, operator|
           next unless options.key?(option_name)
 
-          other = coerce_comparison_amount(record, attribute, options.fetch(option_name))
+          other = coerce_comparison_amount(record, attribute, options.fetch(option_name), value)
           next unless other
 
           compare_amounts(record, attribute, value, operator, other, option_name)
@@ -65,9 +65,12 @@ class Amount
         end
       end
 
-      def coerce_comparison_amount(record, attribute, candidate)
-        definition = fetch_definition(record, attribute)
+      def coerce_comparison_amount(record, attribute, candidate, value)
         return candidate if candidate.is_a?(::Amount)
+
+        definition = fetch_definition(record, attribute)
+        return definition.type.cast(candidate) if definition.type.fixed_symbol
+        return ::Amount.new(candidate, value.symbol, from: :float) if candidate.is_a?(Numeric)
 
         definition.type.cast(candidate)
       end

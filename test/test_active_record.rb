@@ -309,4 +309,67 @@ class AmountActiveRecordTest < Minitest::Test
 
     assert holding.valid?
   end
+
+  def test_amount_validator_accepts_numeric_threshold_on_multi_symbol_attribute
+    klass = Class.new(::ActiveRecord::Base) do
+      self.table_name = "holdings"
+
+      has_amount :amount
+      validates :amount, amount: { greater_than: 0, less_than_or_equal_to: 100 }
+    end
+
+    above = klass.new(amount: "USDC|50.00")
+    assert above.valid?
+
+    at_zero = klass.new(amount: "USDC|0.00")
+    refute at_zero.valid?
+    assert_includes at_zero.errors[:amount].join, "greater than"
+
+    above_max = klass.new(amount: "USDC|150.00")
+    refute above_max.valid?
+    assert_includes above_max.errors[:amount].join, "less than"
+  end
+
+  def test_amount_validator_numeric_threshold_uses_value_symbol
+    klass = Class.new(::ActiveRecord::Base) do
+      self.table_name = "holdings"
+
+      has_amount :amount
+      validates :amount, amount: { greater_than: 1 }
+    end
+
+    # The same `greater_than: 1` is interpreted as 1 USDC for a USDC value
+    # and as 1 SOL for a SOL value, because the threshold inherits the
+    # value's symbol on multi-symbol attributes.
+    assert klass.new(amount: "USDC|2.00").valid?
+    refute klass.new(amount: "USDC|0.50").valid?
+    assert klass.new(amount: "SOL|2").valid?
+    refute klass.new(amount: "SOL|0.5").valid?
+  end
+
+  def test_custom_class_symbol_round_trips_through_active_record
+    metal_class = Class.new(Amount) do
+      def self.name
+        "MetalAmount"
+      end
+    end
+    Amount.register :METAL, decimals: 4, class: metal_class
+
+    ::ActiveRecord::Schema.define do
+      create_table :metal_holdings, force: true do |t|
+        t.amount :weight, symbol: :METAL, null: false
+      end
+    end
+
+    klass = Class.new(::ActiveRecord::Base) do
+      self.table_name = "metal_holdings"
+      has_amount :weight, symbol: :METAL
+    end
+
+    record = klass.create!(weight: metal_class.new("2.5", :METAL))
+    record.reload
+
+    assert_instance_of metal_class, record.weight
+    assert_equal 25_000, record.weight.atomic
+  end
 end

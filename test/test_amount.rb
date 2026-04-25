@@ -26,6 +26,20 @@ class AmountTest < Minitest::Test
     assert_equal 1_500_000, Amount.new(1.5, :USDC).atomic
   end
 
+  def test_construct_from_rational_treats_as_ui
+    assert_equal 1_500_000, Amount.new(Rational(3, 2), :USDC).atomic
+  end
+
+  def test_construct_from_rational_is_exact_for_repeating_fractions
+    # 1/3 has no finite decimal expansion. With six decimals of storage
+    # the atomic representation is 333333 (truncated toward zero).
+    assert_equal 333_333, Amount.new(Rational(1, 3), :USDC).atomic
+  end
+
+  def test_construct_from_rational_with_explicit_ui_from
+    assert_equal 1_500_000, Amount.new(Rational(3, 2), :USDC, from: :ui).atomic
+  end
+
   def test_explicit_from_overrides_inference
     amount = Amount.new("1500000", :USDC, from: :atomic)
 
@@ -468,5 +482,36 @@ class AmountCustomClassTest < Minitest::Test
 
     assert parts.all? { |part| part.instance_of?(GoldAmount) }
     assert_instance_of GoldAmount, remainder
+  end
+
+  def test_amount_new_dispatches_to_registered_subclass
+    assert_instance_of GoldAmount, Amount.new("1", :GOLD)
+    assert_instance_of GoldAmount, Amount.new(100_000_000, :GOLD, from: :atomic)
+  end
+
+  def test_parse_dispatches_to_registered_subclass
+    assert_instance_of GoldAmount, Amount.parse("GOLD|1.0")
+  end
+
+  def test_load_dispatches_to_registered_subclass
+    payload = GoldAmount.new("1", :GOLD).to_h
+    restored = Amount.load(payload)
+
+    assert_instance_of GoldAmount, restored
+    assert_equal "24k", restored.purity_estimate
+  end
+
+  def test_explicit_wrong_subclass_still_raises
+    other = Class.new(Amount)
+
+    error = assert_raises(Amount::InvalidInput) { other.new("1", :GOLD) }
+    assert_match(/use AmountCustomClassTest::GoldAmount\.new for GOLD/, error.message)
+  end
+
+  def test_amount_new_with_default_class_is_unchanged
+    Amount.register :USDC, decimals: 6
+    instance = Amount.new("1", :USDC)
+
+    assert_instance_of Amount, instance
   end
 end
