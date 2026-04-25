@@ -14,14 +14,10 @@ class Amount
     end
 
     def self.load(payload)
-      version = payload[:v] || payload["v"]
-      validate_version!(version)
+      payload = payload.transform_keys(&:to_sym)
+      validate_version!(payload[:v])
 
-      Amount.new(
-        payload.fetch(:atomic) { payload.fetch("atomic") },
-        payload.fetch(:symbol) { payload.fetch("symbol") },
-        from: :atomic
-      )
+      Amount.new(payload.fetch(:atomic), payload.fetch(:symbol), from: :atomic)
     rescue KeyError => e
       raise InvalidInput, "amount payload missing key: #{e.key}"
     end

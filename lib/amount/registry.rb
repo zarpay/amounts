@@ -67,6 +67,8 @@ class Amount
     def register(symbol, decimals:, display_symbol: symbol.to_s, display_position: :suffix,
                  ui_decimals: decimals, display_units: nil, default_display: nil,
                  class: nil)
+      raise ArgumentError, "symbol must not be blank" if symbol.nil? || symbol.to_s.empty?
+
       symbol = symbol.to_sym
 
       @lock.synchronize do

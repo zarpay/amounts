@@ -1,5 +1,20 @@
 # Changelog
 
+## Unreleased
+
+### Fixed
+
+- `Amount.register` now rejects empty or nil symbols with
+  `ArgumentError("symbol must not be blank")`. Previously
+  `Amount.register :"", decimals: 2` succeeded silently and produced a
+  registered "type" with an empty symbol.
+- Frozen `Amount` instances can now render display output without raising
+  `FrozenError`. Previously `Amount#display` lazily memoized the `Display`
+  via `@display ||= …`, which mutated the frozen instance on first read.
+  The `Display` is now built eagerly in `Amount#initialize`, so any frozen
+  amount can be safely passed to `.ui`, `.formatted`, `.to_s`, or
+  `.in_unit`.
+
 ## 0.0.3 - 2026-04-26
 
 ### Fixed
