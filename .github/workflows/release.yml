@@ -26,9 +26,15 @@ jobs:
           ruby-version: "3.3"
           bundler: 2.5.18
           bundler-cache: true
+        env:
+          BUNDLE_WITH: active_record:quality
+          BUNDLE_WITHOUT: development
 
       - name: Verify test suite
         run: bundle exec rake
+        env:
+          BUNDLE_WITH: active_record:quality
+          BUNDLE_WITHOUT: development
 
       - name: Publish gem to RubyGems.org
         uses: rubygems/release-gem@v1

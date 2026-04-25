@@ -40,11 +40,4 @@ Gem::Specification.new do |spec|
   spec.require_paths = ["lib"]
 
   spec.add_runtime_dependency "bigdecimal"
-
-  spec.add_development_dependency "irb", ">= 1.13"
-  spec.add_development_dependency "minitest", ">= 5.0"
-  spec.add_development_dependency "rake", ">= 13.0"
-  spec.add_development_dependency "rspec", ">= 3.13"
-  spec.add_development_dependency "rubocop", "~> 1.63.0"
-  spec.add_development_dependency "yard", ">= 0.9"
 end

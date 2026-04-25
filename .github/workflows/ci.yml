@@ -28,17 +28,17 @@ jobs:
           ruby-version: ${{ matrix.ruby-version }}
           bundler-cache: true
         env:
-          BUNDLE_WITHOUT: active_record
+          BUNDLE_WITHOUT: active_record:development:quality
 
       - name: Core Minitest
         run: bundle exec ruby -Ilib:test test/test_amount.rb
         env:
-          BUNDLE_WITHOUT: active_record
+          BUNDLE_WITHOUT: active_record:development:quality
 
       - name: Core RSpec
         run: bundle exec rspec spec/amount_rspec_matchers_spec.rb
         env:
-          BUNDLE_WITHOUT: active_record
+          BUNDLE_WITHOUT: active_record:development:quality
 
   active_record:
     runs-on: ubuntu-latest
@@ -61,16 +61,19 @@ jobs:
           bundler-cache: true
         env:
           BUNDLE_WITH: active_record
+          BUNDLE_WITHOUT: development:quality
 
       - name: ActiveRecord Minitest
         run: bundle exec ruby -Ilib:test test/test_active_record.rb
         env:
           BUNDLE_WITH: active_record
+          BUNDLE_WITHOUT: development:quality
 
       - name: ActiveRecord RSpec
         run: bundle exec rspec spec/active_record_rspec_matchers_spec.rb
         env:
           BUNDLE_WITH: active_record
+          BUNDLE_WITHOUT: development:quality
 
   quality:
     runs-on: ubuntu-latest
@@ -85,9 +88,11 @@ jobs:
           ruby-version: "3.4"
           bundler-cache: true
         env:
-          BUNDLE_WITH: active_record
+          BUNDLE_WITH: active_record:quality
+          BUNDLE_WITHOUT: development
 
       - name: Lint
         run: bundle exec rake lint
         env:
-          BUNDLE_WITH: active_record
+          BUNDLE_WITH: active_record:quality
+          BUNDLE_WITHOUT: development
