@@ -84,6 +84,26 @@ class Amount
       Parser.new(str).parse
     end
 
+    # When called as `Amount.new` for a symbol whose registry entry binds a
+    # custom class, dispatch the construction to that class instead of raising.
+    # Direct calls to a subclass (`GoldAmount.new(...)`) still go through the
+    # default `Class.new` path. Calls that target the wrong subclass continue
+    # to raise from `#initialize`.
+    #
+    # @param value [Integer, String, Float, BigDecimal, Rational]
+    # @param symbol [Symbol, String]
+    # @param from [Symbol, nil]
+    # @return [Amount]
+    def new(value, symbol, from: nil)
+      if equal?(::Amount)
+        entry_class = registry.lookup(symbol.to_sym).amount_class
+        if entry_class && entry_class != ::Amount
+          return entry_class.new(value, symbol, from: from)
+        end
+      end
+      super
+    end
+
     # Temporarily swaps the global registry. Intended for tests.
     #
     # @param registry [Amount::Registry]
@@ -139,8 +159,9 @@ class Amount
     @symbol = symbol.to_sym
     @entry = self.class.registry.lookup(@symbol)
 
-    if @entry.amount_class != self.class && @entry.amount_class != Amount
-      raise InvalidInput, "use #{@entry.amount_class}.new for #{@symbol}" unless instance_of?(@entry.amount_class)
+    expected = @entry.amount_class
+    if expected && expected != Amount && self.class != Amount && !instance_of?(expected)
+      raise InvalidInput, "use #{expected}.new for #{@symbol}"
     end
 
     @atomic = infer_value(from, value)

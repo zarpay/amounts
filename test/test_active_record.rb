@@ -309,4 +309,30 @@ class AmountActiveRecordTest < Minitest::Test
 
     assert holding.valid?
   end
+
+  def test_custom_class_symbol_round_trips_through_active_record
+    metal_class = Class.new(Amount) do
+      def self.name
+        "MetalAmount"
+      end
+    end
+    Amount.register :METAL, decimals: 4, class: metal_class
+
+    ::ActiveRecord::Schema.define do
+      create_table :metal_holdings, force: true do |t|
+        t.amount :weight, symbol: :METAL, null: false
+      end
+    end
+
+    klass = Class.new(::ActiveRecord::Base) do
+      self.table_name = "metal_holdings"
+      has_amount :weight, symbol: :METAL
+    end
+
+    record = klass.create!(weight: metal_class.new("2.5", :METAL))
+    record.reload
+
+    assert_instance_of metal_class, record.weight
+    assert_equal 25_000, record.weight.atomic
+  end
 end

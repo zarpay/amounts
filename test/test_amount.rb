@@ -469,4 +469,35 @@ class AmountCustomClassTest < Minitest::Test
     assert parts.all? { |part| part.instance_of?(GoldAmount) }
     assert_instance_of GoldAmount, remainder
   end
+
+  def test_amount_new_dispatches_to_registered_subclass
+    assert_instance_of GoldAmount, Amount.new("1", :GOLD)
+    assert_instance_of GoldAmount, Amount.new(100_000_000, :GOLD, from: :atomic)
+  end
+
+  def test_parse_dispatches_to_registered_subclass
+    assert_instance_of GoldAmount, Amount.parse("GOLD|1.0")
+  end
+
+  def test_load_dispatches_to_registered_subclass
+    payload = GoldAmount.new("1", :GOLD).to_h
+    restored = Amount.load(payload)
+
+    assert_instance_of GoldAmount, restored
+    assert_equal "24k", restored.purity_estimate
+  end
+
+  def test_explicit_wrong_subclass_still_raises
+    other = Class.new(Amount)
+
+    error = assert_raises(Amount::InvalidInput) { other.new("1", :GOLD) }
+    assert_match(/use AmountCustomClassTest::GoldAmount\.new for GOLD/, error.message)
+  end
+
+  def test_amount_new_with_default_class_is_unchanged
+    Amount.register :USDC, decimals: 6
+    instance = Amount.new("1", :USDC)
+
+    assert_instance_of Amount, instance
+  end
 end
