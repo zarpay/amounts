@@ -57,6 +57,8 @@ Amount.gold("1.0").class
 # => GoldAmount
 ```
 
+`Amount.new("1.0", :GOLD)` returns a `GoldAmount` too — when a symbol is registered with `class:`, every entry point that knows the symbol at runtime (`Amount.new`, `Amount.parse`, `Amount.load`, the ActiveRecord adapter) dispatches to the registered subclass. Direct calls to a different subclass (`OtherAmount.new(value, :GOLD)`) still raise `Amount::InvalidInput`.
+
 The type is still registry-driven. The subclass is an escape hatch, not the primary model.
 
 ## Locking the registry
