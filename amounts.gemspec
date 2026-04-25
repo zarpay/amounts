@@ -14,15 +14,15 @@ Gem::Specification.new do |spec|
     safe registered-type arithmetic, explicit conversion rates, display helpers,
     and an optional ActiveRecord integration layer.
   TEXT
-  spec.homepage = "https://github.com/sebscholl/amounts"
+  spec.homepage = "https://github.com/zarpay/amounts"
   spec.license = "MIT"
   spec.required_ruby_version = ">= 3.0"
 
   spec.metadata = {
-    "bug_tracker_uri" => "https://github.com/sebscholl/amounts/issues",
-    "changelog_uri" => "https://github.com/sebscholl/amounts/blob/main/CHANGELOG.md",
-    "documentation_uri" => "https://github.com/sebscholl/amounts#readme",
-    "source_code_uri" => "https://github.com/sebscholl/amounts"
+    "bug_tracker_uri" => "https://github.com/zarpay/amounts/issues",
+    "changelog_uri" => "https://github.com/zarpay/amounts/blob/main/CHANGELOG.md",
+    "documentation_uri" => "https://github.com/zarpay/amounts#readme",
+    "source_code_uri" => "https://github.com/zarpay/amounts"
   }
 
   spec.files = Dir.glob("{bin,lib,test,.github}/**/*", File::FNM_DOTMATCH).reject do |path|
@@ -41,8 +41,7 @@ Gem::Specification.new do |spec|
 
   spec.add_runtime_dependency "bigdecimal"
 
-  spec.add_development_dependency "activerecord", ">= 7.1", "< 9.0"
-  spec.add_development_dependency "bundler", ">= 2.4"
+  spec.add_development_dependency "activerecord", ">= 7.1", "< 8.0"
   spec.add_development_dependency "irb", ">= 1.13"
   spec.add_development_dependency "minitest", ">= 5.0"
   spec.add_development_dependency "rake", ">= 13.0"

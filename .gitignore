@@ -1,7 +1,6 @@
 .bundle/
 .yardoc/
 *.gem
-Gemfile.lock
 pkg/
 tmp/
 vendor/bundle/

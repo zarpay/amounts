@@ -6,5 +6,5 @@ gemspec
 
 group :development, :test do
   gem "pg", ">= 1.5"
-  gem "railties", ">= 7.1", "< 9.0"
+  gem "railties", ">= 7.1", "< 8.0"
 end
