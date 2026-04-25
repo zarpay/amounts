@@ -32,7 +32,7 @@ class Amount
     # @return [BigDecimal]
     def in_unit(unit)
       unit_spec = fetch_display_unit(unit)
-      @amount.decimal * BigDecimal(unit_spec[:scale].to_s)
+      @amount.decimal * Amount.coerce_decimal(unit_spec[:scale])
     end
 
     private
@@ -44,7 +44,7 @@ class Amount
 
     def render_display_unit(unit, direction)
       spec = fetch_display_unit(unit)
-      scaled = @amount.decimal * BigDecimal(spec[:scale].to_s)
+      scaled = @amount.decimal * Amount.coerce_decimal(spec[:scale])
       decimals = spec[:ui_decimals] || @entry.ui_decimals
       rounded = round(scaled, decimals, direction)
 

@@ -22,6 +22,8 @@ class Amount
         payload.fetch(:symbol) { payload.fetch("symbol") },
         from: :atomic
       )
+    rescue KeyError => e
+      raise InvalidInput, "amount payload missing key: #{e.key}"
     end
 
     def self.validate_version!(version)

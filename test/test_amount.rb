@@ -229,6 +229,8 @@ class AmountTest < Minitest::Test
     assert_equal Amount.new("3", :USDC), Amount.new("1", :USDC) * 3
     assert_equal Amount.new("1.5", :USDC), Amount.new("1", :USDC) * 1.5
     assert_equal Amount.new("2", :USDC), Amount.new("-1", :USDC) * -2
+    assert_equal Amount.new("3", :USDC), Amount.new("2", :USDC) * BigDecimal("1.5")
+    assert_equal Amount.new("3", :USDC), Amount.new("2", :USDC) * Rational(3, 2)
   end
 
   def test_amount_times_amount_raises
@@ -240,6 +242,8 @@ class AmountTest < Minitest::Test
   def test_scalar_division_returns_amount
     assert_equal Amount.new("0.5", :USDC), Amount.new("1", :USDC) / 2
     assert_equal Amount.new("2", :USDC), Amount.new("-1", :USDC) / -0.5
+    assert_equal Amount.new("2", :USDC), Amount.new("3", :USDC) / Rational(3, 2)
+    assert_equal Amount.new("2", :USDC), Amount.new("3", :USDC) / BigDecimal("1.5")
   end
 
   def test_amount_division_returns_ratio
@@ -353,6 +357,33 @@ class AmountTest < Minitest::Test
     assert_equal :GOLD, gold.symbol
   end
 
+  def test_to_with_rational_rate
+    converted = Amount.new("4", :USDC).to(:USD, rate: Rational(1, 2))
+
+    assert_equal BigDecimal("2"), converted.decimal
+    assert_equal :USD, converted.symbol
+  end
+
+  def test_register_default_rate_accepts_rational
+    Amount.register_default_rate :USDC, :USD, Rational(1, 2)
+
+    assert_equal BigDecimal("0.5"), Amount.registry.default_rate(:USDC, :USD)
+    assert_equal BigDecimal("0.5"), Amount.new("1", :USDC).to(:USD).decimal
+  end
+
+  def test_display_units_with_rational_scale
+    Amount.registry.clear!
+    Amount.register :METAL, decimals: 4, display_symbol: "x", display_position: :suffix,
+      ui_decimals: 2,
+      display_units: { half: { scale: Rational(1, 2), symbol: "h", ui_decimals: 2 } },
+      default_display: :half
+
+    metal = Amount.new("1", :METAL)
+
+    assert_equal BigDecimal("0.5"), metal.in_unit(:half)
+    assert_match(/\A0\.50/, metal.ui(unit: :half))
+  end
+
   def test_to_without_rate_requires_default
     assert_raises(Amount::Registry::NoDefaultRate) do
       Amount.new("1", :USDC).to(:GOLD)
@@ -404,6 +435,14 @@ class AmountTest < Minitest::Test
     amount = Amount.load(atomic: 1_500_000, symbol: :USDC)
 
     assert_equal Amount.new("1.5", :USDC), amount
+  end
+
+  def test_load_wraps_missing_keys_as_invalid_input
+    error = assert_raises(Amount::InvalidInput) { Amount.load(v: 1, symbol: "USDC") }
+    assert_match(/missing key: atomic/, error.message)
+
+    error = assert_raises(Amount::InvalidInput) { Amount.load({}) }
+    assert_match(/missing key/, error.message)
   end
 
   def test_load_rejects_unknown_serialization_version

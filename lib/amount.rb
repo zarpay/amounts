@@ -102,6 +102,22 @@ class Amount
       super
     end
 
+    # Coerces a numeric input to BigDecimal in a way that preserves Rational
+    # values. `BigDecimal(value.to_s)` raises `ArgumentError` for Rational
+    # because `Rational#to_s` produces strings like `"3/2"`. This helper is
+    # the single place every call site should use to convert a scalar / rate /
+    # display-unit scale into a BigDecimal.
+    #
+    # @param value [Numeric, BigDecimal, Rational, String]
+    # @return [BigDecimal]
+    def coerce_decimal(value)
+      case value
+      when BigDecimal then value
+      when Rational then BigDecimal(value, Float::DIG + 4)
+      else BigDecimal(value.to_s)
+      end
+    end
+
     # Temporarily swaps the global registry. Intended for tests.
     #
     # @param registry [Amount::Registry]
@@ -281,7 +297,7 @@ class Amount
   #   Amount.usdc("1.25") * 2
   def *(scalar)
     ensure_scalar!(scalar)
-    build((BigDecimal(@atomic) * BigDecimal(scalar.to_s)).to_i)
+    build((BigDecimal(@atomic) * Amount.coerce_decimal(scalar)).to_i)
   end
 
   # @param other [Amount, Numeric]
@@ -302,7 +318,7 @@ class Amount
       ensure_scalar!(other)
       raise ZeroDivisionError if other.zero?
 
-      build((BigDecimal(@atomic) / BigDecimal(other.to_s)).to_i)
+      build((BigDecimal(@atomic) / Amount.coerce_decimal(other)).to_i)
     end
   end
 
@@ -411,7 +427,7 @@ class Amount
     rate = resolve_rate(target_symbol, rate)
     target_entry = self.class.registry.lookup(target_symbol)
 
-    decimal_result = decimal * BigDecimal(rate.to_s)
+    decimal_result = decimal * Amount.coerce_decimal(rate)
     atomic_result = (decimal_result * (BigDecimal(10)**target_entry.decimals)).to_i
 
     target_entry.amount_class.new(atomic_result, target_symbol, from: :atomic)
