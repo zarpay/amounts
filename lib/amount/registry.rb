@@ -21,23 +21,30 @@ class Amount
   #   Amount.registry.lock!
   class Registry
     class UnknownType < StandardError; end
-    class AlreadyRegistered < StandardError; end
-    class InvalidDisplayUnit < StandardError; end
     class NoDefaultRate < StandardError; end
     class RegistryLocked < StandardError; end
+    class AlreadyRegistered < StandardError; end
+    class InvalidDisplayUnit < StandardError; end
 
     Entry = Struct.new(
-      :symbol, :decimals, :display_symbol, :display_position,
-      :ui_decimals, :display_units, :default_display, :amount_class,
+      :symbol,
+      :decimals,
+      :display_symbol,
+      :display_position,
+      :ui_decimals,
+      :display_units,
+      :default_display,
+      :amount_class,
       keyword_init: true
     )
 
     def initialize
-      @entries = {}
+      @entries       = {}
       @default_rates = {}
-      @generated_constructors = GeneratedConstructors.new
-      @locked = false
+      @locked        = false
+
       @lock = Mutex.new
+      @generated_constructors = GeneratedConstructors.new
     end
 
     # Registers a new fungible type.

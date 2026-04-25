@@ -3,8 +3,8 @@
 class Amount
   # Parses compact amount strings such as `USDC|1.50`.
   class Parser
-    VERSION_PREFIX = /\A(v\d+):(.*)\z/
     SUPPORTED_VERSION = "v1"
+    VERSION_PREFIX = /\A(v\d+):(.*)\z/
 
     def initialize(input)
       @input = input
