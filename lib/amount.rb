@@ -97,9 +97,7 @@ class Amount
     def new(value, symbol, from: nil)
       if equal?(::Amount)
         entry_class = registry.lookup(symbol.to_sym).amount_class
-        if entry_class && entry_class != ::Amount
-          return entry_class.new(value, symbol, from: from)
-        end
+        return entry_class.new(value, symbol, from:) if entry_class && entry_class != ::Amount
       end
       super
     end
