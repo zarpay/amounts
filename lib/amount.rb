@@ -7,7 +7,6 @@ require_relative "amount/version"
 require_relative "amount/registry"
 require_relative "amount/display"
 require_relative "amount/parser"
-require_relative "amount/serializer"
 require_relative "amount/arithmetic"
 require_relative "amount/allocation"
 require_relative "amount/comparison"
@@ -94,18 +93,6 @@ class Amount
     #   Amount.parse("v1:USDC|1.50")
     def parse(str)
       Parser.new(str).parse
-    end
-
-    # @param hash [Hash]
-    # @return [Amount]
-    # @raise [InvalidInput] for unsupported serialized versions
-    # @example Loading the current versioned payload
-    #   Amount.load(v: 1, atomic: "1500000", symbol: "USDC")
-    #
-    # @example Loading the legacy unversioned payload
-    #   Amount.load(atomic: 1500000, symbol: :USDC)
-    def load(hash)
-      Serializer.load(hash)
     end
 
     # When called as `Amount.new` for a symbol whose registry entry binds a
@@ -211,6 +198,7 @@ class Amount
   include Comparison
   include Conversion
   include Serialization
+  extend Serialization::ClassMethods
 
   # @return [Amount::Registry::Entry]
   # @example Accessing display configuration for this amount
