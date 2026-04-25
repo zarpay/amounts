@@ -5,6 +5,7 @@ AllCops:
   UseCache: false
   Exclude:
     - "vendor/**/*"
+    - "site/**/*"
 
 Layout/LineLength:
   Enabled: false
@@ -39,9 +40,6 @@ Style/StringLiterals:
 Style/WordArray:
   Enabled: false
 
-Style/PredicateWithKind:
-  Enabled: false
-
 Layout/HashAlignment:
   Enabled: false
 
@@ -60,7 +58,7 @@ Naming/BinaryOperatorParameterName:
 Naming/MethodParameterName:
   Enabled: false
 
-Naming/PredicatePrefix:
+Naming/PredicateName:
   Enabled: false
 
 Metrics/ParameterLists:
@@ -82,9 +80,6 @@ Style/RedundantConstantBase:
   Enabled: false
 
 Layout/SpaceAroundKeyword:
-  Enabled: false
-
-Gemspec/AddRuntimeDependency:
   Enabled: false
 
 Gemspec/DevelopmentDependencies:

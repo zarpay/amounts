@@ -2,25 +2,92 @@ name: CI
 
 on:
   push:
+    branches:
+      - main
   pull_request:
 
 jobs:
-  test:
+  core:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        ruby:
+        ruby-version:
           - "3.0"
           - "3.1"
           - "3.2"
           - "3.3"
 
     steps:
-      - uses: actions/checkout@v4
-      - uses: ruby/setup-ruby@v1
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
         with:
-          ruby-version: ${{ matrix.ruby }}
-          bundler: 2.5.18
+          ruby-version: ${{ matrix.ruby-version }}
           bundler-cache: true
-      - run: bundle exec rake
+        env:
+          BUNDLE_WITHOUT: active_record
+
+      - name: Core Minitest
+        run: bundle exec ruby -Ilib:test test/test_amount.rb
+        env:
+          BUNDLE_WITHOUT: active_record
+
+      - name: Core RSpec
+        run: bundle exec rspec spec/amount_rspec_matchers_spec.rb
+        env:
+          BUNDLE_WITHOUT: active_record
+
+  active_record:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        ruby-version:
+          - "3.2"
+          - "3.3"
+          - "3.4"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ${{ matrix.ruby-version }}
+          bundler-cache: true
+        env:
+          BUNDLE_WITH: active_record
+
+      - name: ActiveRecord Minitest
+        run: bundle exec ruby -Ilib:test test/test_active_record.rb
+        env:
+          BUNDLE_WITH: active_record
+
+      - name: ActiveRecord RSpec
+        run: bundle exec rspec spec/active_record_rspec_matchers_spec.rb
+        env:
+          BUNDLE_WITH: active_record
+
+  quality:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.4"
+          bundler-cache: true
+        env:
+          BUNDLE_WITH: active_record
+
+      - name: Lint
+        run: bundle exec rake lint
+        env:
+          BUNDLE_WITH: active_record

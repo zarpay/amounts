@@ -18,4 +18,6 @@ RSpec::Core::RakeTask.new(:spec)
 
 YARD::Rake::YardocTask.new(:yard)
 
+task lint: %i[rubocop yard]
+
 task default: %i[test spec rubocop yard]
