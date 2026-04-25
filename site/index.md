@@ -88,6 +88,7 @@ invoice = Amount.new("2500.00", :USD)
 - **Testing** shows how to test exact and approximate expectations.
 - **Cookbook** collects longer real-world patterns.
 - **Design** explains the tradeoffs and comparisons honestly.
+- **[CHANGELOG](https://github.com/zarpay/amounts/blob/main/CHANGELOG.md)** lists what changed in each release.
 
 ## Where people usually go wrong
 
