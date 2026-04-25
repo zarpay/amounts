@@ -3,10 +3,11 @@
 class Amount
   # Comparison, equality, hashing, and sign predicates for `Amount`.
   #
-  # `<=>` is defined here, which together with `Comparable` (mixed in on the
-  # main `Amount` class) gives `<`, `<=`, `>`, `>=`, `between?`, and
-  # `Enumerable#min`/`#max` for free.
+  # Pulls in `Comparable` itself so consumers only need `include Comparison`
+  # to get `<`, `<=`, `>`, `>=`, `between?`, `clamp`, and `Enumerable#min`/
+  # `#max` alongside the explicit `<=>` / `==` / `eql?` / `hash` defined here.
   module Comparison
+    include Comparable
     # @param other [Object]
     # @return [Boolean]
     # @example

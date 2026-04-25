@@ -37,7 +37,6 @@ require_relative "amount/serialization"
 #   Amount.usdc(1_500_000, from: :atomic).decimal.to_s("F")
 #   # => "1.5"
 class Amount
-  include Comparable
   include Arithmetic
   include Allocation
   include Comparison
