@@ -29,10 +29,10 @@ class Amount
         defaults = normalize_defaults(default, symbol)
 
         decimal_options = {
-          precision: precision,
+          precision:,
           scale: 0,
           default: defaults[:atomic],
-          comment: comment
+          comment:
         }
         decimal_options[:null] = null unless null.nil?
         decimal(name_to_atomic(name), **decimal_options.compact)
@@ -42,7 +42,7 @@ class Amount
         string_options = {
           limit: 10,
           default: defaults[:symbol],
-          comment: comment
+          comment:
         }
         string_options[:null] = null unless null.nil?
         string(name_to_symbol(name), **string_options.compact)
@@ -53,7 +53,7 @@ class Amount
       def normalize_defaults(default, symbol)
         return {} if default.nil?
 
-        type = Type.new(symbol: symbol)
+        type = Type.new(symbol:)
         amount = type.cast(default)
 
         {

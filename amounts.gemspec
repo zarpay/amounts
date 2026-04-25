@@ -16,7 +16,7 @@ Gem::Specification.new do |spec|
   TEXT
   spec.homepage = "https://github.com/zarpay/amounts"
   spec.license = "MIT"
-  spec.required_ruby_version = ">= 3.0"
+  spec.required_ruby_version = ">= 3.1"
 
   spec.metadata = {
     "bug_tracker_uri" => "https://github.com/zarpay/amounts/issues",
@@ -39,5 +39,5 @@ Gem::Specification.new do |spec|
   spec.executables = ["console", "setup"]
   spec.require_paths = ["lib"]
 
-  spec.add_runtime_dependency "bigdecimal"
+  spec.add_dependency "bigdecimal"
 end
