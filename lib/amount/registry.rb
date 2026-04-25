@@ -76,13 +76,13 @@ class Amount
         validate_display_units!(display_units, default_display) if display_units
 
         entry = Entry.new(
-          symbol: symbol,
-          decimals: decimals,
-          display_symbol: display_symbol,
-          display_position: display_position,
-          ui_decimals: ui_decimals,
-          display_units: display_units,
-          default_display: default_display,
+          symbol:,
+          decimals:,
+          display_symbol:,
+          display_position:,
+          ui_decimals:,
+          display_units:,
+          default_display:,
           amount_class: binding.local_variable_get(:class) || Amount
         )
 

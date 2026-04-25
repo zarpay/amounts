@@ -5,7 +5,7 @@ class Amount
     # Provides `has_amount` for ActiveRecord models.
     module Model
       def has_amount(name, symbol: nil)
-        definition = AttributeDefinition.new(name, symbol: symbol)
+        definition = AttributeDefinition.new(name, symbol:)
         amount_attribute_definitions[definition.name] = definition
 
         define_amount_reader(definition)
