@@ -126,6 +126,32 @@ class AmountTest < Minitest::Test
     assert_raises(Amount::Registry::UnknownType) { Amount.new(1, :DOGE) }
   end
 
+  def test_register_rejects_empty_symbol
+    error = assert_raises(ArgumentError) { Amount.register :"", decimals: 2 }
+    assert_match(/symbol must not be blank/, error.message)
+  end
+
+  def test_register_rejects_nil_symbol
+    assert_raises(ArgumentError) { Amount.register nil, decimals: 2 }
+  end
+
+  def test_frozen_amount_renders_display
+    amount = Amount.new("1.5", :USDC).freeze
+
+    assert_equal "$1.50", amount.ui
+    assert_equal "1.500000", amount.formatted
+    assert_equal "USDC|1.5", amount.to_s
+  end
+
+  def test_frozen_amount_arithmetic_returns_unfrozen_result
+    a = Amount.new("1", :USDC).freeze
+    b = Amount.new("2", :USDC).freeze
+    sum = a + b
+
+    assert_equal Amount.new("3", :USDC), sum
+    refute sum.frozen?
+  end
+
   def test_formatted_respects_storage_decimals
     assert_equal "1.500000", Amount.new("1.5", :USDC).formatted
     assert_equal "1.500000000", Amount.new("1.5", :SOL).formatted

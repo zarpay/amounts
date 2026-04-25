@@ -147,7 +147,7 @@ class Amount
     end
   end
 
-  attr_reader :atomic, :symbol
+  attr_reader :atomic, :symbol, :display
 
   # Creates an amount for a registered symbol.
   #
@@ -179,6 +179,7 @@ class Amount
     end
 
     @atomic = infer_value(from, value)
+    @display = Display.new(self)
   end
 
   # @return [Amount::Registry::Entry]
@@ -203,14 +204,6 @@ class Amount
   #   # => "1.5"
   def decimal
     BigDecimal(@atomic) / (BigDecimal(10)**decimals)
-  end
-
-  # @return [Amount::Display]
-  # @example Delegating formatting concerns
-  #   Amount.usdc("1.50").display.ui
-  #   # => "$1.50"
-  def display
-    @display ||= Display.new(self)
   end
 
   def_delegators :display, :formatted, :ui, :to_s, :in_unit
