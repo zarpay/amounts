@@ -14,7 +14,6 @@ end
 
 group :quality do
   gem "rubocop", "~> 1.63.0"
-  gem "yard", ">= 0.9"
 end
 
 group :active_record do
