@@ -2,18 +2,26 @@
 
 ## Unreleased
 
-### Fixed
+### Changed (breaking)
 
-- `Amount.register` now rejects empty or nil symbols with
-  `ArgumentError("symbol must not be blank")`. Previously
-  `Amount.register :"", decimals: 2` succeeded silently and produced a
-  registered "type" with an empty symbol.
-- Frozen `Amount` instances can now render display output without raising
-  `FrozenError`. Previously `Amount#display` lazily memoized the `Display`
-  via `@display ||= …`, which mutated the frozen instance on first read.
-  The `Display` is now built eagerly in `Amount#initialize`, so any frozen
-  amount can be safely passed to `.ui`, `.formatted`, `.to_s`, or
-  `.in_unit`.
+- The opt-in RSpec integration moved into a dedicated `Amount::RSpec` namespace
+  with one file per concern. Constants and require paths changed:
+
+  | Old | New |
+  | --- | --- |
+  | `Amount::RSpecMatchers` | `Amount::RSpec::Matchers` |
+  | `Amount::RSpecSupport`  | `Amount::RSpec::Support`  |
+  | `lib/amount/rspec_matchers.rb` | `lib/amount/rspec/matchers.rb` |
+  | `lib/amount/rspec_support.rb`  | `lib/amount/rspec/support.rb`  |
+
+  The ActiveRecord-specific matchers also live in their own file under the same
+  pattern (`Amount::ActiveRecord::RSpec::Matchers` in
+  `lib/amount/active_record/rspec/matchers.rb`). Top-level `require` paths
+  (`require "amount/rspec"` and `require "amount/active_record/rspec"`) are
+  unchanged.
+
+  Update any direct constant references; no backwards-compatibility aliases are
+  shipped.
 
 ### Changed
 

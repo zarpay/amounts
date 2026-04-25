@@ -2,8 +2,8 @@
 
 require_relative "../amount"
 require "rspec/expectations"
-require_relative "rspec_support"
-require_relative "rspec_matchers"
+require_relative "rspec/support"
+require_relative "rspec/matchers"
 
 # Opt-in RSpec matchers for `Amount`.
 #
@@ -16,12 +16,12 @@ require_relative "rspec_matchers"
 #   expect(Amount.usdc("1.50")).to be_amount_of(:USDC)
 #   expect(Amount.usdc("1.50")).to be_positive_amount
 #   expect(Amount.usdc("1.55")).to be_approximately_amount(:USDC, "1.50", within: "0.10")
-Amount::RSpecMatchers.define_amount_equality_matcher(:eq_amount) do |*expected_arguments|
-  Amount::RSpecSupport.coerce_amount_arguments(expected_arguments)
+Amount::RSpec::Matchers.define_amount_equality_matcher(:eq_amount) do |*expected_arguments|
+  Amount::RSpec::Support.coerce_amount_arguments(expected_arguments)
 end
 
-Amount::RSpecMatchers.define_amount_type_matcher
-Amount::RSpecMatchers.define_amount_predicate_matcher(:be_zero_amount, "a zero Amount", &:zero?)
-Amount::RSpecMatchers.define_amount_predicate_matcher(:be_positive_amount, "a positive Amount", &:positive?)
-Amount::RSpecMatchers.define_amount_predicate_matcher(:be_negative_amount, "a negative Amount", &:negative?)
-Amount::RSpecMatchers.define_approximate_amount_matcher
+Amount::RSpec::Matchers.define_amount_type_matcher
+Amount::RSpec::Matchers.define_approximate_amount_matcher
+Amount::RSpec::Matchers.define_amount_predicate_matcher(:be_zero_amount, "a zero Amount", &:zero?)
+Amount::RSpec::Matchers.define_amount_predicate_matcher(:be_positive_amount, "a positive Amount", &:positive?)
+Amount::RSpec::Matchers.define_amount_predicate_matcher(:be_negative_amount, "a negative Amount", &:negative?)
