@@ -1,5 +1,10 @@
 # amounts
 
+[![Gem Version](https://img.shields.io/gem/v/amounts)](https://rubygems.org/gems/amounts)
+[![Release](https://img.shields.io/github/v/release/zarpay/amounts)](https://github.com/zarpay/amounts/releases)
+[![License](https://img.shields.io/github/license/zarpay/amounts)](https://github.com/zarpay/amounts/blob/main/LICENSE.txt)
+[![Ruby](https://img.shields.io/gem/required-ruby-version/amounts)](https://rubygems.org/gems/amounts)
+
 `amounts` is a Ruby gem for precise quantities of fungible things: money, crypto tokens, commodities, inventory units, points, and similar value-like amounts. It stores every value as an arbitrary-precision atomic `Integer`, keeps type identity in a registry, rejects accidental cross-type math unless an explicit directional rate exists, and offers an optional ActiveRecord adapter without making Rails part of the core runtime.
 
 ## Installation
