@@ -24,7 +24,7 @@
   `Conversion` (`to(target_symbol, rate:)`),
   `Allocation` (`split`, `allocate`),
   and `Serialization` (instance `to_h` plus `Serialization::ClassMethods.load`
-  which is `extend`-ed onto `Amount`).
+  auto-extended via the `included` hook).
   Public API unchanged. Shared private helpers (`build`,
   `coerce_other_to_self_type[!]`, `ensure_same_type!`, `infer_value`,
   `infer_type`, `ui_to_atomic`) remain on the main `Amount` class so every

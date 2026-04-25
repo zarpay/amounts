@@ -198,7 +198,6 @@ class Amount
   include Comparison
   include Conversion
   include Serialization
-  extend Serialization::ClassMethods
 
   # @return [Amount::Registry::Entry]
   # @example Accessing display configuration for this amount

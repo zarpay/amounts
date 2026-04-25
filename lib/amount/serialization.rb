@@ -1,16 +1,20 @@
 # frozen_string_literal: true
 
 class Amount
-  # Versioned hash serialization. The instance side (`#to_h`) is included on
-  # `Amount`; the class-level entry point (`Amount.load`) comes from
-  # `extend Serialization::ClassMethods`. The compact-string format is the
+  # Versioned hash serialization. `include Serialization` does both halves:
+  # the instance side (`#to_h`) is mixed in directly, and the class-level
+  # entry point (`Amount.load`) is auto-extended onto the including class
+  # via the `included` hook below. The compact-string format is the
   # responsibility of {Amount::Parser}.
   module Serialization
     VERSION = 1
 
-    # Class-level methods made available to any class that does
-    # `extend Amount::Serialization::ClassMethods`. Currently only `Amount`
-    # itself.
+    def self.included(base)
+      base.extend(ClassMethods)
+    end
+
+    # Class-level methods automatically extended onto any class that does
+    # `include Serialization`.
     module ClassMethods
       # @param payload [Hash]
       # @return [Amount]
