@@ -47,6 +47,20 @@ Amount.usdc("1.561").ui(direction: :ceil)
 # => "$1.57"
 ```
 
+## Without the symbol
+
+Pass `decorated: false` to get the rounded number on its own — useful when the currency label is rendered separately (e.g. a column header, an input adornment, a chip):
+
+```ruby
+Amount.usdc("1.50").ui                              # => "$1.50"
+Amount.usdc("1.50").ui(decorated: false)            # => "1.50"
+
+gold.ui(unit: :gram)                                # => "46.65 g"
+gold.ui(unit: :gram, decorated: false)              # => "46.65"
+```
+
+`decorated: false` composes with `unit:` and `direction:` — same rounding, same display unit, just no symbol.
+
 ## What display units are not
 
 They are not:
