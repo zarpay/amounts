@@ -26,6 +26,20 @@ class AmountTest < Minitest::Test
     assert_equal 1_500_000, Amount.new(1.5, :USDC).atomic
   end
 
+  def test_construct_from_rational_treats_as_ui
+    assert_equal 1_500_000, Amount.new(Rational(3, 2), :USDC).atomic
+  end
+
+  def test_construct_from_rational_is_exact_for_repeating_fractions
+    # 1/3 has no finite decimal expansion. With six decimals of storage
+    # the atomic representation is 333333 (truncated toward zero).
+    assert_equal 333_333, Amount.new(Rational(1, 3), :USDC).atomic
+  end
+
+  def test_construct_from_rational_with_explicit_ui_from
+    assert_equal 1_500_000, Amount.new(Rational(3, 2), :USDC, from: :ui).atomic
+  end
+
   def test_explicit_from_overrides_inference
     amount = Amount.new("1500000", :USDC, from: :atomic)
 

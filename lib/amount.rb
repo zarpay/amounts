@@ -475,7 +475,7 @@ class Amount
     case from || infer_type(value)
     when :atomic then value.to_i
     when :ui then ui_to_atomic(value)
-    when :float then ui_to_atomic(value.to_s)
+    when :float then ui_to_atomic(value.is_a?(Rational) ? value : value.to_s)
     else
       raise InvalidInput, "unknown amount format: #{value.inspect}"
     end
@@ -492,6 +492,8 @@ class Amount
   end
 
   def ui_to_atomic(value)
+    return (value * (10**decimals)).to_i if value.is_a?(Rational)
+
     (BigDecimal(value.to_s) * (BigDecimal(10)**decimals)).to_i
   rescue ArgumentError
     raise InvalidInput, "cannot parse #{value.inspect} as #{symbol}"
