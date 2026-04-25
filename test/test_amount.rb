@@ -169,12 +169,30 @@ class AmountTest < Minitest::Test
     assert_equal "$1.57", Amount.new("1.561", :USDC).ui(direction: :ceil)
   end
 
+  def test_ui_decorated_false_omits_the_display_symbol
+    assert_equal "1.50", Amount.new("1.5", :USDC).ui(decorated: false)
+    assert_equal "1.5000", Amount.new("1.5", :SOL).ui(decorated: false)
+    assert_equal "1", Amount.new(1, :LOGS).ui(decorated: false)
+  end
+
+  def test_ui_decorated_false_with_ceil_direction
+    assert_equal "1.57", Amount.new("1.561", :USDC).ui(direction: :ceil, decorated: false)
+  end
+
   def test_display_units_scale_output
     gold = Amount.new("1.5", :GOLD)
 
     assert_equal "1.5000 oz t", gold.ui
     assert_equal "46.65 g", gold.ui(unit: :gram)
     assert_equal "0.04665 kg", gold.ui(unit: :kg)
+  end
+
+  def test_display_units_with_decorated_false
+    gold = Amount.new("1.5", :GOLD)
+
+    assert_equal "1.5000", gold.ui(decorated: false)
+    assert_equal "46.65", gold.ui(unit: :gram, decorated: false)
+    assert_equal "0.04665", gold.ui(unit: :kg, decorated: false)
   end
 
   def test_in_unit_returns_raw_bigdecimal

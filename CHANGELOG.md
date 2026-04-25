@@ -1,5 +1,16 @@
 # Changelog
 
+## Unreleased
+
+### Added
+
+- `Amount#ui(decorated: false)` returns the rounded UI value as a plain
+  numeric string without the `display_symbol` prefix or suffix. Useful when
+  the caller renders the currency label separately (e.g. in a column header
+  or chip). Composes with `unit:` and `direction:` — for example,
+  `Amount.gold("1").ui(unit: :gram, decorated: false)` returns `"31.10"`.
+  Default remains `decorated: true`, so existing callers see no change.
+
 ## 0.0.4 - 2026-04-26
 
 ### Changed (breaking)

@@ -18,9 +18,21 @@ class Amount
 
     # @param unit [Symbol, nil]
     # @param direction [Symbol]
+    # @param decorated [Boolean] when `false`, omit the display symbol and
+    #   return just the rounded number. Useful when the caller renders the
+    #   currency label separately (e.g. in a column header or a chip).
     # @return [String]
-    def ui(unit: nil, direction: :floor)
-      unit ? render_display_unit(unit, direction) : render_default(direction)
+    # @example
+    #   Amount.usdc("1.50").ui                       # => "$1.50"
+    #   Amount.usdc("1.50").ui(decorated: false)     # => "1.50"
+    #   Amount.gold("1").ui(unit: :gram)             # => "31.10 g"
+    #   Amount.gold("1").ui(unit: :gram, decorated: false)  # => "31.10"
+    def ui(unit: nil, direction: :floor, decorated: true)
+      if unit
+        render_display_unit(unit, direction, decorated:)
+      else
+        render_default(direction, decorated:)
+      end
     end
 
     # @return [String]
@@ -37,19 +49,24 @@ class Amount
 
     private
 
-    def render_default(direction)
+    def render_default(direction, decorated:)
       rounded = round(@amount.decimal, @entry.ui_decimals, direction)
-      apply_symbol(format("%.#{@entry.ui_decimals}f", rounded), @entry.display_symbol, @entry.display_position)
+      formatted = format("%.#{@entry.ui_decimals}f", rounded)
+      return formatted unless decorated
+
+      apply_symbol(formatted, @entry.display_symbol, @entry.display_position)
     end
 
-    def render_display_unit(unit, direction)
+    def render_display_unit(unit, direction, decorated:)
       spec = fetch_display_unit(unit)
       scaled = @amount.decimal * Amount.coerce_decimal(spec[:scale])
       decimals = spec[:ui_decimals] || @entry.ui_decimals
       rounded = round(scaled, decimals, direction)
+      formatted = format("%.#{decimals}f", rounded)
+      return formatted unless decorated
 
       apply_symbol(
-        format("%.#{decimals}f", rounded),
+        formatted,
         spec[:symbol] || @entry.display_symbol,
         spec[:position] || @entry.display_position
       )
