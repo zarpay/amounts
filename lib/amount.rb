@@ -38,6 +38,12 @@ require_relative "amount/serialization"
 #   # => "1.5"
 class Amount
   include Comparable
+  include Arithmetic
+  include Allocation
+  include Comparison
+  include Conversion
+  include Serialization
+
   extend Forwardable
 
   class Error < StandardError; end
@@ -192,12 +198,6 @@ class Amount
     @atomic = infer_value(from, value)
     @display = Display.new(self)
   end
-
-  include Arithmetic
-  include Allocation
-  include Comparison
-  include Conversion
-  include Serialization
 
   # @return [Amount::Registry::Entry]
   # @example Accessing display configuration for this amount
