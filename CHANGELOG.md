@@ -15,6 +15,27 @@
   amount can be safely passed to `.ui`, `.formatted`, `.to_s`, or
   `.in_unit`.
 
+### Changed
+
+- The `Amount` instance behavior is now composed from focused mixins instead
+  of all living in a single 500+ line file. New modules under `lib/amount/`:
+  `Arithmetic` (`+`, `-`, `*`, `/`, `abs`, `-@`),
+  `Comparison` (`<=>`, `==`, `eql?`, `hash`, `same_type?`, sign predicates),
+  `Conversion` (`to(target_symbol, rate:)`),
+  `Allocation` (`split`, `allocate`),
+  and `Serialization` (instance `to_h` plus `Serialization::ClassMethods.load`
+  auto-extended via the `included` hook).
+  Public API unchanged. Shared private helpers (`build`,
+  `coerce_other_to_self_type[!]`, `ensure_same_type!`, `infer_value`,
+  `infer_type`, `ui_to_atomic`) remain on the main `Amount` class so every
+  mixin can call them.
+
+### Removed
+
+- `Amount::Serializer` is gone. Its `dump`/`load` class methods moved into
+  `Amount::Serialization` (instance `to_h` plus `ClassMethods.load`).
+  `Amount.load(hash)` and `Amount#to_h` are unchanged.
+
 ## 0.0.3 - 2026-04-26
 
 ### Fixed
