@@ -8,6 +8,11 @@ require_relative "amount/registry"
 require_relative "amount/display"
 require_relative "amount/parser"
 require_relative "amount/serializer"
+require_relative "amount/arithmetic"
+require_relative "amount/allocation"
+require_relative "amount/comparison"
+require_relative "amount/conversion"
+require_relative "amount/serialization"
 
 # Represents a precise quantity of a registered fungible type.
 #
@@ -15,6 +20,13 @@ require_relative "amount/serializer"
 # smallest unit configured for the registered symbol. UI values are parsed from
 # strings or decimals, while integer inputs are treated as atomic counts unless
 # `from:` overrides inference.
+#
+# Behavior is composed from a set of focused mixins:
+# - {Arithmetic}    — `+`, `-`, `*`, `/`, `abs`, `-@`
+# - {Comparison}    — `<=>`, `==`, `eql?`, `hash`, `same_type?`, sign predicates
+# - {Conversion}    — `to(:SYMBOL, rate:)`
+# - {Allocation}    — `split(n)`, `allocate(weights)`
+# - {Serialization} — `to_h`
 #
 # @example Constructing from a UI value
 #   Amount.register :USDC, decimals: 6
@@ -82,6 +94,18 @@ class Amount
     #   Amount.parse("v1:USDC|1.50")
     def parse(str)
       Parser.new(str).parse
+    end
+
+    # @param hash [Hash]
+    # @return [Amount]
+    # @raise [InvalidInput] for unsupported serialized versions
+    # @example Loading the current versioned payload
+    #   Amount.load(v: 1, atomic: "1500000", symbol: "USDC")
+    #
+    # @example Loading the legacy unversioned payload
+    #   Amount.load(atomic: 1500000, symbol: :USDC)
+    def load(hash)
+      Serializer.load(hash)
     end
 
     # When called as `Amount.new` for a symbol whose registry entry binds a
@@ -182,6 +206,12 @@ class Amount
     @display = Display.new(self)
   end
 
+  include Arithmetic
+  include Allocation
+  include Comparison
+  include Conversion
+  include Serialization
+
   # @return [Amount::Registry::Entry]
   # @example Accessing display configuration for this amount
   #   Amount.usdc("1").registry_entry.ui_decimals
@@ -216,247 +246,12 @@ class Amount
     "#<#{self.class} #{symbol} #{ui}>"
   end
 
-  # @return [Boolean]
-  # @example
-  #   Amount.usdc(0, from: :atomic).zero?
-  #   # => true
-  def zero? = @atomic.zero?
-
-  # @return [Boolean]
-  # @example
-  #   Amount.usdc("1").positive?
-  #   # => true
-  def positive? = @atomic.positive?
-
-  # @return [Boolean]
-  # @example
-  #   Amount.usdc("-1").negative?
-  #   # => true
-  def negative? = @atomic.negative?
-
-  # @param other [Object]
-  # @return [Boolean]
-  # @example
-  #   Amount.usdc("1").same_type?(Amount.usdc("2"))
-  #   # => true
-  def same_type?(other)
-    other.is_a?(Amount) && other.symbol == symbol
-  end
-
-  # @return [Amount]
-  # @example
-  #   Amount.usdc("-1").abs
-  #   # => #<Amount USDC $1.00>
-  def abs
-    build(@atomic.abs)
-  end
-
-  # @return [Amount]
-  # @example
-  #   -Amount.usdc("1")
-  #   # => #<Amount USDC -$1.00>
-  def -@
-    build(-@atomic)
-  end
-
-  # @param other [Amount]
-  # @return [Amount]
-  # @raise [TypeMismatch]
-  # @example Same-type addition
-  #   Amount.usdc("1.50") + Amount.usdc("0.50")
-  #
-  # @example Cross-type addition using a registered directional rate
-  #   Amount.register_default_rate :USD, :USDC, "1"
-  #   Amount.usdc("10.00") + Amount.new("5.00", :USD)
-  def +(other)
-    rhs = coerce_other_to_self_type!(other)
-    build(@atomic + rhs.atomic)
-  end
-
-  # @param other [Amount]
-  # @return [Amount]
-  # @raise [TypeMismatch]
-  # @example
-  #   Amount.usdc("2.00") - Amount.usdc("0.50")
-  def -(other)
-    rhs = coerce_other_to_self_type!(other)
-    build(@atomic - rhs.atomic)
-  end
-
-  # @param scalar [Numeric]
-  # @return [Amount]
-  # @raise [TypeMismatch]
-  # @example
-  #   Amount.usdc("1.25") * 2
-  def *(scalar)
-    ensure_scalar!(scalar)
-    build((BigDecimal(@atomic) * Amount.coerce_decimal(scalar)).to_i)
-  end
-
-  # @param other [Amount, Numeric]
-  # @return [Amount, BigDecimal]
-  # @raise [TypeMismatch, ZeroDivisionError]
-  # @example Dividing by a scalar returns an amount
-  #   Amount.usdc("1.00") / 2
-  #
-  # @example Dividing by an amount returns a ratio
-  #   Amount.usdc("10.00") / Amount.usdc("2.00")
-  def /(other)
-    if other.is_a?(Amount)
-      ensure_same_type!(other)
-      raise ZeroDivisionError if other.zero?
-
-      BigDecimal(@atomic) / BigDecimal(other.atomic)
-    else
-      ensure_scalar!(other)
-      raise ZeroDivisionError if other.zero?
-
-      build((BigDecimal(@atomic) / Amount.coerce_decimal(other)).to_i)
-    end
-  end
-
-  # Splits into equal parts and returns the leftover explicitly.
-  #
-  # @param n [Integer]
-  # @return [Array<(Array<Amount>, Amount)>]
-  # @raise [ArgumentError] if `n` is not a positive integer
-  # @example
-  #   parts, remainder = Amount.new(10, :LOGS).split(3)
-  #   parts.map(&:atomic)
-  #   # => [3, 3, 3]
-  #   remainder.atomic
-  #   # => 1
-  def split(n)
-    raise ArgumentError, "n must be positive" unless n.is_a?(Integer) && n.positive?
-
-    sign = atomic_sign
-    base, remainder = @atomic.abs.divmod(n)
-    parts = Array.new(n) { build(sign * base) }
-
-    [parts, build(sign * remainder)]
-  end
-
-  # Allocates proportionally by integer weights and returns the leftover explicitly.
-  #
-  # @param weights [Array<Integer>]
-  # @return [Array<(Array<Amount>, Amount)>]
-  # @raise [ArgumentError] if weights are empty, negative, or sum to zero
-  # @example
-  #   parts, remainder = Amount.new(10, :LOGS).allocate([1, 1, 2])
-  #   parts.map(&:atomic)
-  #   # => [2, 2, 5]
-  #   remainder.atomic
-  #   # => 1
-  def allocate(weights)
-    raise ArgumentError, "weights must be non-empty" if weights.empty?
-    raise ArgumentError, "weights must be non-negative integers" unless weights.all? { |weight| weight.is_a?(Integer) && weight >= 0 }
-
-    total = weights.sum
-    raise ArgumentError, "weights must sum to positive value" unless total.positive?
-
-    sign = atomic_sign
-    absolute_atomic = @atomic.abs
-    allocations = weights.map { |weight| absolute_atomic * weight / total }
-    remainder = absolute_atomic - allocations.sum
-
-    parts = allocations.map { |allocation| build(sign * allocation) }
-    [parts, build(sign * remainder)]
-  end
-
-  # @param other [Object]
-  # @return [-1, 0, 1, nil]
-  # @example
-  #   Amount.usdc("1") <=> Amount.usdc("2")
-  #   # => -1
-  def <=>(other)
-    return nil unless other.is_a?(Amount)
-
-    comparable = coerce_other_to_self_type(other)
-    return nil unless comparable
-
-    @atomic <=> comparable.atomic
-  end
-
-  # @param other [Object]
-  # @return [Boolean]
-  # @example
-  #   Amount.usdc("1.50") == Amount.usdc("1.50")
-  #   # => true
-  def ==(other)
-    same_type?(other) && @atomic == other.atomic
-  end
-
-  # @param other [Object]
-  # @return [Boolean]
-  # @example Hash-key equality keeps class and symbol identity
-  #   Amount.usdc("1").eql?(Amount.usdc("1"))
-  #   # => true
-  def eql?(other)
-    other.class == self.class && symbol == other.symbol && @atomic == other.atomic
-  end
-
-  # @return [Integer]
-  # @example
-  #   { Amount.usdc("1") => :ok }[Amount.usdc("1")]
-  #   # => :ok
-  def hash
-    [self.class, symbol, @atomic].hash
-  end
-
-  # @param target_symbol [Symbol, String]
-  # @param rate [String, Numeric, BigDecimal, nil]
-  # @return [Amount]
-  # @raise [Amount::Registry::NoDefaultRate] if no explicit or registered rate is available
-  # @example Using an explicit one-off rate
-  #   Amount.usdc("100").to(:GOLD, rate: "0.00042")
-  #
-  # @example Using a registered default rate
-  #   Amount.register_default_rate :USDC, :USD, "1"
-  #   Amount.usdc("1.50").to(:USD)
-  def to(target_symbol, rate: nil)
-    target_symbol = target_symbol.to_sym
-    return self.class.new(@atomic, symbol, from: :atomic) if target_symbol == symbol
-
-    rate = resolve_rate(target_symbol, rate)
-    target_entry = self.class.registry.lookup(target_symbol)
-
-    decimal_result = decimal * Amount.coerce_decimal(rate)
-    atomic_result = (decimal_result * (BigDecimal(10)**target_entry.decimals)).to_i
-
-    target_entry.amount_class.new(atomic_result, target_symbol, from: :atomic)
-  end
-
-  # @return [Hash]
-  # @example
-  #   Amount.usdc("1.50").to_h
-  #   # => { v: 1, atomic: "1500000", symbol: "USDC" }
-  def to_h
-    Serializer.dump(self)
-  end
-
-  # @param hash [Hash]
-  # @return [Amount]
-  # @raise [InvalidInput] for unsupported serialized versions
-  # @example Loading the current versioned payload
-  #   Amount.load(v: 1, atomic: "1500000", symbol: "USDC")
-  #
-  # @example Loading the legacy unversioned payload
-  #   Amount.load(atomic: 1500000, symbol: :USDC)
-  def self.load(hash)
-    Serializer.load(hash)
-  end
-
   private
 
+  # Builds a same-symbol amount in the receiver's class. Used by every
+  # operator that returns an Amount so subclass identity propagates.
   def build(atomic_value)
     self.class.new(atomic_value, symbol, from: :atomic)
-  end
-
-  def atomic_sign
-    return 1 if @atomic.positive?
-    return(-1) if @atomic.negative?
-
-    0
   end
 
   def ensure_same_type!(other)
@@ -465,17 +260,20 @@ class Amount
     raise TypeMismatch, "type mismatch: #{symbol} vs #{other.is_a?(Amount) ? other.symbol : other.class}"
   end
 
-  def ensure_scalar!(value)
-    return if value.is_a?(Integer) || value.is_a?(Float) ||
-              value.is_a?(BigDecimal) || value.is_a?(Rational)
+  def coerce_other_to_self_type(other)
+    return other if same_type?(other)
+    return unless other.is_a?(Amount)
 
-    raise TypeMismatch, "expected scalar, got #{value.class}"
+    other.to(symbol)
+  rescue Registry::NoDefaultRate
+    nil
   end
 
-  def resolve_rate(target, provided)
-    return provided if provided
-
-    self.class.registry.default_rate(symbol, target)
+  def coerce_other_to_self_type!(other)
+    coerce_other_to_self_type(other) || raise(
+      TypeMismatch,
+      "type mismatch: #{symbol} vs #{other.is_a?(Amount) ? other.symbol : other.class}"
+    )
   end
 
   def infer_value(from, value)
@@ -504,21 +302,5 @@ class Amount
     (BigDecimal(value.to_s) * (BigDecimal(10)**decimals)).to_i
   rescue ArgumentError
     raise InvalidInput, "cannot parse #{value.inspect} as #{symbol}"
-  end
-
-  def coerce_other_to_self_type!(other)
-    coerce_other_to_self_type(other) || raise(
-      TypeMismatch,
-      "type mismatch: #{symbol} vs #{other.is_a?(Amount) ? other.symbol : other.class}"
-    )
-  end
-
-  def coerce_other_to_self_type(other)
-    return other if same_type?(other)
-    return unless other.is_a?(Amount)
-
-    other.to(symbol)
-  rescue Registry::NoDefaultRate
-    nil
   end
 end
