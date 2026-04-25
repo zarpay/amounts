@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>
+  Class: Amount::ActiveRecord::Type
+  
+    &mdash; Documentation by YARD 0.9.43
+  
+</title>
+
+  <link rel="stylesheet" href="../../css/style.css" type="text/css">
+
+  <link rel="stylesheet" href="../../css/common.css" type="text/css">
+
+<script type="text/javascript">
+  pathId = "Amount::ActiveRecord::Type";
+  relpath = '../../';
+</script>
+
+
+  <script type="text/javascript" charset="utf-8" src="../../js/jquery.js"></script>
+
+  <script type="text/javascript" charset="utf-8" src="../../js/app.js"></script>
+
+
+  </head>
+  <body>
+    <div id="main_progress" aria-hidden="true"></div>
+
+    <div class="nav_wrap">
+      <iframe id="nav" src="../../class_list.html?1"></iframe>
+      <div id="resizer"></div>
+    </div>
+
+    <div id="main" tabindex="-1">
+      <div id="header">
+        <div id="menu">
+  
+    <a href="../../_index.html">Index (T)</a> &raquo;
+    <span class='title'><span class='object_link'><a href="../../Amount.html" title="Amount (class)">Amount</a></span></span> &raquo; <span class='title'><span class='object_link'><a href="../ActiveRecord.html" title="Amount::ActiveRecord (module)">ActiveRecord</a></span></span>
+     &raquo; 
+    <span class="title">Type</span>
+  
+</div>
+
+        <div id="search">
+  
+    <a class="full_list_link" id="class_list_link"
+        href="../../class_list.html">
+
+        <svg width="24" height="24">
+          <rect x="0" y="4" width="24" height="4" rx="1" ry="1"></rect>
+          <rect x="0" y="12" width="24" height="4" rx="1" ry="1"></rect>
+          <rect x="0" y="20" width="24" height="4" rx="1" ry="1"></rect>
+        </svg>
+    </a>
+  
+</div>
+        <div class="clear"></div>
+      </div>
+
+      <div id="content"><h1>Class: Amount::ActiveRecord::Type
+  
+  
+  
+</h1>
+<div class="box_info">
+  
+  <dl>
+    <dt>Inherits:</dt>
+    <dd>
+      <span class="inheritName">Object</span>
+      
+        <ul class="fullTree">
+          <li>Object</li>
+          
+            <li class="next">Amount::ActiveRecord::Type</li>
+          
+        </ul>
+        <a href="#" class="inheritanceTree">show all</a>
+      
+    </dd>
+  </dl>
+  
+
+  
+  
+  
+  
+  
+
+  
+
+  
+  <dl>
+    <dt>Defined in:</dt>
+    <dd>lib/amount/active_record/type.rb
+</dd>
+  </dl>
+  
+</div>
+
+<h2>Overview</h2><div class="docstring">
+  <div class="discussion">
+    <p>Casts user input into Amount objects for the optional ActiveRecord adapter.</p>
+<p>The type is intentionally explicit:</p>
+<ul>
+<li>strings are parsed using <span class='object_link'><a href="../../Amount.html#parse-class_method" title="Amount.parse (method)">Amount.parse</a></span></li>
+<li>hashes are loaded or interpreted as value/symbol pairs</li>
+<li>raw numerics are only accepted for fixed-currency attributes</li>
+</ul>
+
+  </div>
+</div>
+<div class="tags">
+  
+  <div class="examples">
+    <h4 class="tag_title">Examples:</h4>
+    
+      
+        <h5 class="example_title"><div class='inline'><p>Casting a polymorphic string value</p></div></h5>
+      
+      <pre class="example code"><code><span class='const'><span class='object_link'><a href="../../Amount.html" title="Amount (class)">Amount</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../ActiveRecord.html" title="Amount::ActiveRecord (module)">ActiveRecord</a></span></span><span class='op'>::</span><span class='const'>Type</span><span class='period'>.</span><span class='id identifier rubyid_new'><span class='object_link'><a href="#initialize-instance_method" title="Amount::ActiveRecord::Type#initialize (method)">new</a></span></span><span class='period'>.</span><span class='id identifier rubyid_cast'><span class='object_link'><a href="#cast-instance_method" title="Amount::ActiveRecord::Type#cast (method)">cast</a></span></span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>USDC|1.50</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span></code></pre>
+    
+      
+        <h5 class="example_title"><div class='inline'><p>Casting a fixed-currency numeric value</p></div></h5>
+      
+      <pre class="example code"><code><span class='const'><span class='object_link'><a href="../../Amount.html" title="Amount (class)">Amount</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../ActiveRecord.html" title="Amount::ActiveRecord (module)">ActiveRecord</a></span></span><span class='op'>::</span><span class='const'>Type</span><span class='period'>.</span><span class='id identifier rubyid_new'><span class='object_link'><a href="#initialize-instance_method" title="Amount::ActiveRecord::Type#initialize (method)">new</a></span></span><span class='lparen'>(</span><span class='label'>currency:</span> <span class='symbol'>:SOL</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_cast'><span class='object_link'><a href="#cast-instance_method" title="Amount::ActiveRecord::Type#cast (method)">cast</a></span></span><span class='lparen'>(</span><span class='float'>0.25</span><span class='rparen'>)</span></code></pre>
+    
+  </div>
+
+
+</div>
+
+
+
+  <h2>Instance Attribute Summary <small><a href="#" class="summary_toggle">collapse</a></small></h2>
+  <ul class="summary">
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#fixed_currency-instance_method" title="#fixed_currency (instance method)">#<strong>fixed_currency</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+    
+      <span class="note title readonly">readonly</span>
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Returns the value of attribute fixed_currency.</p></div></span>
+  
+</li>
+
+    
+  </ul>
+
+
+
+
+  
+    <h2>
+      Instance Method Summary
+      <small><a href="#" class="summary_toggle">collapse</a></small>
+    </h2>
+
+    <ul class="summary">
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#cast-instance_method" title="#cast (instance method)">#<strong>cast</strong>(value)  &#x21d2; Amount<sup>?</sup> </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'></div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#deserialize-instance_method" title="#deserialize (instance method)">#<strong>deserialize</strong>(atomic, currency = fixed_currency)  &#x21d2; Amount<sup>?</sup> </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'></div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#dump-instance_method" title="#dump (instance method)">#<strong>dump</strong>(value)  &#x21d2; Hash<sup>?</sup> </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'></div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#initialize-instance_method" title="#initialize (instance method)">#<strong>initialize</strong>(currency: nil)  &#x21d2; Type </a>
+    
+
+    
+  </span>
+  
+  
+    <span class="note title constructor">constructor</span>
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>A new instance of Type.</p></div></span>
+  
+</li>
+
+      
+    </ul>
+    
+  
+
+<div id="constructor_details" class="method_details_list">
+  <h2>Constructor Details</h2>
+  
+    <div class="method_details first">
+  <h3 class="signature first" id="initialize-instance_method">
+  
+    #<strong>initialize</strong>(currency: nil)  &#x21d2; <tt><span class='object_link'><a href="" title="Amount::ActiveRecord::Type (class)">Type</a></span></tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Returns a new instance of Type.</p>
+
+  </div>
+</div>
+<div class="tags">
+  
+  <div class="examples">
+    <h4 class="tag_title">Examples:</h4>
+    
+      
+      <pre class="example code"><code><span class='const'><span class='object_link'><a href="../../Amount.html" title="Amount (class)">Amount</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../ActiveRecord.html" title="Amount::ActiveRecord (module)">ActiveRecord</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="" title="Amount::ActiveRecord::Type (class)">Type</a></span></span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='label'>currency:</span> <span class='symbol'>:SOL</span><span class='rparen'>)</span></code></pre>
+    
+  </div>
+<p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>currency</span>
+      
+      
+        <span class='type'>(<tt>Symbol</tt>, <tt>String</tt>, <tt>nil</tt>)</span>
+      
+      
+        <em class="default">(defaults to: <tt>nil</tt>)</em>
+      
+      
+    </li>
+  
+</ul>
+
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+23
+24
+25</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/amount/active_record/type.rb', line 23</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_initialize'>initialize</span><span class='lparen'>(</span><span class='label'>currency:</span> <span class='kw'>nil</span><span class='rparen'>)</span>
+  <span class='ivar'>@fixed_currency</span> <span class='op'>=</span> <span class='id identifier rubyid_currency'>currency</span><span class='op'>&amp;.</span><span class='id identifier rubyid_to_sym'>to_sym</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+  
+</div>
+
+  <div id="instance_attr_details" class="attr_details">
+    <h2>Instance Attribute Details</h2>
+    
+      
+      <span id=""></span>
+      <div class="method_details first">
+  <h3 class="signature first" id="fixed_currency-instance_method">
+  
+    #<strong>fixed_currency</strong>  &#x21d2; <tt>Object</tt>  <span class="extras">(readonly)</span>
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Returns the value of attribute fixed_currency.</p>
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+18
+19
+20</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/amount/active_record/type.rb', line 18</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_fixed_currency'>fixed_currency</span>
+  <span class='ivar'>@fixed_currency</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+  </div>
+
+
+  <div id="instance_method_details" class="method_details_list">
+    <h2>Instance Method Details</h2>
+
+    
+      <div class="method_details first">
+  <h3 class="signature first" id="cast-instance_method">
+  
+    #<strong>cast</strong>(value)  &#x21d2; <tt><span class='object_link'><a href="../../Amount.html" title="Amount (class)">Amount</a></span></tt><sup>?</sup> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+
+  </div>
+</div>
+<div class="tags">
+  
+  <div class="examples">
+    <h4 class="tag_title">Examples:</h4>
+    
+      
+      <pre class="example code"><code><span class='id identifier rubyid_type'>type</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="../../Amount.html" title="Amount (class)">Amount</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../ActiveRecord.html" title="Amount::ActiveRecord (module)">ActiveRecord</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="" title="Amount::ActiveRecord::Type (class)">Type</a></span></span><span class='period'>.</span><span class='id identifier rubyid_new'><span class='object_link'><a href="#initialize-instance_method" title="Amount::ActiveRecord::Type#initialize (method)">new</a></span></span>
+<span class='id identifier rubyid_type'>type</span><span class='period'>.</span><span class='id identifier rubyid_cast'>cast</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>USDC|1.50</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span></code></pre>
+    
+  </div>
+<p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>value</span>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="../../Amount.html" title="Amount (class)">Amount</a></span></tt>, <tt>String</tt>, <tt>Hash</tt>, <tt>Numeric</tt>, <tt>nil</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="../../Amount.html" title="Amount (class)">Amount</a></span></tt>, <tt>nil</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+<p class="tag_title">Raises:</p>
+<ul class="raise">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="../InvalidInput.html" title="Amount::InvalidInput (class)">Amount::InvalidInput</a></span></tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>when the value cannot be cast</p></div>
+      
+    </li>
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="../TypeMismatch.html" title="Amount::TypeMismatch (class)">Amount::TypeMismatch</a></span></tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>when a fixed-currency assignment uses a
+different symbol</p></div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/amount/active_record/type.rb', line 35</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_cast'>cast</span><span class='lparen'>(</span><span class='id identifier rubyid_value'>value</span><span class='rparen'>)</span>
+  <span class='kw'>return</span> <span class='kw'>nil</span> <span class='kw'>if</span> <span class='id identifier rubyid_value'>value</span><span class='period'>.</span><span class='id identifier rubyid_nil?'>nil?</span> <span class='op'>||</span> <span class='id identifier rubyid_value'>value</span> <span class='op'>==</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_end'>&quot;</span></span>
+
+  <span class='id identifier rubyid_amount'>amount</span> <span class='op'>=</span> <span class='kw'>case</span> <span class='id identifier rubyid_value'>value</span>
+           <span class='kw'>when</span> <span class='op'>::</span><span class='const'><span class='object_link'><a href="../../Amount.html" title="Amount (class)">Amount</a></span></span> <span class='kw'>then</span> <span class='id identifier rubyid_value'>value</span>
+           <span class='kw'>when</span> <span class='const'>String</span> <span class='kw'>then</span> <span class='op'>::</span><span class='const'><span class='object_link'><a href="../../Amount.html" title="Amount (class)">Amount</a></span></span><span class='period'>.</span><span class='id identifier rubyid_parse'><span class='object_link'><a href="../../Amount.html#parse-class_method" title="Amount.parse (method)">parse</a></span></span><span class='lparen'>(</span><span class='id identifier rubyid_value'>value</span><span class='rparen'>)</span>
+           <span class='kw'>when</span> <span class='const'>Hash</span> <span class='kw'>then</span> <span class='id identifier rubyid_cast_hash'>cast_hash</span><span class='lparen'>(</span><span class='id identifier rubyid_value'>value</span><span class='rparen'>)</span>
+           <span class='kw'>when</span> <span class='const'>Integer</span><span class='comma'>,</span> <span class='const'>Float</span><span class='comma'>,</span> <span class='const'>BigDecimal</span><span class='comma'>,</span> <span class='const'>Rational</span> <span class='kw'>then</span> <span class='id identifier rubyid_cast_numeric'>cast_numeric</span><span class='lparen'>(</span><span class='id identifier rubyid_value'>value</span><span class='rparen'>)</span>
+           <span class='kw'>else</span>
+             <span class='id identifier rubyid_raise'>raise</span> <span class='op'>::</span><span class='const'><span class='object_link'><a href="../../Amount.html" title="Amount (class)">Amount</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../InvalidInput.html" title="Amount::InvalidInput (class)">InvalidInput</a></span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>cannot cast </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_value'>value</span><span class='period'>.</span><span class='id identifier rubyid_class'>class</span><span class='embexpr_end'>}</span><span class='tstring_content'> to Amount</span><span class='tstring_end'>&quot;</span></span>
+           <span class='kw'>end</span>
+
+  <span class='id identifier rubyid_ensure_fixed_currency!'>ensure_fixed_currency!</span><span class='lparen'>(</span><span class='id identifier rubyid_amount'>amount</span><span class='rparen'>)</span> <span class='kw'>if</span> <span class='id identifier rubyid_fixed_currency'>fixed_currency</span>
+  <span class='id identifier rubyid_amount'>amount</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="deserialize-instance_method">
+  
+    #<strong>deserialize</strong>(atomic, currency = fixed_currency)  &#x21d2; <tt><span class='object_link'><a href="../../Amount.html" title="Amount (class)">Amount</a></span></tt><sup>?</sup> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+
+  </div>
+</div>
+<div class="tags">
+  
+  <div class="examples">
+    <h4 class="tag_title">Examples:</h4>
+    
+      
+      <pre class="example code"><code><span class='const'><span class='object_link'><a href="../../Amount.html" title="Amount (class)">Amount</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../ActiveRecord.html" title="Amount::ActiveRecord (module)">ActiveRecord</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="" title="Amount::ActiveRecord::Type (class)">Type</a></span></span><span class='period'>.</span><span class='id identifier rubyid_new'><span class='object_link'><a href="#initialize-instance_method" title="Amount::ActiveRecord::Type#initialize (method)">new</a></span></span><span class='period'>.</span><span class='id identifier rubyid_deserialize'>deserialize</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>1500000</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='symbol'>:USDC</span><span class='rparen'>)</span></code></pre>
+    
+  </div>
+<p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>atomic</span>
+      
+      
+        <span class='type'>(<tt>Integer</tt>, <tt>String</tt>, <tt>BigDecimal</tt>)</span>
+      
+      
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>currency</span>
+      
+      
+        <span class='type'>(<tt>Symbol</tt>, <tt>String</tt>, <tt>nil</tt>)</span>
+      
+      
+        <em class="default">(defaults to: <tt>fixed_currency</tt>)</em>
+      
+      
+    </li>
+  
+</ul>
+
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="../../Amount.html" title="Amount (class)">Amount</a></span></tt>, <tt>nil</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+56
+57
+58
+59
+60
+61
+62
+63</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/amount/active_record/type.rb', line 56</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_deserialize'>deserialize</span><span class='lparen'>(</span><span class='id identifier rubyid_atomic'>atomic</span><span class='comma'>,</span> <span class='id identifier rubyid_currency'>currency</span> <span class='op'>=</span> <span class='id identifier rubyid_fixed_currency'>fixed_currency</span><span class='rparen'>)</span>
+  <span class='kw'>return</span> <span class='kw'>nil</span> <span class='kw'>if</span> <span class='id identifier rubyid_atomic'>atomic</span><span class='period'>.</span><span class='id identifier rubyid_nil?'>nil?</span>
+
+  <span class='id identifier rubyid_resolved_currency'>resolved_currency</span> <span class='op'>=</span> <span class='lparen'>(</span><span class='id identifier rubyid_currency'>currency</span> <span class='op'>||</span> <span class='id identifier rubyid_fixed_currency'>fixed_currency</span><span class='rparen'>)</span>
+  <span class='kw'>return</span> <span class='kw'>nil</span> <span class='kw'>if</span> <span class='id identifier rubyid_resolved_currency'>resolved_currency</span><span class='period'>.</span><span class='id identifier rubyid_nil?'>nil?</span>
+
+  <span class='op'>::</span><span class='const'><span class='object_link'><a href="../../Amount.html" title="Amount (class)">Amount</a></span></span><span class='period'>.</span><span class='id identifier rubyid_new'><span class='object_link'><a href="../../Amount.html#initialize-instance_method" title="Amount#initialize (method)">new</a></span></span><span class='lparen'>(</span><span class='id identifier rubyid_atomic'>atomic</span><span class='period'>.</span><span class='id identifier rubyid_to_i'>to_i</span><span class='comma'>,</span> <span class='id identifier rubyid_resolved_currency'>resolved_currency</span><span class='comma'>,</span> <span class='label'>from:</span> <span class='symbol'>:atomic</span><span class='rparen'>)</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="dump-instance_method">
+  
+    #<strong>dump</strong>(value)  &#x21d2; <tt>Hash</tt><sup>?</sup> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+
+  </div>
+</div>
+<div class="tags">
+  
+  <div class="examples">
+    <h4 class="tag_title">Examples:</h4>
+    
+      
+      <pre class="example code"><code><span class='const'><span class='object_link'><a href="../../Amount.html" title="Amount (class)">Amount</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../ActiveRecord.html" title="Amount::ActiveRecord (module)">ActiveRecord</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="" title="Amount::ActiveRecord::Type (class)">Type</a></span></span><span class='period'>.</span><span class='id identifier rubyid_new'><span class='object_link'><a href="#initialize-instance_method" title="Amount::ActiveRecord::Type#initialize (method)">new</a></span></span><span class='period'>.</span><span class='id identifier rubyid_dump'>dump</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>USDC|1.50</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
+<span class='comment'># =&gt; { atomic: 1500000, symbol: :USDC }</span></code></pre>
+    
+  </div>
+<p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>value</span>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="../../Amount.html" title="Amount (class)">Amount</a></span></tt>, <tt>String</tt>, <tt>Hash</tt>, <tt>Numeric</tt>, <tt>nil</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Hash</tt>, <tt>nil</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+70
+71
+72
+73
+74
+75</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/amount/active_record/type.rb', line 70</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_dump'>dump</span><span class='lparen'>(</span><span class='id identifier rubyid_value'>value</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_amount'>amount</span> <span class='op'>=</span> <span class='id identifier rubyid_cast'>cast</span><span class='lparen'>(</span><span class='id identifier rubyid_value'>value</span><span class='rparen'>)</span>
+  <span class='kw'>return</span> <span class='kw'>nil</span> <span class='kw'>unless</span> <span class='id identifier rubyid_amount'>amount</span>
+
+  <span class='lbrace'>{</span> <span class='label'>atomic:</span> <span class='id identifier rubyid_amount'>amount</span><span class='period'>.</span><span class='id identifier rubyid_atomic'>atomic</span><span class='comma'>,</span> <span class='label'>symbol:</span> <span class='id identifier rubyid_amount'>amount</span><span class='period'>.</span><span class='id identifier rubyid_symbol'>symbol</span> <span class='rbrace'>}</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+  </div>
+
+</div>
+
+      <div id="footer">
+  Generated on Sat Apr 25 20:26:03 2026 by
+  <a href="https://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
+  0.9.43 (ruby-4.0.2).
+</div>
+
+    </div>
+  </body>
+</html>

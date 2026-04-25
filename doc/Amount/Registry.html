@@ -1,0 +1,1593 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>
+  Class: Amount::Registry
+  
+    &mdash; Documentation by YARD 0.9.43
+  
+</title>
+
+  <link rel="stylesheet" href="../css/style.css" type="text/css">
+
+  <link rel="stylesheet" href="../css/common.css" type="text/css">
+
+<script type="text/javascript">
+  pathId = "Amount::Registry";
+  relpath = '../';
+</script>
+
+
+  <script type="text/javascript" charset="utf-8" src="../js/jquery.js"></script>
+
+  <script type="text/javascript" charset="utf-8" src="../js/app.js"></script>
+
+
+  </head>
+  <body>
+    <div id="main_progress" aria-hidden="true"></div>
+
+    <div class="nav_wrap">
+      <iframe id="nav" src="../class_list.html?1"></iframe>
+      <div id="resizer"></div>
+    </div>
+
+    <div id="main" tabindex="-1">
+      <div id="header">
+        <div id="menu">
+  
+    <a href="../_index.html">Index (R)</a> &raquo;
+    <span class='title'><span class='object_link'><a href="../Amount.html" title="Amount (class)">Amount</a></span></span>
+     &raquo; 
+    <span class="title">Registry</span>
+  
+</div>
+
+        <div id="search">
+  
+    <a class="full_list_link" id="class_list_link"
+        href="../class_list.html">
+
+        <svg width="24" height="24">
+          <rect x="0" y="4" width="24" height="4" rx="1" ry="1"></rect>
+          <rect x="0" y="12" width="24" height="4" rx="1" ry="1"></rect>
+          <rect x="0" y="20" width="24" height="4" rx="1" ry="1"></rect>
+        </svg>
+    </a>
+  
+</div>
+        <div class="clear"></div>
+      </div>
+
+      <div id="content"><h1>Class: Amount::Registry
+  
+  
+  
+</h1>
+<div class="box_info">
+  
+  <dl>
+    <dt>Inherits:</dt>
+    <dd>
+      <span class="inheritName">Object</span>
+      
+        <ul class="fullTree">
+          <li>Object</li>
+          
+            <li class="next">Amount::Registry</li>
+          
+        </ul>
+        <a href="#" class="inheritanceTree">show all</a>
+      
+    </dd>
+  </dl>
+  
+
+  
+  
+  
+  
+  
+
+  
+
+  
+  <dl>
+    <dt>Defined in:</dt>
+    <dd>lib/amount/registry.rb<span class="defines">,<br>
+  lib/amount/registry/generated_constructors.rb</span>
+
+</dd>
+  </dl>
+  
+</div>
+
+<h2>Overview</h2><div class="docstring">
+  <div class="discussion">
+    <p>Stores registered amount types and default directional conversion rates.</p>
+<p>The registry is the configuration surface of the gem. Application code
+normally uses the shared global instance exposed by <span class='object_link'><a href="../Amount.html#registry-class_method" title="Amount.registry (method)">registry</a></span>,
+configures it during boot, and optionally calls <span class='object_link'><a href="#lock!-instance_method" title="Amount::Registry#lock! (method)">#lock!</a></span> when setup is
+complete.</p>
+
+  </div>
+</div>
+<div class="tags">
+  
+  <div class="examples">
+    <h4 class="tag_title">Examples:</h4>
+    
+      
+        <h5 class="example_title"><div class='inline'><p>Registering types at boot</p></div></h5>
+      
+      <pre class="example code"><code><span class='const'><span class='object_link'><a href="../Amount.html" title="Amount (class)">Amount</a></span></span><span class='period'>.</span><span class='id identifier rubyid_register'><span class='object_link'><a href="../Amount.html#register-class_method" title="Amount.register (method)">register</a></span></span> <span class='symbol'>:USDC</span><span class='comma'>,</span> <span class='label'>decimals:</span> <span class='int'>6</span>
+<span class='const'><span class='object_link'><a href="../Amount.html" title="Amount (class)">Amount</a></span></span><span class='period'>.</span><span class='id identifier rubyid_register'><span class='object_link'><a href="../Amount.html#register-class_method" title="Amount.register (method)">register</a></span></span> <span class='symbol'>:USD</span><span class='comma'>,</span> <span class='label'>decimals:</span> <span class='int'>2</span>
+<span class='const'><span class='object_link'><a href="../Amount.html" title="Amount (class)">Amount</a></span></span><span class='period'>.</span><span class='id identifier rubyid_register_default_rate'><span class='object_link'><a href="../Amount.html#register_default_rate-class_method" title="Amount.register_default_rate (method)">register_default_rate</a></span></span> <span class='symbol'>:USD</span><span class='comma'>,</span> <span class='symbol'>:USDC</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>1</span><span class='tstring_end'>&quot;</span></span>
+<span class='const'><span class='object_link'><a href="../Amount.html" title="Amount (class)">Amount</a></span></span><span class='period'>.</span><span class='id identifier rubyid_registry'><span class='object_link'><a href="../Amount.html#registry-class_method" title="Amount.registry (method)">registry</a></span></span><span class='period'>.</span><span class='id identifier rubyid_lock!'><span class='object_link'><a href="#lock!-instance_method" title="Amount::Registry#lock! (method)">lock!</a></span></span></code></pre>
+    
+  </div>
+
+
+</div><h2>Defined Under Namespace</h2>
+<p class="children">
+  
+    
+  
+    
+      <strong class="classes">Classes:</strong> <span class='object_link'><a href="Registry/AlreadyRegistered.html" title="Amount::Registry::AlreadyRegistered (class)">AlreadyRegistered</a></span>, <span class='object_link'><a href="Registry/Entry.html" title="Amount::Registry::Entry (class)">Entry</a></span>, <span class='object_link'><a href="Registry/GeneratedConstructors.html" title="Amount::Registry::GeneratedConstructors (class)">GeneratedConstructors</a></span>, <span class='object_link'><a href="Registry/InvalidDisplayUnit.html" title="Amount::Registry::InvalidDisplayUnit (class)">InvalidDisplayUnit</a></span>, <span class='object_link'><a href="Registry/NoDefaultRate.html" title="Amount::Registry::NoDefaultRate (class)">NoDefaultRate</a></span>, <span class='object_link'><a href="Registry/RegistryLocked.html" title="Amount::Registry::RegistryLocked (class)">RegistryLocked</a></span>, <span class='object_link'><a href="Registry/UnknownType.html" title="Amount::Registry::UnknownType (class)">UnknownType</a></span>
+    
+  
+</p>
+
+
+
+
+
+
+
+  
+    <h2>
+      Instance Method Summary
+      <small><a href="#" class="summary_toggle">collapse</a></small>
+    </h2>
+
+    <ul class="summary">
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#activate_generated_methods!-instance_method" title="#activate_generated_methods! (instance method)">#<strong>activate_generated_methods!</strong>  &#x21d2; void </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'></div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#clear!-instance_method" title="#clear! (instance method)">#<strong>clear!</strong>  &#x21d2; void </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'></div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#default_rate-instance_method" title="#default_rate (instance method)">#<strong>default_rate</strong>(from, to)  &#x21d2; BigDecimal </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'></div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#default_rate%3F-instance_method" title="#default_rate? (instance method)">#<strong>default_rate?</strong>(from, to)  &#x21d2; Boolean </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'></div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#initialize-instance_method" title="#initialize (instance method)">#<strong>initialize</strong>  &#x21d2; Registry </a>
+    
+
+    
+  </span>
+  
+  
+    <span class="note title constructor">constructor</span>
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>A new instance of Registry.</p></div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#lock!-instance_method" title="#lock! (instance method)">#<strong>lock!</strong>  &#x21d2; void </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'></div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#locked%3F-instance_method" title="#locked? (instance method)">#<strong>locked?</strong>  &#x21d2; Boolean </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'></div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#lookup-instance_method" title="#lookup (instance method)">#<strong>lookup</strong>(symbol)  &#x21d2; Entry </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'></div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#register-instance_method" title="#register (instance method)">#<strong>register</strong>(symbol, decimals:, display_symbol: symbol.to_s, display_position: :suffix, ui_decimals: decimals, display_units: nil, default_display: nil, class: nil)  &#x21d2; void </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Registers a new fungible type.</p></div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#register_default_rate-instance_method" title="#register_default_rate (instance method)">#<strong>register_default_rate</strong>(from, to, rate)  &#x21d2; void </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'></div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#registered%3F-instance_method" title="#registered? (instance method)">#<strong>registered?</strong>(symbol)  &#x21d2; Boolean </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'></div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#remove_generated_methods!-instance_method" title="#remove_generated_methods! (instance method)">#<strong>remove_generated_methods!</strong>  &#x21d2; void </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'></div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#symbols-instance_method" title="#symbols (instance method)">#<strong>symbols</strong>  &#x21d2; Array&lt;Symbol&gt; </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'></div></span>
+  
+</li>
+
+      
+    </ul>
+    
+  
+
+<div id="constructor_details" class="method_details_list">
+  <h2>Constructor Details</h2>
+  
+    <div class="method_details first">
+  <h3 class="signature first" id="initialize-instance_method">
+  
+    #<strong>initialize</strong>  &#x21d2; <tt><span class='object_link'><a href="" title="Amount::Registry (class)">Registry</a></span></tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Returns a new instance of Registry.</p>
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+33
+34
+35
+36
+37
+38
+39</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/amount/registry.rb', line 33</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_initialize'>initialize</span>
+  <span class='ivar'>@entries</span> <span class='op'>=</span> <span class='lbrace'>{</span><span class='rbrace'>}</span>
+  <span class='ivar'>@default_rates</span> <span class='op'>=</span> <span class='lbrace'>{</span><span class='rbrace'>}</span>
+  <span class='ivar'>@generated_constructors</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="Registry/GeneratedConstructors.html" title="Amount::Registry::GeneratedConstructors (class)">GeneratedConstructors</a></span></span><span class='period'>.</span><span class='id identifier rubyid_new'><span class='object_link'><a href="Registry/GeneratedConstructors.html#initialize-instance_method" title="Amount::Registry::GeneratedConstructors#initialize (method)">new</a></span></span>
+  <span class='ivar'>@locked</span> <span class='op'>=</span> <span class='kw'>false</span>
+  <span class='ivar'>@lock</span> <span class='op'>=</span> <span class='const'>Mutex</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+  
+</div>
+
+
+  <div id="instance_method_details" class="method_details_list">
+    <h2>Instance Method Details</h2>
+
+    
+      <div class="method_details first">
+  <h3 class="signature first" id="activate_generated_methods!-instance_method">
+  
+    #<strong>activate_generated_methods!</strong>  &#x21d2; <tt>void</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p class="note returns_void">This method returns an undefined value.</p>
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+196
+197
+198
+199
+200</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/amount/registry.rb', line 196</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_activate_generated_methods!'>activate_generated_methods!</span>
+  <span class='ivar'>@lock</span><span class='period'>.</span><span class='id identifier rubyid_synchronize'>synchronize</span> <span class='kw'>do</span>
+    <span class='ivar'>@generated_constructors</span><span class='period'>.</span><span class='id identifier rubyid_activate'>activate</span><span class='lparen'>(</span><span class='ivar'>@entries</span><span class='rparen'>)</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="clear!-instance_method">
+  
+    #<strong>clear!</strong>  &#x21d2; <tt>void</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p class="note returns_void">This method returns an undefined value.</p>
+
+  </div>
+</div>
+<div class="tags">
+  
+  <div class="examples">
+    <h4 class="tag_title">Examples:</h4>
+    
+      
+      <pre class="example code"><code><span class='const'><span class='object_link'><a href="../Amount.html" title="Amount (class)">Amount</a></span></span><span class='period'>.</span><span class='id identifier rubyid_registry'><span class='object_link'><a href="../Amount.html#registry-class_method" title="Amount.registry (method)">registry</a></span></span><span class='period'>.</span><span class='id identifier rubyid_clear!'>clear!</span></code></pre>
+    
+  </div>
+
+<p class="tag_title">Raises:</p>
+<ul class="raise">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="Registry/RegistryLocked.html" title="Amount::Registry::RegistryLocked (class)">RegistryLocked</a></span></tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>if the registry has been locked</p></div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+124
+125
+126
+127
+128
+129
+130
+131</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/amount/registry.rb', line 124</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_clear!'>clear!</span>
+  <span class='ivar'>@lock</span><span class='period'>.</span><span class='id identifier rubyid_synchronize'>synchronize</span> <span class='kw'>do</span>
+    <span class='id identifier rubyid_ensure_unlocked!'>ensure_unlocked!</span>
+    <span class='ivar'>@generated_constructors</span><span class='period'>.</span><span class='id identifier rubyid_remove_all'>remove_all</span>
+    <span class='ivar'>@entries</span><span class='period'>.</span><span class='id identifier rubyid_clear'>clear</span>
+    <span class='ivar'>@default_rates</span><span class='period'>.</span><span class='id identifier rubyid_clear'>clear</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="default_rate-instance_method">
+  
+    #<strong>default_rate</strong>(from, to)  &#x21d2; <tt>BigDecimal</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+
+  </div>
+</div>
+<div class="tags">
+  
+  <div class="examples">
+    <h4 class="tag_title">Examples:</h4>
+    
+      
+      <pre class="example code"><code><span class='const'><span class='object_link'><a href="../Amount.html" title="Amount (class)">Amount</a></span></span><span class='period'>.</span><span class='id identifier rubyid_registry'><span class='object_link'><a href="../Amount.html#registry-class_method" title="Amount.registry (method)">registry</a></span></span><span class='period'>.</span><span class='id identifier rubyid_default_rate'>default_rate</span><span class='lparen'>(</span><span class='symbol'>:USD</span><span class='comma'>,</span> <span class='symbol'>:USDC</span><span class='rparen'>)</span>
+<span class='comment'># =&gt; 0.1e1</span></code></pre>
+    
+  </div>
+<p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>from</span>
+      
+      
+        <span class='type'>(<tt>Symbol</tt>, <tt>String</tt>)</span>
+      
+      
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>to</span>
+      
+      
+        <span class='type'>(<tt>Symbol</tt>, <tt>String</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>BigDecimal</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+<p class="tag_title">Raises:</p>
+<ul class="raise">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="Registry/NoDefaultRate.html" title="Amount::Registry::NoDefaultRate (class)">NoDefaultRate</a></span></tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+160
+161
+162
+163
+164
+165
+166</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/amount/registry.rb', line 160</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_default_rate'>default_rate</span><span class='lparen'>(</span><span class='id identifier rubyid_from'>from</span><span class='comma'>,</span> <span class='id identifier rubyid_to'>to</span><span class='rparen'>)</span>
+  <span class='ivar'>@lock</span><span class='period'>.</span><span class='id identifier rubyid_synchronize'>synchronize</span> <span class='kw'>do</span>
+    <span class='ivar'>@default_rates</span><span class='period'>.</span><span class='id identifier rubyid_fetch'>fetch</span><span class='lparen'>(</span><span class='lbracket'>[</span><span class='id identifier rubyid_from'>from</span><span class='period'>.</span><span class='id identifier rubyid_to_sym'>to_sym</span><span class='comma'>,</span> <span class='id identifier rubyid_to'>to</span><span class='period'>.</span><span class='id identifier rubyid_to_sym'>to_sym</span><span class='rbracket'>]</span><span class='rparen'>)</span> <span class='kw'>do</span>
+      <span class='id identifier rubyid_raise'>raise</span> <span class='const'><span class='object_link'><a href="Registry/NoDefaultRate.html" title="Amount::Registry::NoDefaultRate (class)">NoDefaultRate</a></span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>no default rate for </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_from'>from</span><span class='embexpr_end'>}</span><span class='tstring_content'> -&gt; </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_to'>to</span><span class='embexpr_end'>}</span><span class='tstring_content'>; pass rate: explicitly</span><span class='tstring_end'>&quot;</span></span>
+    <span class='kw'>end</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="default_rate?-instance_method">
+  
+    #<strong>default_rate?</strong>(from, to)  &#x21d2; <tt>Boolean</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+
+  </div>
+</div>
+<div class="tags">
+  
+  <div class="examples">
+    <h4 class="tag_title">Examples:</h4>
+    
+      
+      <pre class="example code"><code><span class='const'><span class='object_link'><a href="../Amount.html" title="Amount (class)">Amount</a></span></span><span class='period'>.</span><span class='id identifier rubyid_registry'><span class='object_link'><a href="../Amount.html#registry-class_method" title="Amount.registry (method)">registry</a></span></span><span class='period'>.</span><span class='id identifier rubyid_default_rate?'>default_rate?</span><span class='lparen'>(</span><span class='symbol'>:USD</span><span class='comma'>,</span> <span class='symbol'>:USDC</span><span class='rparen'>)</span>
+<span class='comment'># =&gt; true</span></code></pre>
+    
+  </div>
+<p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>from</span>
+      
+      
+        <span class='type'>(<tt>Symbol</tt>, <tt>String</tt>)</span>
+      
+      
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>to</span>
+      
+      
+        <span class='type'>(<tt>Symbol</tt>, <tt>String</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Boolean</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+174
+175
+176</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/amount/registry.rb', line 174</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_default_rate?'>default_rate?</span><span class='lparen'>(</span><span class='id identifier rubyid_from'>from</span><span class='comma'>,</span> <span class='id identifier rubyid_to'>to</span><span class='rparen'>)</span>
+  <span class='ivar'>@lock</span><span class='period'>.</span><span class='id identifier rubyid_synchronize'>synchronize</span> <span class='lbrace'>{</span> <span class='ivar'>@default_rates</span><span class='period'>.</span><span class='id identifier rubyid_key?'>key?</span><span class='lparen'>(</span><span class='lbracket'>[</span><span class='id identifier rubyid_from'>from</span><span class='period'>.</span><span class='id identifier rubyid_to_sym'>to_sym</span><span class='comma'>,</span> <span class='id identifier rubyid_to'>to</span><span class='period'>.</span><span class='id identifier rubyid_to_sym'>to_sym</span><span class='rbracket'>]</span><span class='rparen'>)</span> <span class='rbrace'>}</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="lock!-instance_method">
+  
+    #<strong>lock!</strong>  &#x21d2; <tt>void</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p class="note returns_void">This method returns an undefined value.</p>
+
+  </div>
+</div>
+<div class="tags">
+  
+  <div class="examples">
+    <h4 class="tag_title">Examples:</h4>
+    
+      
+        <h5 class="example_title"><div class='inline'><p>Locking the global registry after initialization</p></div></h5>
+      
+      <pre class="example code"><code><span class='const'><span class='object_link'><a href="../Amount.html" title="Amount (class)">Amount</a></span></span><span class='period'>.</span><span class='id identifier rubyid_registry'><span class='object_link'><a href="../Amount.html#registry-class_method" title="Amount.registry (method)">registry</a></span></span><span class='period'>.</span><span class='id identifier rubyid_lock!'>lock!</span></code></pre>
+    
+  </div>
+
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+181
+182
+183
+184
+185</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/amount/registry.rb', line 181</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_lock!'>lock!</span>
+  <span class='ivar'>@lock</span><span class='period'>.</span><span class='id identifier rubyid_synchronize'>synchronize</span> <span class='kw'>do</span>
+    <span class='ivar'>@locked</span> <span class='op'>=</span> <span class='kw'>true</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="locked?-instance_method">
+  
+    #<strong>locked?</strong>  &#x21d2; <tt>Boolean</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+
+  </div>
+</div>
+<div class="tags">
+  
+  <div class="examples">
+    <h4 class="tag_title">Examples:</h4>
+    
+      
+      <pre class="example code"><code><span class='const'><span class='object_link'><a href="../Amount.html" title="Amount (class)">Amount</a></span></span><span class='period'>.</span><span class='id identifier rubyid_registry'><span class='object_link'><a href="../Amount.html#registry-class_method" title="Amount.registry (method)">registry</a></span></span><span class='period'>.</span><span class='id identifier rubyid_locked?'>locked?</span>
+<span class='comment'># =&gt; true</span></code></pre>
+    
+  </div>
+
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Boolean</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+191
+192
+193</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/amount/registry.rb', line 191</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_locked?'>locked?</span>
+  <span class='ivar'>@lock</span><span class='period'>.</span><span class='id identifier rubyid_synchronize'>synchronize</span> <span class='lbrace'>{</span> <span class='ivar'>@locked</span> <span class='rbrace'>}</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="lookup-instance_method">
+  
+    #<strong>lookup</strong>(symbol)  &#x21d2; <tt><span class='object_link'><a href="Registry/Entry.html" title="Amount::Registry::Entry (class)">Entry</a></span></tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+
+  </div>
+</div>
+<div class="tags">
+  
+  <div class="examples">
+    <h4 class="tag_title">Examples:</h4>
+    
+      
+      <pre class="example code"><code><span class='const'><span class='object_link'><a href="../Amount.html" title="Amount (class)">Amount</a></span></span><span class='period'>.</span><span class='id identifier rubyid_registry'><span class='object_link'><a href="../Amount.html#registry-class_method" title="Amount.registry (method)">registry</a></span></span><span class='period'>.</span><span class='id identifier rubyid_lookup'>lookup</span><span class='lparen'>(</span><span class='symbol'>:USDC</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_decimals'><span class='object_link'><a href="Registry/Entry.html#decimals-instance_method" title="Amount::Registry::Entry#decimals (method)">decimals</a></span></span>
+<span class='comment'># =&gt; 6</span></code></pre>
+    
+  </div>
+<p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>symbol</span>
+      
+      
+        <span class='type'>(<tt>Symbol</tt>, <tt>String</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="Registry/Entry.html" title="Amount::Registry::Entry (class)">Entry</a></span></tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+<p class="tag_title">Raises:</p>
+<ul class="raise">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="Registry/UnknownType.html" title="Amount::Registry::UnknownType (class)">UnknownType</a></span></tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+104
+105
+106
+107
+108
+109
+110</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/amount/registry.rb', line 104</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_lookup'>lookup</span><span class='lparen'>(</span><span class='id identifier rubyid_symbol'>symbol</span><span class='rparen'>)</span>
+  <span class='ivar'>@lock</span><span class='period'>.</span><span class='id identifier rubyid_synchronize'>synchronize</span> <span class='kw'>do</span>
+    <span class='ivar'>@entries</span><span class='period'>.</span><span class='id identifier rubyid_fetch'>fetch</span><span class='lparen'>(</span><span class='id identifier rubyid_symbol'>symbol</span><span class='period'>.</span><span class='id identifier rubyid_to_sym'>to_sym</span><span class='rparen'>)</span> <span class='kw'>do</span>
+      <span class='id identifier rubyid_raise'>raise</span> <span class='const'><span class='object_link'><a href="Registry/UnknownType.html" title="Amount::Registry::UnknownType (class)">UnknownType</a></span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_symbol'>symbol</span><span class='embexpr_end'>}</span><span class='tstring_content'> is not registered</span><span class='tstring_end'>&quot;</span></span>
+    <span class='kw'>end</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="register-instance_method">
+  
+    #<strong>register</strong>(symbol, decimals:, display_symbol: symbol.to_s, display_position: :suffix, ui_decimals: decimals, display_units: nil, default_display: nil, class: nil)  &#x21d2; <tt>void</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p class="note returns_void">This method returns an undefined value.</p><p>Registers a new fungible type.</p>
+<p>When the symbol is a valid Ruby method name after downcasing, an
+ergonomic constructor is also generated on <code>Amount</code>, such as
+<code>Amount.usdc(&quot;1.50&quot;)</code>.</p>
+
+  </div>
+</div>
+<div class="tags">
+  
+  <div class="examples">
+    <h4 class="tag_title">Examples:</h4>
+    
+      
+      <pre class="example code"><code><span class='const'><span class='object_link'><a href="../Amount.html" title="Amount (class)">Amount</a></span></span><span class='period'>.</span><span class='id identifier rubyid_register'><span class='object_link'><a href="../Amount.html#register-class_method" title="Amount.register (method)">register</a></span></span> <span class='symbol'>:USDC</span><span class='comma'>,</span> <span class='label'>decimals:</span> <span class='int'>6</span><span class='comma'>,</span> <span class='label'>display_symbol:</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>$</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span>
+                <span class='label'>display_position:</span> <span class='symbol'>:prefix</span><span class='comma'>,</span> <span class='label'>ui_decimals:</span> <span class='int'>2</span></code></pre>
+    
+  </div>
+<p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>symbol</span>
+      
+      
+        <span class='type'>(<tt>Symbol</tt>, <tt>String</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>registered type identifier</p></div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>decimals</span>
+      
+      
+        <span class='type'>(<tt>Integer</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>number of storage decimals</p></div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>display_symbol</span>
+      
+      
+        <span class='type'>(<tt>String</tt>)</span>
+      
+      
+        <em class="default">(defaults to: <tt>symbol.to_s</tt>)</em>
+      
+      
+        &mdash;
+        <div class='inline'><p>symbol used by UI helpers</p></div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>display_position</span>
+      
+      
+        <span class='type'>(<tt>Symbol</tt>)</span>
+      
+      
+        <em class="default">(defaults to: <tt>:suffix</tt>)</em>
+      
+      
+        &mdash;
+        <div class='inline'><p>either <code>:prefix</code> or <code>:suffix</code></p></div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>ui_decimals</span>
+      
+      
+        <span class='type'>(<tt>Integer</tt>)</span>
+      
+      
+        <em class="default">(defaults to: <tt>decimals</tt>)</em>
+      
+      
+        &mdash;
+        <div class='inline'><p>decimals displayed by default UI formatting</p></div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>display_units</span>
+      
+      
+        <span class='type'>(<tt>Hash</tt>, <tt>nil</tt>)</span>
+      
+      
+        <em class="default">(defaults to: <tt>nil</tt>)</em>
+      
+      
+        &mdash;
+        <div class='inline'><p>optional display-only scaling definitions</p></div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>default_display</span>
+      
+      
+        <span class='type'>(<tt>Symbol</tt>, <tt>nil</tt>)</span>
+      
+      
+        <em class="default">(defaults to: <tt>nil</tt>)</em>
+      
+      
+        &mdash;
+        <div class='inline'><p>optional default display unit key</p></div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>class</span>
+      
+      
+        <span class='type'>(<tt>Class</tt>, <tt>nil</tt>)</span>
+      
+      
+        <em class="default">(defaults to: <tt>nil</tt>)</em>
+      
+      
+        &mdash;
+        <div class='inline'><p>optional custom <code>Amount</code> subclass</p></div>
+      
+    </li>
+  
+</ul>
+
+<p class="tag_title">Raises:</p>
+<ul class="raise">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="Registry/AlreadyRegistered.html" title="Amount::Registry::AlreadyRegistered (class)">AlreadyRegistered</a></span></tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>if the symbol is already registered or the
+generated constructor would collide with an existing method</p></div>
+      
+    </li>
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="Registry/RegistryLocked.html" title="Amount::Registry::RegistryLocked (class)">RegistryLocked</a></span></tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>if the registry has been locked</p></div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+62
+63
+64
+65
+66
+67
+68
+69
+70
+71
+72
+73
+74
+75
+76
+77
+78
+79
+80
+81
+82
+83
+84
+85
+86
+87</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/amount/registry.rb', line 62</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_register'>register</span><span class='lparen'>(</span><span class='id identifier rubyid_symbol'>symbol</span><span class='comma'>,</span> <span class='label'>decimals:</span><span class='comma'>,</span> <span class='label'>display_symbol:</span> <span class='id identifier rubyid_symbol'>symbol</span><span class='period'>.</span><span class='id identifier rubyid_to_s'>to_s</span><span class='comma'>,</span> <span class='label'>display_position:</span> <span class='symbol'>:suffix</span><span class='comma'>,</span>
+             <span class='label'>ui_decimals:</span> <span class='id identifier rubyid_decimals'>decimals</span><span class='comma'>,</span> <span class='label'>display_units:</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='label'>default_display:</span> <span class='kw'>nil</span><span class='comma'>,</span>
+             <span class='label'>class:</span> <span class='kw'>nil</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_symbol'>symbol</span> <span class='op'>=</span> <span class='id identifier rubyid_symbol'>symbol</span><span class='period'>.</span><span class='id identifier rubyid_to_sym'>to_sym</span>
+
+  <span class='ivar'>@lock</span><span class='period'>.</span><span class='id identifier rubyid_synchronize'>synchronize</span> <span class='kw'>do</span>
+    <span class='id identifier rubyid_ensure_unlocked!'>ensure_unlocked!</span>
+    <span class='id identifier rubyid_raise'>raise</span> <span class='const'><span class='object_link'><a href="Registry/AlreadyRegistered.html" title="Amount::Registry::AlreadyRegistered (class)">AlreadyRegistered</a></span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_symbol'>symbol</span><span class='embexpr_end'>}</span><span class='tstring_content'> already registered</span><span class='tstring_end'>&quot;</span></span> <span class='kw'>if</span> <span class='ivar'>@entries</span><span class='period'>.</span><span class='id identifier rubyid_key?'>key?</span><span class='lparen'>(</span><span class='id identifier rubyid_symbol'>symbol</span><span class='rparen'>)</span>
+
+    <span class='id identifier rubyid_validate_display_units!'>validate_display_units!</span><span class='lparen'>(</span><span class='id identifier rubyid_display_units'>display_units</span><span class='comma'>,</span> <span class='id identifier rubyid_default_display'>default_display</span><span class='rparen'>)</span> <span class='kw'>if</span> <span class='id identifier rubyid_display_units'>display_units</span>
+
+    <span class='id identifier rubyid_entry'>entry</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="Registry/Entry.html" title="Amount::Registry::Entry (class)">Entry</a></span></span><span class='period'>.</span><span class='id identifier rubyid_new'><span class='object_link'><a href="#initialize-instance_method" title="Amount::Registry#initialize (method)">new</a></span></span><span class='lparen'>(</span>
+      <span class='label'>symbol:</span> <span class='id identifier rubyid_symbol'>symbol</span><span class='comma'>,</span>
+      <span class='label'>decimals:</span> <span class='id identifier rubyid_decimals'>decimals</span><span class='comma'>,</span>
+      <span class='label'>display_symbol:</span> <span class='id identifier rubyid_display_symbol'>display_symbol</span><span class='comma'>,</span>
+      <span class='label'>display_position:</span> <span class='id identifier rubyid_display_position'>display_position</span><span class='comma'>,</span>
+      <span class='label'>ui_decimals:</span> <span class='id identifier rubyid_ui_decimals'>ui_decimals</span><span class='comma'>,</span>
+      <span class='label'>display_units:</span> <span class='id identifier rubyid_display_units'>display_units</span><span class='comma'>,</span>
+      <span class='label'>default_display:</span> <span class='id identifier rubyid_default_display'>default_display</span><span class='comma'>,</span>
+      <span class='label'>amount_class:</span> <span class='id identifier rubyid_binding'>binding</span><span class='period'>.</span><span class='id identifier rubyid_local_variable_get'>local_variable_get</span><span class='lparen'>(</span><span class='symbol'>:class</span><span class='rparen'>)</span> <span class='op'>||</span> <span class='const'><span class='object_link'><a href="../Amount.html" title="Amount (class)">Amount</a></span></span>
+    <span class='rparen'>)</span>
+
+    <span class='ivar'>@entries</span><span class='lbracket'>[</span><span class='id identifier rubyid_symbol'>symbol</span><span class='rbracket'>]</span> <span class='op'>=</span> <span class='id identifier rubyid_entry'>entry</span>
+    <span class='ivar'>@generated_constructors</span><span class='period'>.</span><span class='id identifier rubyid_define_for'>define_for</span><span class='lparen'>(</span><span class='id identifier rubyid_entry'>entry</span><span class='rparen'>)</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="register_default_rate-instance_method">
+  
+    #<strong>register_default_rate</strong>(from, to, rate)  &#x21d2; <tt>void</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p class="note returns_void">This method returns an undefined value.</p>
+
+  </div>
+</div>
+<div class="tags">
+  
+  <div class="examples">
+    <h4 class="tag_title">Examples:</h4>
+    
+      
+      <pre class="example code"><code><span class='const'><span class='object_link'><a href="../Amount.html" title="Amount (class)">Amount</a></span></span><span class='period'>.</span><span class='id identifier rubyid_register_default_rate'><span class='object_link'><a href="../Amount.html#register_default_rate-class_method" title="Amount.register_default_rate (method)">register_default_rate</a></span></span> <span class='symbol'>:USD</span><span class='comma'>,</span> <span class='symbol'>:USDC</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>1</span><span class='tstring_end'>&quot;</span></span></code></pre>
+    
+  </div>
+<p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>from</span>
+      
+      
+        <span class='type'>(<tt>Symbol</tt>, <tt>String</tt>)</span>
+      
+      
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>to</span>
+      
+      
+        <span class='type'>(<tt>Symbol</tt>, <tt>String</tt>)</span>
+      
+      
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>rate</span>
+      
+      
+        <span class='type'>(<tt>String</tt>, <tt>Numeric</tt>, <tt>BigDecimal</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+<p class="tag_title">Raises:</p>
+<ul class="raise">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="Registry/RegistryLocked.html" title="Amount::Registry::RegistryLocked (class)">RegistryLocked</a></span></tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>if the registry has been locked</p></div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+140
+141
+142
+143
+144
+145
+146
+147
+148
+149
+150
+151</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/amount/registry.rb', line 140</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_register_default_rate'>register_default_rate</span><span class='lparen'>(</span><span class='id identifier rubyid_from'>from</span><span class='comma'>,</span> <span class='id identifier rubyid_to'>to</span><span class='comma'>,</span> <span class='id identifier rubyid_rate'>rate</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_from'>from</span> <span class='op'>=</span> <span class='id identifier rubyid_from'>from</span><span class='period'>.</span><span class='id identifier rubyid_to_sym'>to_sym</span>
+  <span class='id identifier rubyid_to'>to</span> <span class='op'>=</span> <span class='id identifier rubyid_to'>to</span><span class='period'>.</span><span class='id identifier rubyid_to_sym'>to_sym</span>
+
+  <span class='id identifier rubyid_lookup'>lookup</span><span class='lparen'>(</span><span class='id identifier rubyid_from'>from</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_lookup'>lookup</span><span class='lparen'>(</span><span class='id identifier rubyid_to'>to</span><span class='rparen'>)</span>
+
+  <span class='ivar'>@lock</span><span class='period'>.</span><span class='id identifier rubyid_synchronize'>synchronize</span> <span class='kw'>do</span>
+    <span class='id identifier rubyid_ensure_unlocked!'>ensure_unlocked!</span>
+    <span class='ivar'>@default_rates</span><span class='lbracket'>[</span><span class='lbracket'>[</span><span class='id identifier rubyid_from'>from</span><span class='comma'>,</span> <span class='id identifier rubyid_to'>to</span><span class='rbracket'>]</span><span class='rbracket'>]</span> <span class='op'>=</span> <span class='const'>BigDecimal</span><span class='lparen'>(</span><span class='id identifier rubyid_rate'>rate</span><span class='period'>.</span><span class='id identifier rubyid_to_s'>to_s</span><span class='rparen'>)</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="registered?-instance_method">
+  
+    #<strong>registered?</strong>(symbol)  &#x21d2; <tt>Boolean</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+
+  </div>
+</div>
+<div class="tags">
+  
+  <div class="examples">
+    <h4 class="tag_title">Examples:</h4>
+    
+      
+      <pre class="example code"><code><span class='const'><span class='object_link'><a href="../Amount.html" title="Amount (class)">Amount</a></span></span><span class='period'>.</span><span class='id identifier rubyid_registry'><span class='object_link'><a href="../Amount.html#registry-class_method" title="Amount.registry (method)">registry</a></span></span><span class='period'>.</span><span class='id identifier rubyid_registered?'>registered?</span><span class='lparen'>(</span><span class='symbol'>:USDC</span><span class='rparen'>)</span>
+<span class='comment'># =&gt; true</span></code></pre>
+    
+  </div>
+<p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>symbol</span>
+      
+      
+        <span class='type'>(<tt>Symbol</tt>, <tt>String</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Boolean</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+94
+95
+96</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/amount/registry.rb', line 94</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_registered?'>registered?</span><span class='lparen'>(</span><span class='id identifier rubyid_symbol'>symbol</span><span class='rparen'>)</span>
+  <span class='ivar'>@lock</span><span class='period'>.</span><span class='id identifier rubyid_synchronize'>synchronize</span> <span class='lbrace'>{</span> <span class='ivar'>@entries</span><span class='period'>.</span><span class='id identifier rubyid_key?'>key?</span><span class='lparen'>(</span><span class='id identifier rubyid_symbol'>symbol</span><span class='period'>.</span><span class='id identifier rubyid_to_sym'>to_sym</span><span class='rparen'>)</span> <span class='rbrace'>}</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="remove_generated_methods!-instance_method">
+  
+    #<strong>remove_generated_methods!</strong>  &#x21d2; <tt>void</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p class="note returns_void">This method returns an undefined value.</p>
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+203
+204
+205
+206
+207</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/amount/registry.rb', line 203</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_remove_generated_methods!'>remove_generated_methods!</span>
+  <span class='ivar'>@lock</span><span class='period'>.</span><span class='id identifier rubyid_synchronize'>synchronize</span> <span class='kw'>do</span>
+    <span class='ivar'>@generated_constructors</span><span class='period'>.</span><span class='id identifier rubyid_remove_all'>remove_all</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="symbols-instance_method">
+  
+    #<strong>symbols</strong>  &#x21d2; <tt>Array&lt;Symbol&gt;</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+
+  </div>
+</div>
+<div class="tags">
+  
+  <div class="examples">
+    <h4 class="tag_title">Examples:</h4>
+    
+      
+      <pre class="example code"><code><span class='const'><span class='object_link'><a href="../Amount.html" title="Amount (class)">Amount</a></span></span><span class='period'>.</span><span class='id identifier rubyid_registry'><span class='object_link'><a href="../Amount.html#registry-class_method" title="Amount.registry (method)">registry</a></span></span><span class='period'>.</span><span class='id identifier rubyid_symbols'>symbols</span>
+<span class='comment'># =&gt; [:USDC, :USD]</span></code></pre>
+    
+  </div>
+
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Array&lt;Symbol&gt;</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+116
+117
+118</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/amount/registry.rb', line 116</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_symbols'>symbols</span>
+  <span class='ivar'>@lock</span><span class='period'>.</span><span class='id identifier rubyid_synchronize'>synchronize</span> <span class='lbrace'>{</span> <span class='ivar'>@entries</span><span class='period'>.</span><span class='id identifier rubyid_keys'>keys</span> <span class='rbrace'>}</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+  </div>
+
+</div>
+
+      <div id="footer">
+  Generated on Sat Apr 25 20:26:03 2026 by
+  <a href="https://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
+  0.9.43 (ruby-4.0.2).
+</div>
+
+    </div>
+  </body>
+</html>

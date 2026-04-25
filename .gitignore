@@ -1,0 +1,11 @@
+.bundle/
+.yardoc/
+*.gem
+Gemfile.lock
+pkg/
+tmp/
+vendor/bundle/
+coverage/
+site/node_modules/
+site/.vitepress/cache/
+site/.vitepress/dist/
