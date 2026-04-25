@@ -349,6 +349,29 @@ bundle exec rake
 bundle exec rspec
 ```
 
+## Releases
+
+RubyGems publishing is intended to run from GitHub Releases using RubyGems trusted publishing.
+
+Workflow:
+
+- create and push a version tag such as `v0.1.0`
+- publish a GitHub Release for that tag
+- GitHub Actions runs `.github/workflows/release.yml`
+- the workflow verifies the test suite and publishes the gem to RubyGems.org
+
+RubyGems setup:
+
+- on RubyGems.org, configure a trusted publisher for the `amounts` gem
+- repository owner: `zarpay`
+- repository name: `amounts`
+- workflow filename: `release.yml`
+- GitHub Actions environment: `release`
+
+This uses OIDC trusted publishing, so no RubyGems API token needs to be stored in GitHub Actions. See the official RubyGems trusted publishing guide:
+
+- https://guides.rubygems.org/trusted-publishing/
+
 ## Compared to `money`
 
 `money` is excellent for fiat currency workflows and has a mature ecosystem. `amounts` takes a different tradeoff:
