@@ -6,6 +6,10 @@ on:
       - main
   pull_request:
 
+defaults:
+  run:
+    working-directory: gem
+
 jobs:
   core:
     runs-on: ubuntu-latest
@@ -26,6 +30,7 @@ jobs:
         uses: ruby/setup-ruby@v1
         with:
           ruby-version: ${{ matrix.ruby-version }}
+          working-directory: gem
           bundler-cache: true
         env:
           BUNDLE_WITHOUT: active_record:development:quality
@@ -58,6 +63,7 @@ jobs:
         uses: ruby/setup-ruby@v1
         with:
           ruby-version: ${{ matrix.ruby-version }}
+          working-directory: gem
           bundler-cache: true
         env:
           BUNDLE_WITH: active_record
@@ -86,6 +92,7 @@ jobs:
         uses: ruby/setup-ruby@v1
         with:
           ruby-version: "3.4"
+          working-directory: gem
           bundler-cache: true
         env:
           BUNDLE_WITH: active_record:quality
@@ -96,3 +103,26 @@ jobs:
         env:
           BUNDLE_WITH: active_record:quality
           BUNDLE_WITHOUT: development
+
+  demo:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: demo
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.4"
+          working-directory: demo
+          bundler-cache: true
+
+      - name: Migrate test database
+        run: bin/rails db:migrate RAILS_ENV=test
+
+      - name: Run RSpec
+        run: bundle exec rspec

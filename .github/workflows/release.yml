@@ -8,6 +8,10 @@ permissions:
   contents: read
   id-token: write
 
+defaults:
+  run:
+    working-directory: gem
+
 jobs:
   publish:
     runs-on: ubuntu-latest
@@ -24,6 +28,7 @@ jobs:
         uses: ruby/setup-ruby@v1
         with:
           ruby-version: "3.3"
+          working-directory: gem
           bundler: 2.5.18
           bundler-cache: true
         env:
@@ -38,3 +43,5 @@ jobs:
 
       - name: Publish gem to RubyGems.org
         uses: rubygems/release-gem@v1
+        with:
+          working-directory: gem
