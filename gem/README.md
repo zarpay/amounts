@@ -37,6 +37,10 @@ Load the Rails adapter only when needed:
 require "amount/active_record"
 ```
 
+If the gem is bundled into a Rails app, the Rails-only generator hooks are
+loaded through the adapter railtie. You do not need a separate top-level
+generator require.
+
 ## Quickstart
 
 ```ruby
@@ -239,6 +243,22 @@ Load the adapter explicitly:
 ```ruby
 require "amount/active_record"
 ```
+
+### Preset registry generator
+
+In a Rails app, you can generate a starter initializer with curated baskets of
+registered symbols:
+
+```bash
+bin/rails generate amounts:registry fiat
+bin/rails generate amounts:registry metals
+bin/rails generate amounts:registry crypto
+bin/rails generate amounts:registry all
+```
+
+The generator writes `config/initializers/amounts.rb` with registration
+metadata only. It intentionally does not register default conversion rates,
+because those are directional and application-specific.
 
 ### Migration DSL
 

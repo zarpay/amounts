@@ -43,6 +43,7 @@ cd demo
 bundle install
 bin/rails db:migrate RAILS_ENV=test
 bundle exec rspec         # runs the harness against ../gem
+bin/rails generate amounts:registry fiat
 ```
 
 The demo's `Gemfile` path-pins `gem "amounts", path: "../gem"`, so changes

@@ -1,0 +1,180 @@
+  # Registry overview:
+  # Large-Cap Crypto Assets:
+  # - This preset is a curated basket of prominent crypto assets intended for developer-facing ledgers and wallet-style products.
+  # - It is not a literal mirror of any single market-cap top-20 list; the basket favors assets with broadly understood denomination conventions and common integration relevance.
+  # - Where an asset is multichain, the preset documents the denomination convention the initializer assumes.
+  # - Source: Large-cap market snapshot used as a selection input on April 24, 2026: https://coinmarketcap.com/historical/20260424/
+
+  # BTC: Bitcoin.
+  # Fact: Uses 8 decimal places under the satoshi convention.
+  # Fact: The smallest commonly referenced unit is 1 satoshi = 0.00000001 BTC.
+  # Preset default: Adds mBTC and satoshi display units for wallet and fee-oriented UIs.
+  # Preset default: Uses a suffix symbol to avoid fiat-style ambiguity.
+  # Source: Bitcoin developer docs: https://developer.bitcoin.org/
+  Amount.register :BTC,
+    decimals: 8,
+    display_symbol: "BTC",
+    display_position: :suffix,
+    ui_decimals: 8,
+    display_units: {
+      btc:     { scale: 1, symbol: "BTC", ui_decimals: 8 },
+      mbtc:    { scale: "1000", symbol: "mBTC", ui_decimals: 5 },
+      satoshi: { scale: "100000000", symbol: "sat", ui_decimals: 0 }
+    },
+    default_display: :btc
+
+  # ETH: Ether.
+  # Fact: Uses 18 decimal places because 1 ETH = 10^18 wei.
+  # Fact: The gwei display unit uses 1 ETH = 10^9 gwei.
+  # Preset default: Adds gwei and wei display units because fee and gas tooling often surfaces those denominations.
+  # Preset default: Uses a suffix symbol to avoid fiat-style ambiguity.
+  # Source: Ethereum denomination docs: https://ethereum.org/en/developers/docs/intro-to-ether/
+  Amount.register :ETH,
+    decimals: 18,
+    display_symbol: "ETH",
+    display_position: :suffix,
+    ui_decimals: 6,
+    display_units: {
+      eth:  { scale: 1, symbol: "ETH", ui_decimals: 6 },
+      gwei: { scale: "1000000000", symbol: "gwei", ui_decimals: 0 },
+      wei:  { scale: "1000000000000000000", symbol: "wei", ui_decimals: 0 }
+    },
+    default_display: :eth
+
+  # USDT: Tether USDt.
+  # Fact: This preset assumes the widely used 6-decimal denomination used by the common ERC-20-style representation of USDT.
+  # Fact: USDT is multichain in practice, so chain-specific integrations should verify decimals against the concrete deployment they use.
+  # Preset default: Uses "$" as a stablecoin-style display default in English-oriented UIs.
+  # Source: Tether overview and supported-protocol context: https://tether.to/en/how-it-works
+  Amount.register :USDT,
+    decimals: 6,
+    display_symbol: "$",
+    display_position: :prefix,
+    ui_decimals: 2
+
+  # XRP: XRP.
+  # Fact: Uses 6 decimal places because XRP is precise to the nearest drop.
+  # Fact: The XRPL documents 1 drop = 0.000001 XRP.
+  # Preset default: Uses a suffix symbol to avoid fiat-style ambiguity.
+  # Source: XRPL currency formats: https://xrpl.org/currency-formats.html
+  Amount.register :XRP,
+    decimals: 6,
+    display_symbol: "XRP",
+    display_position: :suffix,
+    ui_decimals: 4
+
+  # BNB: BNB.
+  # Fact: Uses 18 decimal places under the wei-style denomination used across BNB EVM infrastructure.
+  # Preset default: Uses a suffix symbol to avoid fiat-style ambiguity.
+  # Source: BNB Chain denomination note: https://docs.bnbchain.org/bnb-greenfield/getting-started/general-faqs/
+  Amount.register :BNB,
+    decimals: 18,
+    display_symbol: "BNB",
+    display_position: :suffix,
+    ui_decimals: 4
+
+  # USDC: USD Coin.
+  # Fact: This preset uses the widely deployed 6-decimal denomination for USDC integrations.
+  # Preset default: Uses "$" as a stablecoin-style display default in English-oriented UIs.
+  # Source: Circle USDC overview: https://www.circle.com/usdc
+  Amount.register :USDC,
+    decimals: 6,
+    display_symbol: "$",
+    display_position: :prefix,
+    ui_decimals: 2
+
+  # SOL: Solana.
+  # Fact: Uses 9 decimal places because 1 SOL = 1,000,000,000 lamports.
+  # Preset default: Adds a lamport display unit because low-level Solana tooling often surfaces lamports directly.
+  # Source: Solana account structure docs: https://solana.com/docs/core/accounts/account-structure
+  Amount.register :SOL,
+    decimals: 9,
+    display_symbol: "SOL",
+    display_position: :suffix,
+    ui_decimals: 4,
+    display_units: {
+      sol:     { scale: 1, symbol: "SOL", ui_decimals: 4 },
+      lamport: { scale: "1000000000", symbol: "lamports", ui_decimals: 0 }
+    },
+    default_display: :sol
+
+  # TRX: TRON.
+  # Fact: Uses 6 decimal places because 1 TRX = 1,000,000 SUN.
+  # Preset default: Uses a suffix symbol to avoid fiat-style ambiguity.
+  # Source: TRON TRX docs: https://developers.tron.network/v3.7/docs/trx
+  Amount.register :TRX,
+    decimals: 6,
+    display_symbol: "TRX",
+    display_position: :suffix,
+    ui_decimals: 4
+
+  # DOGE: Dogecoin.
+  # Fact: Uses the 8-decimal Bitcoin-family denomination convention.
+  # Preset default: Uses a suffix symbol to avoid fiat-style ambiguity.
+  # Preset default: Uses 4 UI decimals by default to keep ordinary wallet-style values readable.
+  # Source: Dogecoin project site: https://dogecoin.com/
+  Amount.register :DOGE,
+    decimals: 8,
+    display_symbol: "DOGE",
+    display_position: :suffix,
+    ui_decimals: 4
+
+  # BCH: Bitcoin Cash.
+  # Fact: Uses the 8-decimal Bitcoin-family denomination convention.
+  # Preset default: Uses a suffix symbol to avoid fiat-style ambiguity.
+  # Source: Bitcoin Cash project site: https://bitcoincash.org/
+  Amount.register :BCH,
+    decimals: 8,
+    display_symbol: "BCH",
+    display_position: :suffix,
+    ui_decimals: 6
+
+  # ADA: Cardano.
+  # Fact: Uses 6 decimal places because 1 ADA = 1,000,000 lovelace.
+  # Preset default: Uses a suffix symbol to avoid fiat-style ambiguity.
+  # Source: Cardano developer docs: https://developers.cardano.org/docs/build/native-tokens/minting/
+  Amount.register :ADA,
+    decimals: 6,
+    display_symbol: "ADA",
+    display_position: :suffix,
+    ui_decimals: 4
+
+  # LINK: Chainlink.
+  # Fact: Uses the common ERC-20 18-decimal denomination convention for LINK.
+  # Preset default: Uses a suffix symbol to avoid fiat-style ambiguity.
+  # Source: Chainlink developer docs hub: https://docs.chain.link/
+  Amount.register :LINK,
+    decimals: 18,
+    display_symbol: "LINK",
+    display_position: :suffix,
+    ui_decimals: 4
+
+  # XLM: Stellar lumens.
+  # Fact: Uses 7 decimal places because 1 XLM = 10,000,000 stroops.
+  # Preset default: Uses a suffix symbol to avoid fiat-style ambiguity.
+  # Source: Stellar docs using stroops: https://developers.stellar.org/docs/tools/cli/stellar-cli
+  Amount.register :XLM,
+    decimals: 7,
+    display_symbol: "XLM",
+    display_position: :suffix,
+    ui_decimals: 4
+
+  # DAI: Dai stablecoin.
+  # Fact: Uses 18 decimal places according to the Dai token contract documentation.
+  # Preset default: Uses "$" as a stablecoin-style display default in English-oriented UIs.
+  # Source: Maker Dai detailed docs: https://docs.makerdao.com/smart-contract-modules/dai-module/dai-detailed-documentation
+  Amount.register :DAI,
+    decimals: 18,
+    display_symbol: "$",
+    display_position: :prefix,
+    ui_decimals: 2
+
+  # LTC: Litecoin.
+  # Fact: Uses the 8-decimal Bitcoin-family denomination convention.
+  # Preset default: Uses a suffix symbol to avoid fiat-style ambiguity.
+  # Source: Litecoin project site: https://litecoin.org/
+  Amount.register :LTC,
+    decimals: 8,
+    display_symbol: "LTC",
+    display_position: :suffix,
+    ui_decimals: 6
