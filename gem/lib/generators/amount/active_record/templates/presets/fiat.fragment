@@ -1,0 +1,163 @@
+  # Registry overview:
+  # Major Fiat Currencies:
+  # - This preset is a curated basket of widely used fiat currencies for general product and treasury workflows.
+  # - Minor-unit precision follows ISO-4217-style currency fractions: most entries use 2 decimals, while JPY uses 0.
+  # - Display symbols are English-oriented defaults inspired by CLDR conventions and may need localization in real applications.
+  # - Source: Unicode CLDR currency symbols and localization notes: https://cldr.unicode.org/translation/currency-names-and-symbols/currency-names
+
+  # USD: United States dollar.
+  # Fact: Uses 2 decimal places for cents.
+  # Preset default: Uses "$" as the default display symbol in an English-oriented UI.
+  # Preset default: Renders as a prefix amount, for example "$12.34".
+  # Source: Currency symbol conventions: https://cldr.unicode.org/translation/currency-names-and-symbols/currency-names
+  Amount.register :USD,
+    decimals: 2,
+    display_symbol: "$",
+    display_position: :prefix,
+    ui_decimals: 2
+
+  # EUR: Euro.
+  # Fact: Uses 2 decimal places for cents.
+  # Preset default: Uses the euro sign as the default display symbol.
+  # Preset default: Renders as a prefix amount for a compact English-oriented default.
+  # Source: Currency symbol conventions: https://cldr.unicode.org/translation/currency-names-and-symbols/currency-names
+  Amount.register :EUR,
+    decimals: 2,
+    display_symbol: "€",
+    display_position: :prefix,
+    ui_decimals: 2
+
+  # GBP: British pound sterling.
+  # Fact: Uses 2 decimal places for pence.
+  # Preset default: Uses the pound sign as the default display symbol.
+  # Preset default: Renders as a prefix amount.
+  # Source: Currency symbol conventions: https://cldr.unicode.org/translation/currency-names-and-symbols/currency-names
+  Amount.register :GBP,
+    decimals: 2,
+    display_symbol: "£",
+    display_position: :prefix,
+    ui_decimals: 2
+
+  # JPY: Japanese yen.
+  # Fact: Uses 0 decimal places under standard minor-unit conventions.
+  # Preset default: Uses the yen sign as the default display symbol.
+  # Preset default: Renders as a prefix amount with no fractional UI digits.
+  # Source: Currency symbol conventions: https://cldr.unicode.org/translation/currency-names-and-symbols/currency-names
+  Amount.register :JPY,
+    decimals: 0,
+    display_symbol: "¥",
+    display_position: :prefix,
+    ui_decimals: 0
+
+  # CHF: Swiss franc.
+  # Fact: Uses 2 decimal places for rappen/centimes.
+  # Preset default: Uses the ISO code as the display symbol to avoid locale ambiguity.
+  # Preset default: Renders as a suffix amount, for example "12.34 CHF".
+  # Source: Currency symbol conventions: https://cldr.unicode.org/translation/currency-names-and-symbols/currency-names
+  Amount.register :CHF,
+    decimals: 2,
+    display_symbol: "CHF",
+    display_position: :suffix,
+    ui_decimals: 2
+
+  # CAD: Canadian dollar.
+  # Fact: Uses 2 decimal places for cents.
+  # Preset default: Uses "CA$" instead of plain "$" to avoid collision with USD.
+  # Source: Currency symbol conventions: https://cldr.unicode.org/translation/currency-names-and-symbols/currency-names
+  Amount.register :CAD,
+    decimals: 2,
+    display_symbol: "CA$",
+    display_position: :prefix,
+    ui_decimals: 2
+
+  # AUD: Australian dollar.
+  # Fact: Uses 2 decimal places for cents.
+  # Preset default: Uses "A$" instead of plain "$" to avoid collision with USD.
+  # Source: Currency symbol conventions: https://cldr.unicode.org/translation/currency-names-and-symbols/currency-names
+  Amount.register :AUD,
+    decimals: 2,
+    display_symbol: "A$",
+    display_position: :prefix,
+    ui_decimals: 2
+
+  # NZD: New Zealand dollar.
+  # Fact: Uses 2 decimal places for cents.
+  # Preset default: Uses "NZ$" instead of plain "$" to avoid collision with USD.
+  # Source: Currency symbol conventions: https://cldr.unicode.org/translation/currency-names-and-symbols/currency-names
+  Amount.register :NZD,
+    decimals: 2,
+    display_symbol: "NZ$",
+    display_position: :prefix,
+    ui_decimals: 2
+
+  # SGD: Singapore dollar.
+  # Fact: Uses 2 decimal places for cents.
+  # Preset default: Uses "S$" instead of plain "$" to avoid collision with USD.
+  # Source: Currency symbol conventions: https://cldr.unicode.org/translation/currency-names-and-symbols/currency-names
+  Amount.register :SGD,
+    decimals: 2,
+    display_symbol: "S$",
+    display_position: :prefix,
+    ui_decimals: 2
+
+  # HKD: Hong Kong dollar.
+  # Fact: Uses 2 decimal places for cents.
+  # Preset default: Uses "HK$" instead of plain "$" to avoid collision with USD.
+  # Source: Currency symbol conventions: https://cldr.unicode.org/translation/currency-names-and-symbols/currency-names
+  Amount.register :HKD,
+    decimals: 2,
+    display_symbol: "HK$",
+    display_position: :prefix,
+    ui_decimals: 2
+
+  # CNY: Chinese yuan renminbi.
+  # Fact: Uses 2 decimal places for jiao/fen display.
+  # Preset default: Uses "CN¥" to avoid confusion with other yen/yuan symbols in multi-currency UIs.
+  # Source: Currency symbol conventions: https://cldr.unicode.org/translation/currency-names-and-symbols/currency-names
+  Amount.register :CNY,
+    decimals: 2,
+    display_symbol: "CN¥",
+    display_position: :prefix,
+    ui_decimals: 2
+
+  # INR: Indian rupee.
+  # Fact: Uses 2 decimal places for paise.
+  # Preset default: Uses the rupee sign as the default display symbol.
+  # Preset default: Renders as a prefix amount.
+  # Source: Currency symbol conventions: https://cldr.unicode.org/translation/currency-names-and-symbols/currency-names
+  Amount.register :INR,
+    decimals: 2,
+    display_symbol: "₹",
+    display_position: :prefix,
+    ui_decimals: 2
+
+  # MXN: Mexican peso.
+  # Fact: Uses 2 decimal places for centavos.
+  # Preset default: Uses "MX$" instead of plain "$" to avoid collision with USD.
+  # Source: Currency symbol conventions: https://cldr.unicode.org/translation/currency-names-and-symbols/currency-names
+  Amount.register :MXN,
+    decimals: 2,
+    display_symbol: "MX$",
+    display_position: :prefix,
+    ui_decimals: 2
+
+  # BRL: Brazilian real.
+  # Fact: Uses 2 decimal places for centavos.
+  # Preset default: Uses the common Brazilian real symbol "R$".
+  # Source: Currency symbol conventions: https://cldr.unicode.org/translation/currency-names-and-symbols/currency-names
+  Amount.register :BRL,
+    decimals: 2,
+    display_symbol: "R$",
+    display_position: :prefix,
+    ui_decimals: 2
+
+  # AED: United Arab Emirates dirham.
+  # Fact: Uses 2 decimal places for fils.
+  # Preset default: Uses the ISO code as the display symbol for an unambiguous English-oriented default.
+  # Preset default: Renders as a suffix amount.
+  # Source: Currency symbol conventions: https://cldr.unicode.org/translation/currency-names-and-symbols/currency-names
+  Amount.register :AED,
+    decimals: 2,
+    display_symbol: "AED",
+    display_position: :suffix,
+    ui_decimals: 2

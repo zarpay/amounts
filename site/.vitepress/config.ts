@@ -60,6 +60,7 @@ export default defineConfig({
         text: 'Rails',
         items: [
           { text: 'Overview', link: '/rails/overview' },
+          { text: 'Registry Generator', link: '/rails/registry-generator' },
           { text: 'Migration DSL', link: '/rails/migration-dsl' },
           { text: 'has_amount', link: '/rails/has-amount' },
           { text: 'Querying', link: '/rails/querying' },

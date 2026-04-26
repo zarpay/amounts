@@ -1,0 +1,151 @@
+  # Registry overview:
+  # Precious And Industrial Metals:
+  # - This preset is a curated basket of metals commonly tracked in treasury, vault, and commodities workflows.
+  # - Display-unit conversion factors use standard mass relationships such as troy-ounce to gram and kilogram to pound.
+  # - Storage decimals here are preset defaults chosen for application headroom; they are not exchange-mandated market standards.
+  # - Source: NIST precious-metals conversion guidance: https://www.nist.gov/pml/weights-and-measures/laws-and-regulations/precious-metals-conversion
+  # - Source: NIST metric and customary conversion guidance: https://www.nist.gov/pml/weights-and-measures/common-conversion-factors-ii
+
+  # GOLD: Gold measured with troy-ounce display defaults.
+  # Fact: The alternate gram display uses 1 troy ounce = 31.1035 grams.
+  # Fact: The alternate kilogram display uses 1 troy ounce = 0.0311035 kilograms.
+  # Preset default: Uses 8 storage decimals as a high-precision preset default rather than a market mandate.
+  # Preset default: Defaults to troy-ounce display because that is common for bullion pricing.
+  # Source: NIST precious-metals conversion guidance: https://www.nist.gov/pml/weights-and-measures/laws-and-regulations/precious-metals-conversion
+  Amount.register :GOLD,
+    decimals: 8,
+    display_symbol: "oz t",
+    display_position: :suffix,
+    ui_decimals: 4,
+    display_units: {
+      oz_t: { scale: 1, symbol: "oz t", ui_decimals: 4 },
+      gram: { scale: "31.1035", symbol: "g", ui_decimals: 2 },
+      kg:   { scale: "0.0311035", symbol: "kg", ui_decimals: 5 }
+    },
+    default_display: :oz_t
+
+  # SILVER: Silver measured with troy-ounce display defaults.
+  # Fact: The alternate gram display uses 1 troy ounce = 31.1035 grams.
+  # Fact: The alternate kilogram display uses 1 troy ounce = 0.0311035 kilograms.
+  # Preset default: Uses 8 storage decimals as a high-precision preset default.
+  # Preset default: Defaults to troy-ounce display for consistency with common bullion quoting.
+  # Source: NIST precious-metals conversion guidance: https://www.nist.gov/pml/weights-and-measures/laws-and-regulations/precious-metals-conversion
+  Amount.register :SILVER,
+    decimals: 8,
+    display_symbol: "oz t",
+    display_position: :suffix,
+    ui_decimals: 4,
+    display_units: {
+      oz_t: { scale: 1, symbol: "oz t", ui_decimals: 4 },
+      gram: { scale: "31.1035", symbol: "g", ui_decimals: 2 },
+      kg:   { scale: "0.0311035", symbol: "kg", ui_decimals: 5 }
+    },
+    default_display: :oz_t
+
+  # PLATINUM: Platinum measured with troy-ounce display defaults.
+  # Fact: The alternate gram display uses 1 troy ounce = 31.1035 grams.
+  # Fact: The alternate kilogram display uses 1 troy ounce = 0.0311035 kilograms.
+  # Preset default: Uses 8 storage decimals as a high-precision preset default.
+  # Preset default: Defaults to troy-ounce display for commodity-style pricing.
+  # Source: NIST precious-metals conversion guidance: https://www.nist.gov/pml/weights-and-measures/laws-and-regulations/precious-metals-conversion
+  Amount.register :PLATINUM,
+    decimals: 8,
+    display_symbol: "oz t",
+    display_position: :suffix,
+    ui_decimals: 4,
+    display_units: {
+      oz_t: { scale: 1, symbol: "oz t", ui_decimals: 4 },
+      gram: { scale: "31.1035", symbol: "g", ui_decimals: 2 },
+      kg:   { scale: "0.0311035", symbol: "kg", ui_decimals: 5 }
+    },
+    default_display: :oz_t
+
+  # PALLADIUM: Palladium measured with troy-ounce display defaults.
+  # Fact: The alternate gram display uses 1 troy ounce = 31.1035 grams.
+  # Fact: The alternate kilogram display uses 1 troy ounce = 0.0311035 kilograms.
+  # Preset default: Uses 8 storage decimals as a high-precision preset default.
+  # Preset default: Defaults to troy-ounce display for commodity-style pricing.
+  # Source: NIST precious-metals conversion guidance: https://www.nist.gov/pml/weights-and-measures/laws-and-regulations/precious-metals-conversion
+  Amount.register :PALLADIUM,
+    decimals: 8,
+    display_symbol: "oz t",
+    display_position: :suffix,
+    ui_decimals: 4,
+    display_units: {
+      oz_t: { scale: 1, symbol: "oz t", ui_decimals: 4 },
+      gram: { scale: "31.1035", symbol: "g", ui_decimals: 2 },
+      kg:   { scale: "0.0311035", symbol: "kg", ui_decimals: 5 }
+    },
+    default_display: :oz_t
+
+  # COPPER: Copper measured with metric-mass defaults.
+  # Fact: The tonne display uses 1 kg = 0.001 t.
+  # Fact: The pound display uses 1 kg = 2.2046226218 lb.
+  # Preset default: Uses kilograms as the default display unit for industrial inventory and warehouse-style workflows.
+  # Preset default: Uses 6 storage decimals as a high-precision preset default.
+  # Source: NIST metric and customary conversion guidance: https://www.nist.gov/pml/weights-and-measures/common-conversion-factors-ii
+  Amount.register :COPPER,
+    decimals: 6,
+    display_symbol: "kg",
+    display_position: :suffix,
+    ui_decimals: 3,
+    display_units: {
+      kg:    { scale: 1, symbol: "kg", ui_decimals: 3 },
+      tonne: { scale: "0.001", symbol: "t", ui_decimals: 6 },
+      lb:    { scale: "2.2046226218", symbol: "lb", ui_decimals: 2 }
+    },
+    default_display: :kg
+
+  # ALUMINUM: Aluminum measured with metric-mass defaults.
+  # Fact: The tonne display uses 1 kg = 0.001 t.
+  # Fact: The pound display uses 1 kg = 2.2046226218 lb.
+  # Preset default: Uses kilograms as the default display unit.
+  # Preset default: Uses 6 storage decimals as a high-precision preset default.
+  # Source: NIST metric and customary conversion guidance: https://www.nist.gov/pml/weights-and-measures/common-conversion-factors-ii
+  Amount.register :ALUMINUM,
+    decimals: 6,
+    display_symbol: "kg",
+    display_position: :suffix,
+    ui_decimals: 3,
+    display_units: {
+      kg:    { scale: 1, symbol: "kg", ui_decimals: 3 },
+      tonne: { scale: "0.001", symbol: "t", ui_decimals: 6 },
+      lb:    { scale: "2.2046226218", symbol: "lb", ui_decimals: 2 }
+    },
+    default_display: :kg
+
+  # NICKEL: Nickel measured with metric-mass defaults.
+  # Fact: The tonne display uses 1 kg = 0.001 t.
+  # Fact: The pound display uses 1 kg = 2.2046226218 lb.
+  # Preset default: Uses kilograms as the default display unit.
+  # Preset default: Uses 6 storage decimals as a high-precision preset default.
+  # Source: NIST metric and customary conversion guidance: https://www.nist.gov/pml/weights-and-measures/common-conversion-factors-ii
+  Amount.register :NICKEL,
+    decimals: 6,
+    display_symbol: "kg",
+    display_position: :suffix,
+    ui_decimals: 3,
+    display_units: {
+      kg:    { scale: 1, symbol: "kg", ui_decimals: 3 },
+      tonne: { scale: "0.001", symbol: "t", ui_decimals: 6 },
+      lb:    { scale: "2.2046226218", symbol: "lb", ui_decimals: 2 }
+    },
+    default_display: :kg
+
+  # ZINC: Zinc measured with metric-mass defaults.
+  # Fact: The tonne display uses 1 kg = 0.001 t.
+  # Fact: The pound display uses 1 kg = 2.2046226218 lb.
+  # Preset default: Uses kilograms as the default display unit.
+  # Preset default: Uses 6 storage decimals as a high-precision preset default.
+  # Source: NIST metric and customary conversion guidance: https://www.nist.gov/pml/weights-and-measures/common-conversion-factors-ii
+  Amount.register :ZINC,
+    decimals: 6,
+    display_symbol: "kg",
+    display_position: :suffix,
+    ui_decimals: 3,
+    display_units: {
+      kg:    { scale: 1, symbol: "kg", ui_decimals: 3 },
+      tonne: { scale: "0.001", symbol: "t", ui_decimals: 6 },
+      lb:    { scale: "2.2046226218", symbol: "lb", ui_decimals: 2 }
+    },
+    default_display: :kg
