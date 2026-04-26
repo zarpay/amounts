@@ -5,6 +5,19 @@ pkg/
 tmp/
 vendor/bundle/
 coverage/
+
+# Site
 site/node_modules/
 site/.vitepress/cache/
 site/.vitepress/dist/
+
+# Gem dummy app — runtime logs from the AR test fixtures
+gem/test/dummy/log/*.log
+
+# Demo Rails app — generated artifacts that shouldn't be checked in
+demo/log/*.log
+demo/storage/*.sqlite3
+demo/storage/*.sqlite3-journal
+demo/spec/examples.txt
+demo/coverage/
+

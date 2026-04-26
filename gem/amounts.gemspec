@@ -19,10 +19,10 @@ Gem::Specification.new do |spec|
   spec.required_ruby_version = ">= 3.1"
 
   spec.metadata = {
-    "bug_tracker_uri" => "https://github.com/zarpay/amounts/issues",
-    "changelog_uri" => "https://github.com/zarpay/amounts/blob/main/CHANGELOG.md",
-    "documentation_uri" => "https://github.com/zarpay/amounts#readme",
-    "source_code_uri" => "https://github.com/zarpay/amounts"
+    "bug_tracker_uri"   => "https://github.com/zarpay/amounts/issues",
+    "changelog_uri"     => "https://github.com/zarpay/amounts/blob/main/gem/CHANGELOG.md",
+    "documentation_uri" => "https://github.com/zarpay/amounts/tree/main/gem#readme",
+    "source_code_uri"   => "https://github.com/zarpay/amounts/tree/main/gem"
   }
 
   spec.files = Dir.glob("{bin,lib,test,.github}/**/*", File::FNM_DOTMATCH).reject do |path|
