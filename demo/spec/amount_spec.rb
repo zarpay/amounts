@@ -245,7 +245,7 @@ RSpec.describe Amount, :aggregate_failures do
     end
 
     it "renders default ui with suffix symbol when configured" do
-      expect(Amount.sol("1.5").ui).to match(/\A1\.5000 SOL\z/)
+      expect(Amount.sol("1.5").ui).to eq("1.5 SOL")
     end
 
     it "supports :floor (default) and :ceil rounding" do

@@ -62,7 +62,8 @@ Rails.application.config.to_prepare do
     decimals:         9,
     display_symbol:   "SOL",
     display_position: :suffix,
-    ui_decimals:      4
+    ui_decimals:      4,
+    trim_zeros:       true
 
   # ---------------------------------------------------------------------------
   # Vault / Auric cookbook

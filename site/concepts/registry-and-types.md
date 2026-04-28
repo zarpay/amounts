@@ -17,7 +17,7 @@ Amount.register :GOLD, decimals: 8
 An amount’s symbol determines:
 
 - storage precision
-- default formatting
+- default formatting (including `trim_zeros`)
 - display units
 - custom amount subclass, if any
 - whether a convenience constructor can be generated

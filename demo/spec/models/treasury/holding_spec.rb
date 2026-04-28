@@ -319,4 +319,21 @@ RSpec.describe Treasury::Holding, type: :model do
       expect(total).to eq_amount("USDC|11.25")
     end
   end
+
+  describe "trim_zeros display" do
+    it "strips trailing zeros from SOL fee display" do
+      record = build(:treasury_holding, fee: Amount.sol("0.5"))
+      expect(record.fee.ui).to eq("0.5 SOL")
+    end
+
+    it "strips all-zero decimals from SOL fee display" do
+      record = build(:treasury_holding, fee: Amount.sol("1.0"))
+      expect(record.fee.ui).to eq("1 SOL")
+    end
+
+    it "preserves trailing zeros for USDC balance (trim_zeros: false)" do
+      record = build(:treasury_holding, balance: Amount.usdc("10.50"))
+      expect(record.balance.ui).to eq("$10.50")
+    end
+  end
 end

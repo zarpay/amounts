@@ -61,6 +61,51 @@ gold.ui(unit: :gram, decorated: false)              # => "46.65"
 
 `decorated: false` composes with `unit:` and `direction:` — same rounding, same display unit, just no symbol.
 
+## Trimming trailing zeros
+
+By default, `ui` zero-pads to the configured `ui_decimals`. For tokens with high precision, this produces verbose output like `"1.5000 SOL"`. Use `trim_zeros` to strip trailing zeros after rounding.
+
+### Per call
+
+```ruby
+Amount.sol("2.5").ui(trim_zeros: true)   # => "2.5 SOL"
+Amount.sol("1.0").ui(trim_zeros: true)   # => "1 SOL"
+Amount.sol("1.0").ui(trim_zeros: false)  # => "1.0000 SOL"
+```
+
+### As a registry default
+
+```ruby
+Amount.register :SOL,
+  decimals: 9,
+  display_symbol: "SOL",
+  display_position: :suffix,
+  ui_decimals: 4,
+  trim_zeros: true
+
+Amount.sol("2.5").ui   # => "2.5 SOL"
+Amount.sol("1.0").ui   # => "1 SOL"
+```
+
+Fiat currencies typically leave `trim_zeros` as `false` (the default) so that `$1.50` stays `$1.50`.
+
+### Per display unit
+
+Display units can override the registry default:
+
+```ruby
+Amount.register :GOLD,
+  decimals: 8,
+  trim_zeros: true,
+  display_units: {
+    gram: { scale: "31.1035", symbol: "g", ui_decimals: 2, trim_zeros: false }
+  }
+```
+
+### Precedence
+
+Call-site (`ui(trim_zeros:)`) > display unit spec > registry default.
+
 ## What display units are not
 
 They are not:

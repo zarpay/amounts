@@ -207,6 +207,55 @@ class AmountTest < Minitest::Test
     end
   end
 
+  def test_trim_zeros_strips_trailing_zeros
+    Amount.register :TZ, decimals: 9, display_symbol: "TZ", display_position: :suffix, trim_zeros: true
+
+    assert_equal "2.5 TZ", Amount.new("2.5", :TZ).ui
+    assert_equal "1 TZ", Amount.new("1.0", :TZ).ui
+    assert_equal "0 TZ", Amount.new("0.0", :TZ).ui
+    assert_equal "1.123 TZ", Amount.new("1.123", :TZ).ui
+    assert_equal "0.00005 TZ", Amount.new(50_000, :TZ, from: :atomic).ui
+  end
+
+  def test_trim_zeros_false_preserves_trailing_zeros
+    assert_equal "$1.50", Amount.new("1.5", :USDC).ui
+    assert_equal "$1.00", Amount.new("1.0", :USDC).ui
+  end
+
+  def test_trim_zeros_with_decorated_false
+    Amount.register :TZ, decimals: 9, display_symbol: "TZ", display_position: :suffix, trim_zeros: true
+
+    assert_equal "2.5", Amount.new("2.5", :TZ).ui(decorated: false)
+    assert_equal "1", Amount.new("1.0", :TZ).ui(decorated: false)
+  end
+
+  def test_trim_zeros_with_display_units
+    Amount.register :TZG, decimals: 8, display_symbol: "oz t", display_position: :suffix,
+                    trim_zeros: true,
+                    display_units: { gram: { scale: "31.1035", symbol: "g", ui_decimals: 4 } }
+
+    assert_equal "31.1035 g", Amount.new("1.0", :TZG).ui(unit: :gram)
+  end
+
+  def test_trim_zeros_display_unit_override
+    Amount.register :TZO, decimals: 6, display_symbol: "T", display_position: :suffix,
+                    trim_zeros: true,
+                    display_units: { fixed: { scale: 1, symbol: "F", ui_decimals: 2, trim_zeros: false } }
+
+    assert_equal "1.50 F", Amount.new("1.5", :TZO).ui(unit: :fixed)
+  end
+
+  def test_trim_zeros_call_site_override
+    assert_equal "1.5 SOL", Amount.new("1.5", :SOL).ui(trim_zeros: true)
+    assert_equal "1.0000 SOL", Amount.new("1.0", :SOL).ui(trim_zeros: false)
+  end
+
+  def test_trim_zeros_call_site_overrides_registry
+    Amount.register :TZR, decimals: 6, display_symbol: "T", display_position: :suffix, trim_zeros: true
+
+    assert_equal "1.500000 T", Amount.new("1.5", :TZR).ui(trim_zeros: false)
+  end
+
   def test_predicates
     assert Amount.new(0, :USDC).zero?
     assert Amount.new(1, :USDC).positive?
