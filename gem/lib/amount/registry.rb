@@ -35,6 +35,7 @@ class Amount
       :display_units,
       :default_display,
       :amount_class,
+      :trim_zeros,
       keyword_init: true
     )
 
@@ -60,6 +61,7 @@ class Amount
     # @param ui_decimals [Integer] decimals displayed by default UI formatting
     # @param display_units [Hash, nil] optional display-only scaling definitions
     # @param default_display [Symbol, nil] optional default display unit key
+    # @param trim_zeros [Boolean] strip trailing zeros from UI output
     # @param class [Class, nil] optional custom `Amount` subclass
     # @return [void]
     # @raise [AlreadyRegistered] if the symbol is already registered or the
@@ -73,7 +75,7 @@ class Amount
     #     ui_decimals: 2
     def register(symbol, decimals:, display_symbol: symbol.to_s, display_position: :suffix,
                  ui_decimals: decimals, display_units: nil, default_display: nil,
-                 class: nil)
+                 trim_zeros: false, class: nil)
       raise ArgumentError, "symbol must not be blank" if symbol.nil? || symbol.to_s.empty?
 
       symbol = symbol.to_sym
@@ -92,7 +94,8 @@ class Amount
           ui_decimals:,
           display_units:,
           default_display:,
-          amount_class: binding.local_variable_get(:class) || Amount
+          amount_class: binding.local_variable_get(:class) || Amount,
+          trim_zeros:
         )
 
         @entries[symbol] = entry
