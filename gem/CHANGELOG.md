@@ -1,5 +1,22 @@
 # Changelog
 
+## 0.0.6 - 2026-04-28
+
+### Added
+
+- `trim_zeros` option for `Amount.register` strips trailing zeros from `ui`
+  output. Defaults to `false` so fiat currencies keep fixed decimals (`$1.50`).
+  Set `true` for tokens with high precision to get clean output (`1.5 SOL`
+  instead of `1.5000 SOL`). Display units can override via
+  `display_units: { gram: { ..., trim_zeros: false } }`.
+- `Amount#ui(trim_zeros:)` call-site override. Pass `true` or `false` to
+  override the registry and display-unit settings for a single render.
+  Precedence: call-site > display unit spec > registry default.
+- Railtie `initializer` block that auto-requires `amount/active_record` in
+  Rails apps. `has_amount` and `t.amount` are now available without manual
+  `require` statements — Bundler's auto-require of the `amounts` gem handles
+  everything.
+
 ## 0.0.5 - 2026-04-26
 
 ### Added
