@@ -245,14 +245,14 @@ class AmountActiveRecordTest < Minitest::Test
     holding = ValidatedHolding.new(amount: "USDC|0.00", reserve: "USDC|1.25")
 
     refute holding.valid?
-    assert_includes holding.errors[:amount], "must be greater than USDC|0.0"
+    assert_includes holding.errors[:amount], "must be greater than USDC|0.00"
   end
 
   def test_amount_validator_rejects_amount_above_upper_bound
     holding = ValidatedHolding.new(amount: "USDC|1000.01", reserve: "USDC|1.25")
 
     refute holding.valid?
-    assert_includes holding.errors[:amount], "must be less than or equal to USDC|1000.0"
+    assert_includes holding.errors[:amount], "must be less than or equal to USDC|1000.00"
   end
 
   def test_amount_validator_allows_nil_when_allow_nil_is_set
@@ -271,14 +271,14 @@ class AmountActiveRecordTest < Minitest::Test
     holding = ValidatedHolding.new(amount: "USDC|100.00", reserve: "USDC|1.25", fee: 0)
 
     refute holding.valid?
-    assert_includes holding.errors[:fee], "must be greater than SOL|0.0"
+    assert_includes holding.errors[:fee], "must be greater than SOL|0.0000"
   end
 
   def test_amount_validator_rejects_fixed_symbol_amount_at_exclusive_upper_bound
     holding = ValidatedHolding.new(amount: "USDC|100.00", reserve: "USDC|1.25", fee: 10)
 
     refute holding.valid?
-    assert_includes holding.errors[:fee], "must be less than SOL|10.0"
+    assert_includes holding.errors[:fee], "must be less than SOL|10.0000"
   end
 
   def test_amount_validator_rejects_cross_type_threshold_without_rate
