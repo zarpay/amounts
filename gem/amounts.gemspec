@@ -30,7 +30,6 @@ Gem::Specification.new do |spec|
   end + %w[
     CHANGELOG.md
     Gemfile
-    LICENSE.txt
     README.md
     Rakefile
     .rubocop.yml
