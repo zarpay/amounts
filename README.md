@@ -3,7 +3,7 @@
 [![Gem Version](https://img.shields.io/gem/v/amounts)](https://rubygems.org/gems/amounts)
 [![CI](https://github.com/zarpay/amounts/actions/workflows/ci.yml/badge.svg)](https://github.com/zarpay/amounts/actions/workflows/ci.yml)
 [![Release](https://img.shields.io/github/v/release/zarpay/amounts)](https://github.com/zarpay/amounts/releases)
-[![License](https://img.shields.io/github/license/zarpay/amounts)](https://github.com/zarpay/amounts/blob/main/gem/LICENSE.txt)
+[![License](https://img.shields.io/github/license/zarpay/amounts)](https://github.com/zarpay/amounts/blob/main/LICENSE.txt)
 [![Ruby](https://img.shields.io/badge/Ruby-%3E%3D%203.1-red)](https://rubygems.org/gems/amounts)
 
 `amounts` is a Ruby gem for precise quantities of fungible things — money,
