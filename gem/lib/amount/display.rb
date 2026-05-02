@@ -42,7 +42,8 @@ class Amount
 
     # @return [String]
     def to_s
-      "#{@entry.symbol}|#{@amount.decimal.to_s("F")}"
+      rounded = round(@amount.decimal, @entry.ui_decimals, :floor)
+      "#{@entry.symbol}|#{format_number(rounded, @entry.ui_decimals, false)}"
     end
 
     # @param unit [Symbol]

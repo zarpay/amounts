@@ -350,7 +350,7 @@ RSpec.describe "Torture / edge-case probing", :aggregate_failures do
       a = Amount.usdc("1.50").freeze
       expect(a.ui).to eq("$1.50")
       expect(a.formatted).to eq("1.500000")
-      expect(a.to_s).to eq("USDC|1.5")
+      expect(a.to_s).to eq("USDC|1.50")
     end
   end
 

@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require "json"
 require_relative "test_helper"
 
 class AmountTest < Minitest::Test
@@ -51,7 +52,7 @@ class AmountTest < Minitest::Test
     amount = Amount.parse("USDC|1.5")
 
     assert_equal 1_500_000, amount.atomic
-    assert_equal "USDC|1.5", amount.to_s
+    assert_equal "USDC|1.50", amount.to_s
   end
 
   def test_parse_accepts_explicit_v1_prefix
@@ -140,7 +141,7 @@ class AmountTest < Minitest::Test
 
     assert_equal "$1.50", amount.ui
     assert_equal "1.500000", amount.formatted
-    assert_equal "USDC|1.5", amount.to_s
+    assert_equal "USDC|1.50", amount.to_s
   end
 
   def test_frozen_amount_arithmetic_returns_unfrozen_result
@@ -536,6 +537,19 @@ class AmountTest < Minitest::Test
 
     error = assert_raises(Amount::InvalidInput) { Amount.load({}) }
     assert_match(/missing key/, error.message)
+  end
+
+  def test_as_json_returns_compact_string
+    assert_equal "USDC|1.50", Amount.new("1.5", :USDC).as_json
+  end
+
+  def test_to_json_returns_quoted_compact_string
+    assert_equal '"USDC|1.50"', Amount.new("1.5", :USDC).to_json
+  end
+
+  def test_as_json_works_when_nested_in_hash
+    hash = { amount: Amount.new("1.5", :USDC) }
+    assert_equal({ "amount" => "USDC|1.50" }, JSON.parse(hash.to_json))
   end
 
   def test_load_rejects_unknown_serialization_version

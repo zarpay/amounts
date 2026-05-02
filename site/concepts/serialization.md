@@ -47,13 +47,28 @@ amount.to_h
 # => { v: 1, atomic: "1250000000", symbol: "USDC" }
 ```
 
+## JSON serialization
+
+`as_json` returns the compact string, so amounts serialize cleanly in any JSON context:
+
+```ruby
+Amount.usdc("1.50").as_json
+# => "USDC|1.50"
+
+{ amount: Amount.usdc("1.50") }.to_json
+# => '{"amount":"USDC|1.50"}'
+```
+
+The client can parse the value back with `Amount.parse`.
+
 ## What to use where
 
 | Use case | Recommended format |
 | --- | --- |
 | Browser form field | `USDC|1.50` |
 | CLI or admin tooling | `USDC|1.50` |
-| Internal JSON API object | `{ v: 1, atomic: "1500000", symbol: "USDC" }` |
+| JSON API response | `"USDC|1.50"` (via `as_json`) |
+| Internal structured payload | `{ v: 1, atomic: "1500000", symbol: "USDC" }` |
 | Database persistence | atomic + symbol columns |
 
 ## Common mistake
