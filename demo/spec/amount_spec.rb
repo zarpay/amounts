@@ -293,7 +293,7 @@ RSpec.describe Amount, :aggregate_failures do
     end
 
     it "renders compact to_s" do
-      expect(Amount.usdc("1.5").to_s).to eq("USDC|1.5")
+      expect(Amount.usdc("1.5").to_s).to eq("USDC|1.50")
     end
   end
 
@@ -334,6 +334,15 @@ RSpec.describe Amount, :aggregate_failures do
       expect { Amount.parse("v2:USDC|1.50") }.to raise_error(Amount::InvalidInput)
       expect { Amount.parse("USDC|") }.to raise_error(Amount::InvalidInput)
       expect { Amount.parse("|1.50") }.to raise_error(Amount::InvalidInput)
+    end
+
+    it "as_json returns compact string" do
+      expect(Amount.usdc("1.50").as_json).to eq("USDC|1.50")
+    end
+
+    it "serializes correctly when nested in a hash" do
+      hash = { amount: Amount.usdc("1.50") }
+      expect(JSON.parse(hash.to_json)).to eq("amount" => "USDC|1.50")
     end
   end
 

@@ -21,6 +21,7 @@ bundle exec yard doc
 
 - `Amount.parse`
 - `Amount#to_s`
+- `Amount#as_json` / `Amount#to_json`
 
 ## Structured payload APIs
 

@@ -50,5 +50,10 @@ class Amount
         symbol: @symbol.to_s
       }
     end
+
+    # @return [String]
+    def as_json(*)
+      to_s
+    end
   end
 end

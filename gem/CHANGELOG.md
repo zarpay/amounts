@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.0.7 - 2026-05-03
+
+### Fixed
+
+- `Display#to_s` now formats the decimal value using `ui_decimals`, matching
+  `ui(decorated: false)`. Previously `to_s` used raw `BigDecimal#to_s("F")`
+  which dropped trailing zeros (`USDC|1.5` instead of `USDC|1.50`), defeating
+  the purpose of the compact format carrying the display-ready amount.
+- `Amount#as_json` returns the compact string (`to_s`), preventing a
+  `SystemStackError` (stack level too deep) when calling `as_json` or `to_json`
+  on an Amount in Rails. The circular reference between `Display` and `Amount`
+  caused ActiveSupport's default recursive serialization to overflow.
+
 ## 0.0.6 - 2026-04-28
 
 ### Added
