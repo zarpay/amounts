@@ -34,7 +34,7 @@ RSpec.describe "Timber Yard cookbook scenario", :integration, type: :model do
   end
 
   it "preserves invariants with negative totals (e.g. corrections)" do
-    ship = build(:yard_log_shipment, total: Amount.logs(-7), crew_size: 3)
+    ship = build(:yard_log_shipment, total: Amount.of_logs(-7), crew_size: 3)
     parts, rem = ship.split_evenly
     expect(parts.sum(&:atomic) + rem.atomic).to eq(-7)
   end

@@ -50,15 +50,15 @@ That does four things:
 
 1. Defines the storage precision for each type
 2. Defines how each type should display by default
-3. Generates convenience constructors like `Amount.usdc(...)`
+3. Generates convenience constructors like `Amount.of_usdc(...)`
 4. Registers directional conversion rules for cross-type arithmetic
 
 ## Construct values
 
 ```ruby
-treasury_buffer = Amount.usdc("150000.00")
+treasury_buffer = Amount.of_usdc("150000.00")
 invoice = Amount.new("2500.00", :USD)
-gas_budget = Amount.sol("18.75")
+gas_budget = Amount.of_sol("18.75")
 ```
 
 Construction defaults are intentional:
@@ -83,7 +83,7 @@ That works because the right-hand side can be converted from `USD` into `USDC` u
 Without a rate:
 
 ```ruby
-Amount.usdc("10") + Amount.sol("1")
+Amount.of_usdc("10") + Amount.of_sol("1")
 # => raises Amount::TypeMismatch
 ```
 
@@ -99,14 +99,14 @@ Amount.parse("v1:USDC|1.50")
 Amounts serialize as compact strings in JSON:
 
 ```ruby
-{ amount: Amount.usdc("1.50") }.to_json
+{ amount: Amount.of_usdc("1.50") }.to_json
 # => '{"amount":"USDC|1.50"}'
 ```
 
 For structured persistence or wire payloads:
 
 ```ruby
-payload = Amount.usdc("1.50").to_h
+payload = Amount.of_usdc("1.50").to_h
 # => { v: 1, atomic: "1500000", symbol: "USDC" }
 
 Amount.load(payload)

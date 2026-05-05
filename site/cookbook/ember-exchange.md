@@ -69,9 +69,9 @@ In this fictional market:
 ## The same value in different displays
 
 ```ruby
-raid_reward = Amount.ember("480.00")
-merchant_cash = Amount.usd("24.65")
-vaulted_silver = Amount.silver("18.75")
+raid_reward = Amount.of_ember("480.00")
+merchant_cash = Amount.of_usd("24.65")
+vaulted_silver = Amount.of_silver("18.75")
 ```
 
 The game reward stays in fictional units:
@@ -149,9 +149,9 @@ Commodity math works the same way:
 Imagine a player cashes out some embers, then buys physical silver with part of the proceeds:
 
 ```ruby
-player_wallet = Amount.ember("960.00")
-cash_out = Amount.ember("320.00").to(:USD)
-silver_purchase = Amount.usd("50.00").to(:SILVER)
+player_wallet = Amount.of_ember("960.00")
+cash_out = Amount.of_ember("320.00").to(:USD)
+silver_purchase = Amount.of_usd("50.00").to(:SILVER)
 ```
 
 That gives:

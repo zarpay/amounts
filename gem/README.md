@@ -60,7 +60,7 @@ Amount.register :USD,
 
 Amount.register_default_rate :USD, :USDC, 1
 
-usdc = Amount.usdc("10.00")
+usdc = Amount.of_usdc("10.00")
 usd = Amount.new("5.00", :USD)
 
 (usdc + usd).ui
@@ -90,7 +90,7 @@ Construction rules:
 - `String` defaults to UI decimal values
 - `Float`, `BigDecimal`, and `Rational` are treated as decimal UI values
 - `from: :atomic`, `:ui`, or `:float` overrides inference
-- registering `:USDC` also defines `Amount.usdc(...)` when the symbol is a valid Ruby method name
+- registering `:USDC` also defines `Amount.of_usdc(...)` when the symbol is a valid Ruby method name
 
 ### Registry
 
@@ -173,7 +173,7 @@ remainder.atomic     # => -1
 ```ruby
 Amount.new(1_500_000, :USDC)
 Amount.new("1.50", :USDC)
-Amount.usdc("1.50")
+Amount.of_usdc("1.50")
 Amount.parse("USDC|1.50")
 Amount.load(atomic: 1_500_000, symbol: :USDC)
 ```

@@ -31,9 +31,9 @@ Amount.register_default_rate :USDC, :USD, "1"
 ## Daily uses
 
 ```ruby
-operating_cash = Amount.usdc("250000.00")
+operating_cash = Amount.of_usdc("250000.00")
 vendor_invoice = Amount.new("7500.00", :USD)
-validator_fees = Amount.sol("18.125")
+validator_fees = Amount.of_sol("18.125")
 
 (operating_cash - vendor_invoice).ui
 validator_fees.ui

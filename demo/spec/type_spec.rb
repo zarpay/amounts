@@ -45,7 +45,7 @@ RSpec.describe Amount::ActiveRecord::Type, :aggregate_failures do
       end
 
       it "passes Amount instances through unchanged" do
-        amount = Amount.usdc("1")
+        amount = Amount.of_usdc("1")
         expect(type.cast(amount)).to be(amount)
       end
 
@@ -94,7 +94,7 @@ RSpec.describe Amount::ActiveRecord::Type, :aggregate_failures do
 
     describe "#dump" do
       it "round-trips an Amount into a {atomic:, symbol:} payload" do
-        expect(type.dump(Amount.usdc("1.5"))).to eq(atomic: 1_500_000, symbol: :USDC)
+        expect(type.dump(Amount.of_usdc("1.5"))).to eq(atomic: 1_500_000, symbol: :USDC)
       end
 
       it "returns nil for nil" do
@@ -122,12 +122,12 @@ RSpec.describe Amount::ActiveRecord::Type, :aggregate_failures do
       end
 
       it "accepts a matching-symbol Amount" do
-        amount = Amount.sol("1")
+        amount = Amount.of_sol("1")
         expect(type.cast(amount)).to be(amount)
       end
 
       it "raises TypeMismatch for an Amount with the wrong symbol" do
-        expect { type.cast(Amount.usdc("1")) }.to raise_error(Amount::TypeMismatch, /expected SOL/)
+        expect { type.cast(Amount.of_usdc("1")) }.to raise_error(Amount::TypeMismatch, /expected SOL/)
       end
 
       it "still parses compact strings (must match the fixed symbol)" do
@@ -148,7 +148,7 @@ RSpec.describe Amount::ActiveRecord::Type, :aggregate_failures do
 
     describe "#dump" do
       it "writes the atomic and symbol pair" do
-        expect(type.dump(Amount.sol("0.5"))).to eq(atomic: 500_000_000, symbol: :SOL)
+        expect(type.dump(Amount.of_sol("0.5"))).to eq(atomic: 500_000_000, symbol: :SOL)
       end
     end
   end

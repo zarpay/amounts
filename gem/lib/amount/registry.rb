@@ -51,8 +51,9 @@ class Amount
     # Registers a new fungible type.
     #
     # When the symbol is a valid Ruby method name after downcasing, an
-    # ergonomic constructor is also generated on `Amount`, such as
-    # `Amount.usdc("1.50")`.
+    # ergonomic constructor is also generated on `Amount` with an `of_`
+    # prefix, such as `Amount.of_usdc("1.50")`. The prefix avoids collisions
+    # with existing methods like `Object#try` (added by ActiveSupport).
     #
     # @param symbol [Symbol, String] registered type identifier
     # @param decimals [Integer] number of storage decimals

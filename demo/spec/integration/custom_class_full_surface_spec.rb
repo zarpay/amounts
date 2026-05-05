@@ -62,7 +62,7 @@ RSpec.describe "Custom-class amount full surface", :integration do
     end
 
     it "the generated constructor still returns the subclass" do
-      expect(Amount.bul("1")).to be_a(BullionAmount)
+      expect(Amount.of_bul("1")).to be_a(BullionAmount)
     end
   end
 
@@ -133,9 +133,9 @@ RSpec.describe "Custom-class amount full surface", :integration do
     end
 
     it "cross-type <=> via registered rate" do
-      expect(Amount.new("1", :BUL) <=> Amount.usd("99")).to eq(1)
-      expect(Amount.new("1", :BUL) <=> Amount.usd("100")).to eq(0)
-      expect(Amount.new("1", :BUL) <=> Amount.usd("101")).to eq(-1)
+      expect(Amount.new("1", :BUL) <=> Amount.of_usd("99")).to eq(1)
+      expect(Amount.new("1", :BUL) <=> Amount.of_usd("100")).to eq(0)
+      expect(Amount.new("1", :BUL) <=> Amount.of_usd("101")).to eq(-1)
     end
   end
 
@@ -147,13 +147,13 @@ RSpec.describe "Custom-class amount full surface", :integration do
     end
 
     it "USD.to(:BUL) returns BullionAmount" do
-      converted = Amount.usd("100").to(:BUL)
+      converted = Amount.of_usd("100").to(:BUL)
       expect(converted).to be_a(BullionAmount)
       expect(converted).to eq_amount("BUL|1.0")
     end
 
     it "explicit rate in to() also returns the registered class" do
-      converted = Amount.usd("50").to(:BUL, rate: "0.02")
+      converted = Amount.of_usd("50").to(:BUL, rate: "0.02")
       expect(converted).to be_a(BullionAmount)
     end
 

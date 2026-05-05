@@ -41,7 +41,7 @@ class Amount
 
     # @return [Hash]
     # @example
-    #   Amount.usdc("1.50").to_h
+    #   Amount.of_usdc("1.50").to_h
     #   # => { v: 1, atomic: "1500000", symbol: "USDC" }
     def to_h
       {

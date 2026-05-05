@@ -6,7 +6,7 @@
 # ActiveRecord writer accepts:
 #
 #   - compact string                "USDC|10.00"
-#   - Amount instance               Amount.sol("0.5")
+#   - Amount instance               Amount.of_sol("0.5")
 #   - {atomic:, symbol:} hash       { atomic: 25_000_000, symbol: :USDC }
 #   - raw numeric                   0.10            (fixed-symbol attrs only)
 #   - nil                           clears both component columns
@@ -23,18 +23,18 @@ FactoryBot.define do
     # — it keeps the spec output readable while still exercising both code
     # paths on every build.
     balance { "USDC|10.00" }
-    fee     { Amount.sol("0.5") }
+    fee     { Amount.of_sol("0.5") }
 
     # Multi-symbol balance overridden to a USDC value above the "rich"
     # scope's threshold.
     trait :rich do
-      balance { Amount.usdc("5000.00") }
+      balance { Amount.of_usdc("5000.00") }
     end
 
     # Multi-symbol balance switched to SOL — proves the scopes filter by
     # symbol correctly.
     trait :sol_balance do
-      balance { Amount.sol("12.5") }
+      balance { Amount.of_sol("12.5") }
     end
 
     # Clears the multi-symbol balance entirely (both component columns
@@ -61,7 +61,7 @@ FactoryBot.define do
     memo       { "test transfer" }
 
     trait :sol do
-      gross { Amount.sol("1.0") }
+      gross { Amount.of_sol("1.0") }
     end
   end
 end

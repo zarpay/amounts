@@ -16,7 +16,7 @@ Amount.register :GOLD,
     kg:   { scale: "0.0311035", symbol: "kg", ui_decimals: 5 }
   }
 
-gold = Amount.gold("1.5")
+gold = Amount.of_gold("1.5")
 
 gold.ui
 # => "1.5000 oz t"
@@ -40,10 +40,10 @@ gold.in_unit(:gram) # raw BigDecimal in a display unit
 `ui` uses directional truncation:
 
 ```ruby
-Amount.usdc("1.567").ui
+Amount.of_usdc("1.567").ui
 # => "$1.56"
 
-Amount.usdc("1.561").ui(direction: :ceil)
+Amount.of_usdc("1.561").ui(direction: :ceil)
 # => "$1.57"
 ```
 
@@ -52,8 +52,8 @@ Amount.usdc("1.561").ui(direction: :ceil)
 Pass `decorated: false` to get the rounded number on its own — useful when the currency label is rendered separately (e.g. a column header, an input adornment, a chip):
 
 ```ruby
-Amount.usdc("1.50").ui                              # => "$1.50"
-Amount.usdc("1.50").ui(decorated: false)            # => "1.50"
+Amount.of_usdc("1.50").ui                              # => "$1.50"
+Amount.of_usdc("1.50").ui(decorated: false)            # => "1.50"
 
 gold.ui(unit: :gram)                                # => "46.65 g"
 gold.ui(unit: :gram, decorated: false)              # => "46.65"
@@ -68,9 +68,9 @@ By default, `ui` zero-pads to the configured `ui_decimals`. For tokens with high
 ### Per call
 
 ```ruby
-Amount.sol("2.5").ui(trim_zeros: true)   # => "2.5 SOL"
-Amount.sol("1.0").ui(trim_zeros: true)   # => "1 SOL"
-Amount.sol("1.0").ui(trim_zeros: false)  # => "1.0000 SOL"
+Amount.of_sol("2.5").ui(trim_zeros: true)   # => "2.5 SOL"
+Amount.of_sol("1.0").ui(trim_zeros: true)   # => "1 SOL"
+Amount.of_sol("1.0").ui(trim_zeros: false)  # => "1.0000 SOL"
 ```
 
 ### As a registry default
@@ -83,8 +83,8 @@ Amount.register :SOL,
   ui_decimals: 4,
   trim_zeros: true
 
-Amount.sol("2.5").ui   # => "2.5 SOL"
-Amount.sol("1.0").ui   # => "1 SOL"
+Amount.of_sol("2.5").ui   # => "2.5 SOL"
+Amount.of_sol("1.0").ui   # => "1 SOL"
 ```
 
 Fiat currencies typically leave `trim_zeros` as `false` (the default) so that `$1.50` stays `$1.50`.

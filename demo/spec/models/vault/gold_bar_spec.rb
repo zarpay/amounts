@@ -41,7 +41,7 @@ RSpec.describe Vault::GoldBar, type: :model do
   end
 
   describe "custom GoldAmount subclass round-trip (fixed in amounts 0.0.2)" do
-    let!(:persisted) { create(:vault_gold_bar, weight: Amount.gold("3.5")) }
+    let!(:persisted) { create(:vault_gold_bar, weight: Amount.of_gold("3.5")) }
 
     it "reads back as a GoldAmount instance, not a plain Amount" do
       reloaded = described_class.find(persisted.id)
@@ -55,7 +55,7 @@ RSpec.describe Vault::GoldBar, type: :model do
 
     it "preserves subclass identity through arithmetic on the persisted weight" do
       reloaded = described_class.find(persisted.id)
-      expect((reloaded.weight + Amount.gold("0.5")).class).to eq(GoldAmount)
+      expect((reloaded.weight + Amount.of_gold("0.5")).class).to eq(GoldAmount)
     end
   end
 
@@ -64,7 +64,7 @@ RSpec.describe Vault::GoldBar, type: :model do
     it { is_expected.to validate_uniqueness_of(:serial) }
 
     it "rejects zero weight" do
-      bar.weight = Amount.gold(0, from: :atomic)
+      bar.weight = Amount.of_gold(0, from: :atomic)
       expect(bar).not_to be_valid
       expect(bar.errors[:weight].join).to match(/greater than/)
     end
@@ -86,7 +86,7 @@ RSpec.describe Vault::GoldBar, type: :model do
     end
 
     it "supports :ceil rounding direction" do
-      bar.weight = Amount.gold("1.00001")
+      bar.weight = Amount.of_gold("1.00001")
       expect(bar.weight_label(direction: :ceil)).to eq("1.0001 oz t")
     end
 
@@ -100,7 +100,7 @@ RSpec.describe Vault::GoldBar, type: :model do
   end
 
   describe "split / allocate" do
-    let(:bar) { build(:vault_gold_bar, weight: Amount.gold("3")) }
+    let(:bar) { build(:vault_gold_bar, weight: Amount.of_gold("3")) }
 
     it "splits into N equal parts with remainder" do
       parts, rem = bar.split_into(2)
@@ -115,7 +115,7 @@ RSpec.describe Vault::GoldBar, type: :model do
 
   describe "appraisal cross-symbol attribute" do
     it "stores appraisal in any registered currency" do
-      bar.appraisal = Amount.usd("2000")
+      bar.appraisal = Amount.of_usd("2000")
       bar.save!
       bar.reload
       expect(bar.appraisal).to eq_amount("USD|2000.0")
@@ -124,9 +124,9 @@ RSpec.describe Vault::GoldBar, type: :model do
 
   describe "match_amounts grouping by appraisal_symbol" do
     before do
-      create(:vault_gold_bar, weight: Amount.gold("1"), appraisal: "USDC|2000")
-      create(:vault_gold_bar, weight: Amount.gold("1"), appraisal: "USDC|2500")
-      create(:vault_gold_bar, weight: Amount.gold("1"), appraisal: Amount.usd("2100"))
+      create(:vault_gold_bar, weight: Amount.of_gold("1"), appraisal: "USDC|2000")
+      create(:vault_gold_bar, weight: Amount.of_gold("1"), appraisal: "USDC|2500")
+      create(:vault_gold_bar, weight: Amount.of_gold("1"), appraisal: Amount.of_usd("2100"))
     end
 
     it "aggregates appraisal by symbol" do

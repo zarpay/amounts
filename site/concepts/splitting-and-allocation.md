@@ -7,7 +7,7 @@ Division, splitting, and allocation are three different operations.
 Scalar division gives you one scaled amount:
 
 ```ruby
-Amount.usdc("10.00") / 2
+Amount.of_usdc("10.00") / 2
 # => #<Amount USDC $5.00>
 ```
 

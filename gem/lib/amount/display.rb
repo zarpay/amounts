@@ -27,11 +27,11 @@ class Amount
     #   `false` overrides both.
     # @return [String]
     # @example
-    #   Amount.usdc("1.50").ui                       # => "$1.50"
-    #   Amount.usdc("1.50").ui(decorated: false)     # => "1.50"
-    #   Amount.gold("1").ui(unit: :gram)             # => "31.10 g"
-    #   Amount.gold("1").ui(unit: :gram, decorated: false)  # => "31.10"
-    #   Amount.sol("2.5").ui(trim_zeros: true)       # => "2.5 SOL"
+    #   Amount.of_usdc("1.50").ui                       # => "$1.50"
+    #   Amount.of_usdc("1.50").ui(decorated: false)     # => "1.50"
+    #   Amount.of_gold("1").ui(unit: :gram)             # => "31.10 g"
+    #   Amount.of_gold("1").ui(unit: :gram, decorated: false)  # => "31.10"
+    #   Amount.of_sol("2.5").ui(trim_zeros: true)       # => "2.5 SOL"
     def ui(unit: nil, direction: :floor, decorated: true, trim_zeros: nil)
       if unit
         render_display_unit(unit, direction, decorated:, trim_zeros:)

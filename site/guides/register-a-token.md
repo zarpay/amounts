@@ -36,8 +36,8 @@ Amount.register :SOL,
 ## Use the generated constructors
 
 ```ruby
-Amount.usdc("1250.00")
-Amount.sol("0.125")
+Amount.of_usdc("1250.00")
+Amount.of_sol("0.125")
 ```
 
 ## Add rates only when you mean it

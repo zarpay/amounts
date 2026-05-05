@@ -12,11 +12,11 @@ class Amount
     # @return [Amount]
     # @raise [Amount::Registry::NoDefaultRate] if no explicit or registered rate is available
     # @example Using an explicit one-off rate
-    #   Amount.usdc("100").to(:GOLD, rate: "0.00042")
+    #   Amount.of_usdc("100").to(:GOLD, rate: "0.00042")
     #
     # @example Using a registered default rate
     #   Amount.register_default_rate :USDC, :USD, "1"
-    #   Amount.usdc("1.50").to(:USD)
+    #   Amount.of_usdc("1.50").to(:USD)
     def to(target_symbol, rate: nil)
       target_symbol = target_symbol.to_sym
       return self.class.new(@atomic, symbol, from: :atomic) if target_symbol == symbol

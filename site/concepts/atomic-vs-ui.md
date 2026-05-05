@@ -17,7 +17,7 @@ UI values are just a human-facing decimal view on top of that atomic integer.
 ```ruby
 Amount.register :USDC, decimals: 6
 
-balance = Amount.usdc("1.50")
+balance = Amount.of_usdc("1.50")
 
 balance.atomic
 # => 1500000
@@ -44,11 +44,11 @@ The gem solves that by making the atomic value the single source of truth.
 ## Input inference
 
 ```ruby
-Amount.usdc(1_500_000)                # atomic
-Amount.usdc("1.50")                   # UI
-Amount.usdc(1.5)                      # UI
-Amount.usdc(BigDecimal("1.5"))        # UI
-Amount.usdc(1_500_000, from: :atomic) # explicit atomic
+Amount.of_usdc(1_500_000)                # atomic
+Amount.of_usdc("1.50")                   # UI
+Amount.of_usdc(1.5)                      # UI
+Amount.of_usdc(BigDecimal("1.5"))        # UI
+Amount.of_usdc(1_500_000, from: :atomic) # explicit atomic
 ```
 
 ## Client/server boundary

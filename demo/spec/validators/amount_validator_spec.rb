@@ -46,11 +46,11 @@ RSpec.describe Amount::ActiveRecord::AmountValidator, type: :model do
     let(:klass) { define_holding_with(validation: { symbol: :USDC }) }
 
     it "accepts a value with the matching symbol" do
-      expect(klass.new(owner: "x", balance: Amount.usdc("1"))).to be_valid
+      expect(klass.new(owner: "x", balance: Amount.of_usdc("1"))).to be_valid
     end
 
     it "rejects a value with a different symbol" do
-      record = klass.new(owner: "x", balance: Amount.sol("1"))
+      record = klass.new(owner: "x", balance: Amount.of_sol("1"))
       expect(record).not_to be_valid
       expect(record.errors[:balance].join).to match(/must have symbol USDC/)
     end
@@ -67,27 +67,27 @@ RSpec.describe Amount::ActiveRecord::AmountValidator, type: :model do
     end
 
     it "passes a value satisfying every comparator" do
-      expect(klass.new(owner: "x", balance: Amount.usdc("50"))).to be_valid
+      expect(klass.new(owner: "x", balance: Amount.of_usdc("50"))).to be_valid
     end
 
     it "fails a value below greater_than_or_equal_to" do
-      record = klass.new(owner: "x", balance: Amount.usdc("0.5"))
+      record = klass.new(owner: "x", balance: Amount.of_usdc("0.5"))
       expect(record).not_to be_valid
       expect(record.errors[:balance].join).to match(/greater than or equal to/)
     end
 
     it "fails a value at less_than (boundary, exclusive)" do
-      record = klass.new(owner: "x", balance: Amount.usdc("100"))
+      record = klass.new(owner: "x", balance: Amount.of_usdc("100"))
       expect(record).not_to be_valid
       expect(record.errors[:balance].join).to match(/less than/)
     end
 
     it "fails a value above less_than_or_equal_to" do
-      expect(klass.new(owner: "x", balance: Amount.usdc("99.01"))).not_to be_valid
+      expect(klass.new(owner: "x", balance: Amount.of_usdc("99.01"))).not_to be_valid
     end
 
     it "passes the upper boundary of less_than_or_equal_to" do
-      expect(klass.new(owner: "x", balance: Amount.usdc("99"))).to be_valid
+      expect(klass.new(owner: "x", balance: Amount.of_usdc("99"))).to be_valid
     end
   end
 
@@ -95,13 +95,13 @@ RSpec.describe Amount::ActiveRecord::AmountValidator, type: :model do
     let(:klass) { define_holding_with(validation: { greater_than: 1 }) }
 
     it "treats `greater_than: 1` as 1 USDC against a USDC value" do
-      expect(klass.new(owner: "x", balance: Amount.usdc("0.5"))).not_to be_valid
-      expect(klass.new(owner: "x", balance: Amount.usdc("2"))).to be_valid
+      expect(klass.new(owner: "x", balance: Amount.of_usdc("0.5"))).not_to be_valid
+      expect(klass.new(owner: "x", balance: Amount.of_usdc("2"))).to be_valid
     end
 
     it "treats the SAME `greater_than: 1` as 1 SOL against a SOL value" do
-      expect(klass.new(owner: "x", balance: Amount.sol("0.5"))).not_to be_valid
-      expect(klass.new(owner: "x", balance: Amount.sol("2"))).to be_valid
+      expect(klass.new(owner: "x", balance: Amount.of_sol("0.5"))).not_to be_valid
+      expect(klass.new(owner: "x", balance: Amount.of_sol("2"))).to be_valid
     end
   end
 
@@ -109,7 +109,7 @@ RSpec.describe Amount::ActiveRecord::AmountValidator, type: :model do
     let(:klass) { define_holding_with(validation: { greater_than: "EMBER|1" }) }
 
     it "surfaces 'cannot compare X to Y for op' instead of crashing" do
-      record = klass.new(owner: "x", balance: Amount.usdc("100"))
+      record = klass.new(owner: "x", balance: Amount.of_usdc("100"))
       expect(record).not_to be_valid
       expect(record.errors[:balance].join).to match(/cannot compare USDC to EMBER for greater_than/)
     end
@@ -119,8 +119,8 @@ RSpec.describe Amount::ActiveRecord::AmountValidator, type: :model do
     let(:klass) { define_holding_with(validation: { greater_than: "USD|1.00" }) }
 
     it "compares via the directional rate (USDC value satisfies USD threshold)" do
-      expect(klass.new(owner: "x", balance: Amount.usdc("2.00"))).to be_valid
-      expect(klass.new(owner: "x", balance: Amount.usdc("0.50"))).not_to be_valid
+      expect(klass.new(owner: "x", balance: Amount.of_usdc("2.00"))).to be_valid
+      expect(klass.new(owner: "x", balance: Amount.of_usdc("0.50"))).not_to be_valid
     end
   end
 
@@ -132,7 +132,7 @@ RSpec.describe Amount::ActiveRecord::AmountValidator, type: :model do
     end
 
     it "still fires when the attribute is present" do
-      expect(klass.new(owner: "x", balance: Amount.usdc("0"))).not_to be_valid
+      expect(klass.new(owner: "x", balance: Amount.of_usdc("0"))).not_to be_valid
     end
   end
 
@@ -149,9 +149,9 @@ RSpec.describe Amount::ActiveRecord::AmountValidator, type: :model do
     end
 
     it "compares numeric thresholds in UI units against the value" do
-      expect(klass.new(owner: "x", fee: Amount.sol("3"))).to be_valid
-      expect(klass.new(owner: "x", fee: Amount.sol("0"))).not_to be_valid
-      expect(klass.new(owner: "x", fee: Amount.sol("5.5"))).not_to be_valid
+      expect(klass.new(owner: "x", fee: Amount.of_sol("3"))).to be_valid
+      expect(klass.new(owner: "x", fee: Amount.of_sol("0"))).not_to be_valid
+      expect(klass.new(owner: "x", fee: Amount.of_sol("5.5"))).not_to be_valid
     end
 
     it "skips when fee is nil thanks to allow_nil" do

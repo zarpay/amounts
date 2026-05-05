@@ -9,7 +9,7 @@ Amount.register_default_rate :USD, :USDC, "1"
 
 Amount.register_default_rate :USDC, :USD, "1"
 
-payroll_buffer = Amount.usdc("100000.00")
+payroll_buffer = Amount.of_usdc("100000.00")
 invoice = Amount.new("2500.00", :USD)
 
 (payroll_buffer - invoice).ui
@@ -23,7 +23,7 @@ invoice = Amount.new("2500.00", :USD)
 ## Failing intentionally
 
 ```ruby
-Amount.usdc("10.00") + Amount.sol("1.00")
+Amount.of_usdc("10.00") + Amount.of_sol("1.00")
 # => raises Amount::TypeMismatch
 ```
 
@@ -32,8 +32,8 @@ This is a feature, not a missing convenience.
 ## Use explicit conversion when the rate is one-off
 
 ```ruby
-gold = Amount.gold("1.0")
-quoted = Amount.usdc("1000.00").to(:GOLD, rate: "0.00042")
+gold = Amount.of_gold("1.0")
+quoted = Amount.of_usdc("1000.00").to(:GOLD, rate: "0.00042")
 
 gold + quoted
 ```

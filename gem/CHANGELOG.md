@@ -1,5 +1,33 @@
 # Changelog
 
+## 0.0.8 - 2026-05-05
+
+### Changed
+
+- **Breaking:** Generated constructors now have an `of_` prefix:
+  `Amount.usdc("1.50")` becomes `Amount.of_usdc("1.50")`, `Amount.gold("1.0")`
+  becomes `Amount.of_gold("1.0")`, and so on. Every generated constructor on
+  `Amount` is renamed; only the registered symbol stays the same, so
+  `Amount.new("1.50", :USDC)` still works.
+- The original naming was a latent footgun: any short ISO/symbol code that
+  happened to match a method already defined on `Object` (`try`, `then`,
+  `tap`, `send`, `display`, `format`, ...) would raise
+  `Amount::Registry::AlreadyRegistered` at boot. The first reported
+  manifestation was `:TRY` (Turkish Lira) under Rails, where ActiveSupport's
+  `Object#try` made the gem unusable for any application that needed to
+  denominate amounts in Turkish Lira.
+- The collision check in `GeneratedConstructors#raise_collision!` is kept as
+  a defensive backstop, but with the `of_` prefix it should never fire in
+  practice.
+
+### Migration
+
+Search-and-replace `Amount.<symbol>(` with `Amount.of_<symbol>(` across your
+codebase. Any place that builds an `Amount` from a registered symbol uses one
+of the generated constructors; everywhere else (`Amount.new`,
+`Amount.parse`, `Amount.register`, `Amount.registry`, `Amount.with_registry`)
+is unchanged.
+
 ## 0.0.7 - 2026-05-03
 
 ### Fixed
@@ -38,7 +66,7 @@
   numeric string without the `display_symbol` prefix or suffix. Useful when
   the caller renders the currency label separately (e.g. in a column header
   or chip). Composes with `unit:` and `direction:` — for example,
-  `Amount.gold("1").ui(unit: :gram, decorated: false)` returns `"31.10"`.
+  `Amount.of_gold("1").ui(unit: :gram, decorated: false)` returns `"31.10"`.
   Default remains `decorated: true`, so existing callers see no change.
 
 ## 0.0.4 - 2026-04-26

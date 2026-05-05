@@ -39,7 +39,7 @@ require "rails_helper"
 #                         through arithmetic / split / matchers
 
 RSpec.describe Amount, :aggregate_failures do
-  subject(:amount) { Amount.usdc("1.50") }
+  subject(:amount) { Amount.of_usdc("1.50") }
 
   describe "construction" do
     it "treats Integer input as atomic units" do
@@ -83,25 +83,25 @@ RSpec.describe Amount, :aggregate_failures do
   end
 
   describe "predicates" do
-    specify { expect(Amount.usdc(0, from: :atomic)).to be_zero_amount }
-    specify { expect(Amount.usdc("1")).to be_positive_amount }
-    specify { expect(Amount.usdc("-1")).to be_negative_amount }
+    specify { expect(Amount.of_usdc(0, from: :atomic)).to be_zero_amount }
+    specify { expect(Amount.of_usdc("1")).to be_positive_amount }
+    specify { expect(Amount.of_usdc("-1")).to be_negative_amount }
 
     it "checks same_type?" do
-      expect(Amount.usdc("1").same_type?(Amount.usdc("2"))).to be(true)
-      expect(Amount.usdc("1").same_type?(Amount.sol("1"))).to be(false)
-      expect(Amount.usdc("1").same_type?("not an amount")).to be(false)
+      expect(Amount.of_usdc("1").same_type?(Amount.of_usdc("2"))).to be(true)
+      expect(Amount.of_usdc("1").same_type?(Amount.of_sol("1"))).to be(false)
+      expect(Amount.of_usdc("1").same_type?("not an amount")).to be(false)
     end
   end
 
   describe "unary / abs / negation" do
-    it { expect(-Amount.usdc("1")).to eq_amount("USDC|-1.0") }
-    it { expect(Amount.usdc("-2.5").abs).to eq_amount("USDC|2.5") }
+    it { expect(-Amount.of_usdc("1")).to eq_amount("USDC|-1.0") }
+    it { expect(Amount.of_usdc("-2.5").abs).to eq_amount("USDC|2.5") }
   end
 
   describe "arithmetic" do
-    let(:a) { Amount.usdc("1.50") }
-    let(:b) { Amount.usdc("0.50") }
+    let(:a) { Amount.of_usdc("1.50") }
+    let(:b) { Amount.of_usdc("0.50") }
 
     it { expect(a + b).to eq_amount("USDC|2.0") }
     it { expect(a - b).to eq_amount("USDC|1.0") }
@@ -118,64 +118,64 @@ RSpec.describe Amount, :aggregate_failures do
     end
 
     it "raises ZeroDivisionError for divide by zero amount" do
-      expect { a / Amount.usdc(0, from: :atomic) }.to raise_error(ZeroDivisionError)
+      expect { a / Amount.of_usdc(0, from: :atomic) }.to raise_error(ZeroDivisionError)
     end
 
     it "preserves negative scalar multiplication" do
-      expect(Amount.usdc("-1") * -2).to eq_amount("USDC|2.0")
+      expect(Amount.of_usdc("-1") * -2).to eq_amount("USDC|2.0")
     end
 
     it "accepts a BigDecimal scalar" do
-      expect(Amount.usdc("2") * BigDecimal("1.5")).to eq_amount("USDC|3.0")
+      expect(Amount.of_usdc("2") * BigDecimal("1.5")).to eq_amount("USDC|3.0")
     end
 
     it "accepts a Rational scalar (fixed in 0.0.3)" do
-      expect(Amount.usdc("2") * Rational(3, 2)).to eq_amount("USDC|3.0")
+      expect(Amount.of_usdc("2") * Rational(3, 2)).to eq_amount("USDC|3.0")
     end
 
     it "accepts a Rational divisor (fixed in 0.0.3)" do
-      expect(Amount.usdc("3") / Rational(3, 2)).to eq_amount("USDC|2.0")
+      expect(Amount.of_usdc("3") / Rational(3, 2)).to eq_amount("USDC|2.0")
     end
 
     it "rejects non-numeric scalar" do
-      expect { Amount.usdc("1") * "two" }.to raise_error(Amount::TypeMismatch)
+      expect { Amount.of_usdc("1") * "two" }.to raise_error(Amount::TypeMismatch)
     end
 
     context "cross-type via default rate" do
       it "coerces RHS into LHS during +" do
-        sum = Amount.usdc("1") + Amount.usd("2")
+        sum = Amount.of_usdc("1") + Amount.of_usd("2")
         expect(sum).to be_amount_of(:USDC)
         expect(sum.decimal).to eq(BigDecimal("3"))
       end
 
       it "raises TypeMismatch when no rate exists" do
-        expect { Amount.ember("1") + Amount.usdc("1") }.to raise_error(Amount::TypeMismatch)
+        expect { Amount.of_ember("1") + Amount.of_usdc("1") }.to raise_error(Amount::TypeMismatch)
       end
     end
   end
 
   describe "comparison" do
     it "implements Comparable" do
-      sorted = [Amount.usdc("3"), Amount.usdc("1"), Amount.usdc("2")].sort
+      sorted = [Amount.of_usdc("3"), Amount.of_usdc("1"), Amount.of_usdc("2")].sort
       expect(sorted.map(&:decimal)).to eq([BigDecimal("1"), BigDecimal("2"), BigDecimal("3")])
     end
 
     it "returns nil for cross-type comparison without a rate" do
-      expect(Amount.ember("1") <=> Amount.usdc("1")).to be_nil
+      expect(Amount.of_ember("1") <=> Amount.of_usdc("1")).to be_nil
     end
 
     it "compares cross-type when a rate exists" do
-      expect(Amount.usd("1.00") <=> Amount.usdc("0.99")).to eq(1)
+      expect(Amount.of_usd("1.00") <=> Amount.of_usdc("0.99")).to eq(1)
     end
 
     it "treats == as strict same-symbol same-atomic" do
-      expect(Amount.usdc("1") == Amount.usdc("1")).to be(true)
-      expect(Amount.usdc("1") == Amount.usd("1")).to be(false)
+      expect(Amount.of_usdc("1") == Amount.of_usdc("1")).to be(true)
+      expect(Amount.of_usdc("1") == Amount.of_usd("1")).to be(false)
     end
 
     it "uses [class, symbol, atomic] for hash" do
-      a = Amount.usdc("1")
-      b = Amount.usdc("1")
+      a = Amount.of_usdc("1")
+      b = Amount.of_usdc("1")
       expect(a.hash).to eq(b.hash)
       expect({ a => "x" }[b]).to eq("x")
     end
@@ -183,57 +183,57 @@ RSpec.describe Amount, :aggregate_failures do
 
   describe "conversion .to" do
     it "is identity for the same symbol" do
-      expect(Amount.usdc("1.50").to(:USDC)).to eq_amount("USDC|1.5")
+      expect(Amount.of_usdc("1.50").to(:USDC)).to eq_amount("USDC|1.5")
     end
 
     it "uses the registered default rate" do
-      result = Amount.usd("1").to(:USDC)
+      result = Amount.of_usd("1").to(:USDC)
       expect(result).to be_amount_of(:USDC)
       expect(result.decimal).to eq(BigDecimal("1"))
     end
 
     it "accepts an explicit one-off rate" do
-      result = Amount.gold("1").to(:USDC, rate: "2000")
+      result = Amount.of_gold("1").to(:USDC, rate: "2000")
       expect(result.decimal).to eq(BigDecimal("2000"))
     end
 
     it "raises NoDefaultRate without a registered or explicit rate" do
-      expect { Amount.ember("1").to(:USDC) }.to raise_error(Amount::Registry::NoDefaultRate)
+      expect { Amount.of_ember("1").to(:USDC) }.to raise_error(Amount::Registry::NoDefaultRate)
     end
   end
 
   describe "split / allocate" do
     it "splits evenly with remainder" do
-      parts, remainder = Amount.logs(10).split(3)
+      parts, remainder = Amount.of_logs(10).split(3)
       expect(parts.map(&:atomic)).to eq([3, 3, 3])
       expect(remainder.atomic).to eq(1)
     end
 
     it "allocates by weights" do
-      parts, remainder = Amount.logs(10).allocate([1, 1, 2])
+      parts, remainder = Amount.of_logs(10).allocate([1, 1, 2])
       expect(parts.map(&:atomic)).to eq([2, 2, 5])
       expect(remainder.atomic).to eq(1)
     end
 
     it "preserves the invariant parts.sum + remainder == original" do
-      original = Amount.logs(123)
+      original = Amount.of_logs(123)
       parts, remainder = original.split(7)
       expect(parts.sum(&:atomic) + remainder.atomic).to eq(original.atomic)
     end
 
     it "raises ArgumentError for non-positive split count" do
-      expect { Amount.logs(10).split(0) }.to raise_error(ArgumentError)
-      expect { Amount.logs(10).split(-1) }.to raise_error(ArgumentError)
+      expect { Amount.of_logs(10).split(0) }.to raise_error(ArgumentError)
+      expect { Amount.of_logs(10).split(-1) }.to raise_error(ArgumentError)
     end
 
     it "raises ArgumentError for empty / all-zero / negative weights" do
-      expect { Amount.logs(10).allocate([]) }.to raise_error(ArgumentError)
-      expect { Amount.logs(10).allocate([0, 0]) }.to raise_error(ArgumentError)
-      expect { Amount.logs(10).allocate([1, -1]) }.to raise_error(ArgumentError)
+      expect { Amount.of_logs(10).allocate([]) }.to raise_error(ArgumentError)
+      expect { Amount.of_logs(10).allocate([0, 0]) }.to raise_error(ArgumentError)
+      expect { Amount.of_logs(10).allocate([1, -1]) }.to raise_error(ArgumentError)
     end
 
     it "rounds toward zero for negative amounts" do
-      parts, remainder = Amount.logs(-10).split(3)
+      parts, remainder = Amount.of_logs(-10).split(3)
       expect(parts.map(&:atomic)).to all(be <= 0)
       expect(parts.sum(&:atomic) + remainder.atomic).to eq(-10)
     end
@@ -241,25 +241,25 @@ RSpec.describe Amount, :aggregate_failures do
 
   describe "display / formatting" do
     it "renders default ui with prefix symbol when configured" do
-      expect(Amount.usdc("1.50").ui).to eq("$1.50")
+      expect(Amount.of_usdc("1.50").ui).to eq("$1.50")
     end
 
     it "renders default ui with suffix symbol when configured" do
-      expect(Amount.sol("1.5").ui).to eq("1.5 SOL")
+      expect(Amount.of_sol("1.5").ui).to eq("1.5 SOL")
     end
 
     it "supports :floor (default) and :ceil rounding" do
-      expect(Amount.usdc("1.567").ui).to eq("$1.56")
-      expect(Amount.usdc("1.561").ui(direction: :ceil)).to eq("$1.57")
+      expect(Amount.of_usdc("1.567").ui).to eq("$1.56")
+      expect(Amount.of_usdc("1.561").ui(direction: :ceil)).to eq("$1.57")
     end
 
     it "renders display units" do
-      expect(Amount.gold("1.0").ui(unit: :gram)).to eq("31.10 g")
-      expect(Amount.gold("1.0").ui(unit: :kg)).to eq("0.03110 kg")
+      expect(Amount.of_gold("1.0").ui(unit: :gram)).to eq("31.10 g")
+      expect(Amount.of_gold("1.0").ui(unit: :kg)).to eq("0.03110 kg")
     end
 
     it "raises InvalidDisplayUnit for unknown unit" do
-      expect { Amount.gold("1.0").ui(unit: :ounce) }.to raise_error(Amount::Registry::InvalidDisplayUnit)
+      expect { Amount.of_gold("1.0").ui(unit: :ounce) }.to raise_error(Amount::Registry::InvalidDisplayUnit)
     end
 
     it "respects per-unit position: override (units can flip prefix vs entry default suffix)" do
@@ -285,26 +285,26 @@ RSpec.describe Amount, :aggregate_failures do
     end
 
     it "returns raw scaled BigDecimal via in_unit" do
-      expect(Amount.gold("1.0").in_unit(:gram)).to eq(BigDecimal("31.1035"))
+      expect(Amount.of_gold("1.0").in_unit(:gram)).to eq(BigDecimal("31.1035"))
     end
 
     it "renders formatted (raw, no symbol)" do
-      expect(Amount.usdc("1.5").formatted).to eq("1.500000")
+      expect(Amount.of_usdc("1.5").formatted).to eq("1.500000")
     end
 
     it "renders compact to_s" do
-      expect(Amount.usdc("1.5").to_s).to eq("USDC|1.50")
+      expect(Amount.of_usdc("1.5").to_s).to eq("USDC|1.50")
     end
   end
 
   describe "serialization" do
     it "to_h emits versioned hash with atomic-as-string" do
-      h = Amount.usdc("1.50").to_h
+      h = Amount.of_usdc("1.50").to_h
       expect(h).to eq(v: 1, atomic: "1500000", symbol: "USDC")
     end
 
     it "round-trips via to_h / load" do
-      original = Amount.usdc("1.50")
+      original = Amount.of_usdc("1.50")
       restored = Amount.load(original.to_h)
       expect(restored).to eq_amount(original)
     end
@@ -337,11 +337,11 @@ RSpec.describe Amount, :aggregate_failures do
     end
 
     it "as_json returns compact string" do
-      expect(Amount.usdc("1.50").as_json).to eq("USDC|1.50")
+      expect(Amount.of_usdc("1.50").as_json).to eq("USDC|1.50")
     end
 
     it "serializes correctly when nested in a hash" do
-      hash = { amount: Amount.usdc("1.50") }
+      hash = { amount: Amount.of_usdc("1.50") }
       expect(JSON.parse(hash.to_json)).to eq("amount" => "USDC|1.50")
     end
   end
@@ -364,15 +364,15 @@ RSpec.describe Amount, :aggregate_failures do
     end
 
     it "constructs the subclass via the generated constructor" do
-      expect(Amount.pure("1").class).to eq(PurityAmount)
+      expect(Amount.of_pure("1").class).to eq(PurityAmount)
     end
 
     it "preserves subclass identity through arithmetic" do
-      expect((Amount.pure("1") + Amount.pure("1")).class).to eq(PurityAmount)
+      expect((Amount.of_pure("1") + Amount.of_pure("1")).class).to eq(PurityAmount)
     end
 
     it "preserves subclass identity through split" do
-      parts, _ = Amount.pure("3").split(2)
+      parts, _ = Amount.of_pure("3").split(2)
       expect(parts.map(&:class)).to all(eq(PurityAmount))
     end
 
@@ -387,7 +387,7 @@ RSpec.describe Amount, :aggregate_failures do
 
     it "exposes subclass methods" do
       expected = PurityAmount.new("2", :PURE)
-      expect(Amount.pure("1").boost).to eq(expected)
+      expect(Amount.of_pure("1").boost).to eq(expected)
     end
   end
 end

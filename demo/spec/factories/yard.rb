@@ -21,7 +21,7 @@ FactoryBot.define do
 
     # Demonstrates the Amount-instance input form on a fixed-symbol attr.
     trait :amount_input do
-      total { Amount.logs(50) }
+      total { Amount.of_logs(50) }
     end
   end
 end

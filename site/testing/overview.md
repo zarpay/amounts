@@ -7,7 +7,7 @@
 You can already write:
 
 ```ruby
-assert_equal Amount.usdc("1.50"), holding.amount
+assert_equal Amount.of_usdc("1.50"), holding.amount
 ```
 
 ## RSpec

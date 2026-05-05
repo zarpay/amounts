@@ -137,8 +137,16 @@ RSpec.describe "Torture / edge-case probing", :aggregate_failures do
       expect(restored).to eq(original)
     end
 
-    it "rejects registering a symbol that collides with an existing Amount class method" do
-      expect { Amount.register :registry, decimals: 2 }.to raise_error(Amount::Registry::AlreadyRegistered)
+    it "rejects registering a symbol whose generated constructor would collide" do
+      # The `of_` prefix makes natural collisions vanishingly rare (that's
+      # the whole point), so we have to manufacture one to exercise the
+      # defensive backstop in GeneratedConstructors#raise_collision!.
+      Amount.singleton_class.send(:define_method, :of_collide) { :existing }
+      expect { Amount.register :COLLIDE, decimals: 2 }.to raise_error(Amount::Registry::AlreadyRegistered)
+    ensure
+      if Amount.singleton_class.method_defined?(:of_collide)
+        Amount.singleton_class.send(:remove_method, :of_collide)
+      end
     end
 
     it "tolerates a Ruby keyword-named symbol (:end, :while)" do
@@ -316,38 +324,38 @@ RSpec.describe "Torture / edge-case probing", :aggregate_failures do
 
   describe "Comparable + Enumerable interactions" do
     it "Enumerable#sum needs an explicit zero amount (Ruby's default 0 is an Integer)" do
-      amounts = [Amount.usdc("1"), Amount.usdc("2"), Amount.usdc("3")]
-      total = amounts.sum(Amount.usdc(0, from: :atomic))
+      amounts = [Amount.of_usdc("1"), Amount.of_usdc("2"), Amount.of_usdc("3")]
+      total = amounts.sum(Amount.of_usdc(0, from: :atomic))
       expect(total).to eq_amount("USDC|6.0")
     end
 
     it "Enumerable#sum without explicit zero raises (Integer + Amount has no rate)" do
-      amounts = [Amount.usdc("1"), Amount.usdc("2")]
+      amounts = [Amount.of_usdc("1"), Amount.of_usdc("2")]
       expect { amounts.sum }.to raise_error(StandardError)
     end
 
     it "Array#min / Array#max work for same-symbol amounts" do
-      amounts = [Amount.usdc("1"), Amount.usdc("3"), Amount.usdc("2")]
+      amounts = [Amount.of_usdc("1"), Amount.of_usdc("3"), Amount.of_usdc("2")]
       expect(amounts.min).to eq_amount("USDC|1.0")
       expect(amounts.max).to eq_amount("USDC|3.0")
     end
 
     it "Array#sort raises on heterogeneous symbols without a rate" do
       Amount.register :NORATE, decimals: 2 unless Amount.registry.registered?(:NORATE)
-      amounts = [Amount.usdc("1"), Amount.new("1", :NORATE)]
+      amounts = [Amount.of_usdc("1"), Amount.new("1", :NORATE)]
       expect { amounts.sort }.to raise_error(ArgumentError)
     end
   end
 
   describe "frozen / immutability" do
     it "lets a frozen Amount participate in arithmetic (no internal mutation)" do
-      a = Amount.usdc("1").freeze
-      b = Amount.usdc("2").freeze
+      a = Amount.of_usdc("1").freeze
+      b = Amount.of_usdc("2").freeze
       expect((a + b)).to eq_amount("USDC|3.0")
     end
 
     it "computes display on a frozen Amount without raising (fixed in 0.0.4)" do
-      a = Amount.usdc("1.50").freeze
+      a = Amount.of_usdc("1.50").freeze
       expect(a.ui).to eq("$1.50")
       expect(a.formatted).to eq("1.500000")
       expect(a.to_s).to eq("USDC|1.50")
@@ -356,15 +364,15 @@ RSpec.describe "Torture / edge-case probing", :aggregate_failures do
 
   describe "Amount equality with non-Amount objects" do
     it "returns false against nil" do
-      expect(Amount.usdc("1") == nil).to be(false)
+      expect(Amount.of_usdc("1") == nil).to be(false)
     end
 
     it "returns false against a String even if it 'looks like' the value" do
-      expect(Amount.usdc("1") == "USDC|1.0").to be(false)
+      expect(Amount.of_usdc("1") == "USDC|1.0").to be(false)
     end
 
     it "returns false against an Integer matching the atomic" do
-      expect(Amount.usdc(1_000_000, from: :atomic) == 1_000_000).to be(false)
+      expect(Amount.of_usdc(1_000_000, from: :atomic) == 1_000_000).to be(false)
     end
   end
 end
