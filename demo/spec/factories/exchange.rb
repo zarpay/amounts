@@ -15,17 +15,17 @@ FactoryBot.define do
   factory :exchange_trade, class: "Exchange::Trade" do
     sequence(:counterparty) { |n| "cp-#{n}" }
 
-    sold   { Amount.ember("100") }
-    bought { Amount.usd("25") }
+    sold   { Amount.of_ember("100") }
+    bought { Amount.of_usd("25") }
 
     trait :silver_for_usd do
-      sold   { Amount.silver("1.0") }
-      bought { Amount.usd("30") }
+      sold   { Amount.of_silver("1.0") }
+      bought { Amount.of_usd("30") }
     end
 
     trait :usdc_for_sol do
-      sold   { Amount.usdc("150") }
-      bought { Amount.sol("1.0") }
+      sold   { Amount.of_usdc("150") }
+      bought { Amount.of_sol("1.0") }
     end
 
     trait :settled do

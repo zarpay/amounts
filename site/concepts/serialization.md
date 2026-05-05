@@ -26,7 +26,7 @@ Rules:
 For persistence and language-safe wire payloads:
 
 ```ruby
-Amount.usdc("1.50").to_h
+Amount.of_usdc("1.50").to_h
 # => { v: 1, atomic: "1500000", symbol: "USDC" }
 ```
 
@@ -52,10 +52,10 @@ amount.to_h
 `as_json` returns the compact string, so amounts serialize cleanly in any JSON context:
 
 ```ruby
-Amount.usdc("1.50").as_json
+Amount.of_usdc("1.50").as_json
 # => "USDC|1.50"
 
-{ amount: Amount.usdc("1.50") }.to_json
+{ amount: Amount.of_usdc("1.50") }.to_json
 # => '{"amount":"USDC|1.50"}'
 ```
 

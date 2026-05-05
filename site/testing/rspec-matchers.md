@@ -10,10 +10,10 @@ require "amount/active_record/rspec"
 ## Core matchers
 
 ```ruby
-expect(Amount.usdc("1.50")).to eq_amount("USDC|1.50")
-expect(Amount.usdc("1.50")).to be_amount_of(:USDC)
-expect(Amount.usdc("1.50")).to be_positive_amount
-expect(Amount.usdc("1.55")).to be_approximately_amount(:USDC, "1.50", within: "0.10")
+expect(Amount.of_usdc("1.50")).to eq_amount("USDC|1.50")
+expect(Amount.of_usdc("1.50")).to be_amount_of(:USDC)
+expect(Amount.of_usdc("1.50")).to be_positive_amount
+expect(Amount.of_usdc("1.55")).to be_approximately_amount(:USDC, "1.50", within: "0.10")
 ```
 
 ## ActiveRecord matchers

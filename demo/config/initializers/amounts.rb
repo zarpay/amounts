@@ -16,7 +16,7 @@
 #   - a type identity that Amount instances carry (:USDC, :SOL, ...)
 #   - storage configuration (decimals: how many atomic units per UI unit)
 #   - default formatting (display_symbol, display_position, ui_decimals)
-#   - optionally, a generated convenience constructor like `Amount.usdc(...)`
+#   - optionally, a generated convenience constructor like `Amount.of_usdc(...)`
 #     when the symbol downcases to a valid Ruby method name
 #   - optionally, a custom Amount subclass via `class:` (see GoldAmount below)
 #   - optionally, alternate display units via `display_units:` for unit-scaled
@@ -83,7 +83,7 @@ Rails.application.config.to_prepare do
   # (Amount.new, Amount.parse, Amount.load, the ActiveRecord adapter) to
   # GoldAmount instead of the bare Amount class. This means
   #
-  #   Amount.gold("1.0").class             # => GoldAmount
+  #   Amount.of_gold("1.0").class             # => GoldAmount
   #   Amount.new("1.0", :GOLD).class       # => GoldAmount      (since 0.0.2)
   #   Amount.parse("GOLD|1.0").class       # => GoldAmount      (since 0.0.2)
   #   Vault::GoldBar.first.weight.class    # => GoldAmount      (since 0.0.2)

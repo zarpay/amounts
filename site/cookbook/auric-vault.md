@@ -20,7 +20,7 @@ Amount.register :GOLD,
 ## Displaying the same amount differently
 
 ```ruby
-vault_position = Amount.gold("12.75")
+vault_position = Amount.of_gold("12.75")
 
 vault_position.ui
 # => "12.7500 oz t"
@@ -35,6 +35,6 @@ vault_position.ui(unit: :kg)
 ## Converting from USDC using an explicit quote
 
 ```ruby
-quoted_gold = Amount.usdc("1000.00").to(:GOLD, rate: "0.00042")
+quoted_gold = Amount.of_usdc("1000.00").to(:GOLD, rate: "0.00042")
 quoted_gold.ui
 ```

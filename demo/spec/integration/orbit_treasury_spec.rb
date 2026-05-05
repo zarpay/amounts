@@ -44,7 +44,7 @@ RSpec.describe "Orbit Treasury cookbook scenario", :integration, type: :model do
   end
 
   it "registers and validates SOL fees on the same record" do
-    holding.fee = Amount.sol("0.5")
+    holding.fee = Amount.of_sol("0.5")
     holding.save!
     expect(holding.fee).to be_approximately_amount(:SOL, "0.5", within: "0.0001")
   end

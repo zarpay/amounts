@@ -17,7 +17,7 @@ Amount.register_default_rate :USD, :USDC, "1"
 
 Amount.register_default_rate :USDC, :USD, "1"
 
-usdc = Amount.usdc("10.00")
+usdc = Amount.of_usdc("10.00")
 usd = Amount.new("5.00", :USD)
 
 usdc + usd
@@ -48,7 +48,7 @@ So the gem never assumes reverse conversion exists just because forward conversi
 You can also convert directly:
 
 ```ruby
-Amount.usdc("1000").to(:GOLD, rate: "0.00042")
+Amount.of_usdc("1000").to(:GOLD, rate: "0.00042")
 ```
 
 That is useful for one-off operations without touching the default registry rates.

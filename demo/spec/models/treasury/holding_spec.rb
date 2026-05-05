@@ -60,7 +60,7 @@ RSpec.describe Treasury::Holding, type: :model do
 
   describe "the writer accepts every documented input form" do
     it "accepts an Amount instance" do
-      holding.balance = Amount.usdc("12.34")
+      holding.balance = Amount.of_usdc("12.34")
       expect(holding.balance).to be_amount_of(:USDC)
     end
 
@@ -101,7 +101,7 @@ RSpec.describe Treasury::Holding, type: :model do
 
   describe "structural validations from has_amount" do
     it "rejects an Amount whose symbol does not match the fixed-symbol attribute" do
-      holding.fee = Amount.usdc("0.50")
+      holding.fee = Amount.of_usdc("0.50")
       expect(holding).not_to be_valid
       expect(holding.errors[:fee].join).to match(/expected SOL/i)
     end
@@ -154,31 +154,31 @@ RSpec.describe Treasury::Holding, type: :model do
   describe "AmountValidator (validates :x, amount: { ... })" do
     context "balance with greater_than / less_than_or_equal_to" do
       it "rejects zero" do
-        holding.balance = Amount.usdc("0")
+        holding.balance = Amount.of_usdc("0")
         expect(holding).not_to be_valid
         expect(holding.errors[:balance].join).to match(/greater than/)
       end
 
       it "rejects values above the upper bound" do
-        holding.balance = Amount.usdc("1000001")
+        holding.balance = Amount.of_usdc("1000001")
         expect(holding).not_to be_valid
         expect(holding.errors[:balance].join).to match(/less than/)
       end
 
       it "accepts the boundary value of less_than_or_equal_to" do
-        holding.balance = Amount.usdc("1000000")
+        holding.balance = Amount.of_usdc("1000000")
         expect(holding).to be_valid
       end
     end
 
     context "fee with symbol pinning + numeric thresholds (allow_nil)" do
       it "accepts a SOL-symboled non-negative value" do
-        holding.fee = Amount.sol("0")
+        holding.fee = Amount.of_sol("0")
         expect(holding).to be_valid
       end
 
       it "rejects fee >= 100 SOL" do
-        holding.fee = Amount.sol("100")
+        holding.fee = Amount.of_sol("100")
         expect(holding).not_to be_valid
         expect(holding.errors[:fee].join).to match(/less than/)
       end
@@ -196,12 +196,12 @@ RSpec.describe Treasury::Holding, type: :model do
       end
 
       it "accepts the floor exactly" do
-        holding.reserve = Amount.usdc("1.25")
+        holding.reserve = Amount.of_usdc("1.25")
         expect(holding).to be_valid
       end
 
       it "rejects below floor" do
-        holding.reserve = Amount.usdc("1.24")
+        holding.reserve = Amount.of_usdc("1.24")
         expect(holding).not_to be_valid
         expect(holding.errors[:reserve].join).to match(/greater than or equal to/)
       end
@@ -281,7 +281,7 @@ RSpec.describe Treasury::Holding, type: :model do
     end
 
     it "fixed-symbol scopes accept raw numerics directly" do
-      sol.update!(fee: Amount.sol("0.75"))
+      sol.update!(fee: Amount.of_sol("0.75"))
       expect(described_class.where_fee_gt(0.5)).to include(sol)
     end
   end
@@ -322,17 +322,17 @@ RSpec.describe Treasury::Holding, type: :model do
 
   describe "trim_zeros display" do
     it "strips trailing zeros from SOL fee display" do
-      record = build(:treasury_holding, fee: Amount.sol("0.5"))
+      record = build(:treasury_holding, fee: Amount.of_sol("0.5"))
       expect(record.fee.ui).to eq("0.5 SOL")
     end
 
     it "strips all-zero decimals from SOL fee display" do
-      record = build(:treasury_holding, fee: Amount.sol("1.0"))
+      record = build(:treasury_holding, fee: Amount.of_sol("1.0"))
       expect(record.fee.ui).to eq("1 SOL")
     end
 
     it "preserves trailing zeros for USDC balance (trim_zeros: false)" do
-      record = build(:treasury_holding, balance: Amount.usdc("10.50"))
+      record = build(:treasury_holding, balance: Amount.of_usdc("10.50"))
       expect(record.balance.ui).to eq("$10.50")
     end
   end

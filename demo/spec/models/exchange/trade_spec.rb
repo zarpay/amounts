@@ -23,7 +23,7 @@ require "rails_helper"
 RSpec.describe Exchange::Trade, type: :model do
   describe "validations" do
     it "rejects EMBER sold = 0 (greater_than threshold)" do
-      trade = build(:exchange_trade, sold: Amount.ember("0"), bought: Amount.usd("0.01"))
+      trade = build(:exchange_trade, sold: Amount.of_ember("0"), bought: Amount.of_usd("0.01"))
       expect(trade).not_to be_valid
       expect(trade.errors[:sold].join).to match(/greater than/)
     end
@@ -36,28 +36,28 @@ RSpec.describe Exchange::Trade, type: :model do
 
   describe "cross-type arithmetic via implied_rate" do
     it "computes a rate when EMBER->USD path exists" do
-      trade = build(:exchange_trade, sold: Amount.ember("100"), bought: Amount.usd("25"))
+      trade = build(:exchange_trade, sold: Amount.of_ember("100"), bought: Amount.of_usd("25"))
       # Both bought and sold need to be in the same symbol; bought.to(:EMBER)
       # requires a USD->EMBER rate which is registered.
       expect(trade.implied_rate).to eq(BigDecimal("1"))
     end
 
     it "returns nil when no rate path exists" do
-      trade = build(:exchange_trade, sold: Amount.ember("100"), bought: Amount.silver("1"))
+      trade = build(:exchange_trade, sold: Amount.of_ember("100"), bought: Amount.of_silver("1"))
       expect(trade.implied_rate).to be_nil
     end
   end
 
   describe "#settle!" do
     it "uses the registered default rate when no explicit rate is provided" do
-      trade = create(:exchange_trade, sold: Amount.ember("100"), bought: Amount.usd("25"))
+      trade = create(:exchange_trade, sold: Amount.of_ember("100"), bought: Amount.of_usd("25"))
       result = trade.settle!
       expect(result).to be_amount_of(:USD)
       expect(result.decimal).to eq(BigDecimal("25"))
     end
 
     it "accepts an explicit rate that overrides the default" do
-      trade = create(:exchange_trade, sold: Amount.ember("100"), bought: Amount.usd("25"))
+      trade = create(:exchange_trade, sold: Amount.of_ember("100"), bought: Amount.of_usd("25"))
       result = trade.settle!(rate: "0.5")
       expect(result.decimal).to eq(BigDecimal("50"))
     end

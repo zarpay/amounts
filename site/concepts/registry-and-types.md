@@ -27,8 +27,8 @@ An amount’s symbol determines:
 Valid Ruby method names become convenience constructors:
 
 ```ruby
-Amount.usdc("1.50")
-Amount.gold("2.5")
+Amount.of_usdc("1.50")
+Amount.of_gold("2.5")
 ```
 
 This is just ergonomic sugar on top of:
@@ -53,7 +53,7 @@ Amount.register :GOLD,
   decimals: 8,
   class: GoldAmount
 
-Amount.gold("1.0").class
+Amount.of_gold("1.0").class
 # => GoldAmount
 ```
 
@@ -98,8 +98,8 @@ end
 
 ## Common mistake
 
-::: warning Do not read `Amount.usdc(...)` as “USDC is a class”
-`Amount.usdc(...)` is a generated class method, not a type constant. The actual type identity is still the registered symbol `:USDC`.
+::: warning Do not read `Amount.of_usdc(...)` as “USDC is a class”
+`Amount.of_usdc(...)` is a generated class method, not a type constant. The actual type identity is still the registered symbol `:USDC`.
 :::
 
 ## See also

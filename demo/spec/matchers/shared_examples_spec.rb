@@ -25,7 +25,7 @@ RSpec.describe "shared example coverage" do
 
   describe Vault::GoldBar, type: :model do
     subject { build(:vault_gold_bar) }
-    it_behaves_like "a multi-symbol amount column", :appraisal, sample: Amount.usd("1500")
+    it_behaves_like "a multi-symbol amount column", :appraisal, sample: Amount.of_usd("1500")
   end
 
   describe "Comparable on Amount" do

@@ -61,7 +61,7 @@ Amount.register_default_rate :USD, :USDC, "1"
 
 Amount.register_default_rate :USDC, :USD, "1"
 
-payroll_buffer = Amount.usdc("125000.00")
+payroll_buffer = Amount.of_usdc("125000.00")
 invoice = Amount.new("2500.00", :USD)
 
 (payroll_buffer - invoice).ui

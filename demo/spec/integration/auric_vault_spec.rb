@@ -13,7 +13,7 @@ require "rails_helper"
 #   - splitting a bar in half with no remainder
 
 RSpec.describe "Auric Vault cookbook scenario", :integration, type: :model do
-  let!(:bullion) { create(:vault_gold_bar, weight: Amount.gold("12.5"), appraisal: "USDC|25000") }
+  let!(:bullion) { create(:vault_gold_bar, weight: Amount.of_gold("12.5"), appraisal: "USDC|25000") }
 
   it "renders weight in oz_t / gram / kg with their respective ui_decimals" do
     expect(bullion.weight_label).to eq("12.5000 oz t")

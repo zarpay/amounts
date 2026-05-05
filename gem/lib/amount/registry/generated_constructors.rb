@@ -2,9 +2,14 @@
 
 class Amount
   class Registry
-    # Manages registry-driven constructor methods such as `Amount.usdc(...)`.
+    # Manages registry-driven constructor methods such as `Amount.of_usdc(...)`.
+    #
+    # Generated names are prefixed with `of_` so that short ISO codes like
+    # `:TRY` (which collides with `Object#try` once ActiveSupport is loaded)
+    # do not clash with existing methods on `Amount`.
     class GeneratedConstructors
-      METHOD_NAME_PATTERN = /\A[a-z_][a-z0-9_]*\z/
+      SYMBOL_PATTERN = /\A[a-z_][a-z0-9_]*\z/
+      METHOD_NAME_PREFIX = "of_"
 
       def initialize(target: Amount)
         @target = target
@@ -40,10 +45,10 @@ class Amount
       private
 
       def method_name_for(symbol)
-        method_name = symbol.to_s.downcase
-        return unless method_name.match?(METHOD_NAME_PATTERN)
+        downcased = symbol.to_s.downcase
+        return unless downcased.match?(SYMBOL_PATTERN)
 
-        method_name
+        "#{METHOD_NAME_PREFIX}#{downcased}"
       end
 
       def raise_collision!(method_name)

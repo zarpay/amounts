@@ -19,7 +19,7 @@ FactoryBot.define do
     # 100 oz t bar — useful for split / allocate tests where remainders
     # need to be visible.
     trait :heavy do
-      weight { Amount.gold("100") }
+      weight { Amount.of_gold("100") }
     end
 
     # No appraisal yet — the default-factory price is dropped, the bar

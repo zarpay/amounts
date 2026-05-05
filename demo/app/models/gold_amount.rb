@@ -18,7 +18,7 @@
 # GoldAmount:
 #
 #   Amount.new("1.0", :GOLD).class             # => GoldAmount
-#   Amount.gold("1.0").class                   # => GoldAmount
+#   Amount.of_gold("1.0").class                   # => GoldAmount
 #   Amount.parse("GOLD|1.0").class             # => GoldAmount
 #   Amount.load(payload).class                 # => GoldAmount
 #   Vault::GoldBar.find(id).weight.class       # => GoldAmount

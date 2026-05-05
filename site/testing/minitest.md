@@ -5,8 +5,8 @@ The gem does not ship Minitest-specific matchers because ordinary equality alrea
 ## Example
 
 ```ruby
-assert_equal Amount.usdc("1.50"), holding.amount
-assert_equal Amount.usdc("1.50"), Amount.parse("USDC|1.50")
+assert_equal Amount.of_usdc("1.50"), holding.amount
+assert_equal Amount.of_usdc("1.50"), Amount.parse("USDC|1.50")
 ```
 
 ## Why this is enough

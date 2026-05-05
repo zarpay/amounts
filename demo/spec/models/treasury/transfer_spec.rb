@@ -38,31 +38,31 @@ RSpec.describe Treasury::Transfer, type: :model do
 
   describe "validations" do
     it "rejects negative commission" do
-      transfer.commission = Amount.usdc("-1")
+      transfer.commission = Amount.of_usdc("-1")
       expect(transfer).not_to be_valid
       expect(transfer.errors[:commission].join).to match(/greater than or equal to/)
     end
 
     it "skips greater_than check when gross symbol is not USDC (conditional)" do
-      transfer.gross = Amount.sol("0")
+      transfer.gross = Amount.of_sol("0")
       expect(transfer).to be_valid
     end
 
     it "fires greater_than when gross symbol is USDC" do
-      transfer.gross = Amount.usdc("0")
+      transfer.gross = Amount.of_usdc("0")
       expect(transfer).not_to be_valid
     end
   end
 
   describe "#net" do
     it "computes gross - commission for same-type" do
-      transfer.gross = Amount.usdc("100")
-      transfer.commission = Amount.usdc("0.5")
+      transfer.gross = Amount.of_usdc("100")
+      transfer.commission = Amount.of_usdc("0.5")
       expect(transfer.net).to eq_amount("USDC|99.5")
     end
 
     it "returns nil when types differ and there is no rate" do
-      transfer.gross = Amount.ember("100")
+      transfer.gross = Amount.of_ember("100")
       expect(transfer.net).to be_nil
     end
   end

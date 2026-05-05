@@ -31,12 +31,12 @@ RSpec.describe "Amount registry", :aggregate_failures do
     end
 
     it "exposes generated constructors for every well-named symbol" do
-      expect(Amount.usdc("1.50")).to be_amount_of(:USDC)
-      expect(Amount.sol("0.5")).to be_amount_of(:SOL)
-      expect(Amount.gold("1.0")).to be_amount_of(:GOLD)
-      expect(Amount.logs(10)).to be_amount_of(:LOGS)
-      expect(Amount.ember("1.0")).to be_amount_of(:EMBER)
-      expect(Amount.silver("1.0")).to be_amount_of(:SILVER)
+      expect(Amount.of_usdc("1.50")).to be_amount_of(:USDC)
+      expect(Amount.of_sol("0.5")).to be_amount_of(:SOL)
+      expect(Amount.of_gold("1.0")).to be_amount_of(:GOLD)
+      expect(Amount.of_logs(10)).to be_amount_of(:LOGS)
+      expect(Amount.of_ember("1.0")).to be_amount_of(:EMBER)
+      expect(Amount.of_silver("1.0")).to be_amount_of(:SILVER)
     end
 
     it "carries directional default rates as registered" do
@@ -107,14 +107,24 @@ RSpec.describe "Amount registry", :aggregate_failures do
     it "skips constructor generation for symbols that aren't valid Ruby method names" do
       Amount.register :"USDC.e", decimals: 6
       expect(Amount.registry.registered?(:"USDC.e")).to be(true)
-      expect(Amount).not_to respond_to(:"USDC.e")
+      expect(Amount).not_to respond_to(:"of_USDC.e")
+      expect(Amount).not_to respond_to(:of_usdc_e)
     end
 
     it "downcases multi-word symbols into snake_case generated constructors" do
       Amount.register :OIL_WTI_BBL, decimals: 4
-      expect(Amount).to respond_to(:oil_wti_bbl)
-      expect(Amount.oil_wti_bbl("1.5")).to eq_amount(:OIL_WTI_BBL, "1.5")
-      expect(Amount.oil_wti_bbl(15_000, from: :atomic).atomic).to eq(15_000)
+      expect(Amount).to respond_to(:of_oil_wti_bbl)
+      expect(Amount.of_oil_wti_bbl("1.5")).to eq_amount(:OIL_WTI_BBL, "1.5")
+      expect(Amount.of_oil_wti_bbl(15_000, from: :atomic).atomic).to eq(15_000)
+    end
+
+    it "registers ISO codes that collide with ActiveSupport methods on Object" do
+      # Object#try is defined by ActiveSupport, so the unprefixed name
+      # `Amount.try` would clash. The `of_` prefix sidesteps the collision
+      # entirely — see the original bug for :TRY (Turkish Lira).
+      expect(Object.instance_method(:try)).to be_a(UnboundMethod)
+      expect { Amount.register :TRY, decimals: 2 }.not_to raise_error
+      expect(Amount.of_try("100")).to eq_amount(:TRY, "100")
     end
 
     it "exposes registry_entry directly on a constructed Amount" do
@@ -152,10 +162,10 @@ RSpec.describe "Amount registry", :aggregate_failures do
 
     it "removes all entries, rates, and generated constructors" do
       Amount.register :CLR, decimals: 2
-      expect(Amount).to respond_to(:clr)
+      expect(Amount).to respond_to(:of_clr)
       Amount.registry.clear!
       expect(Amount.registry.symbols).to be_empty
-      expect(Amount).not_to respond_to(:clr)
+      expect(Amount).not_to respond_to(:of_clr)
     end
   end
 end

@@ -31,69 +31,69 @@ RSpec::Matchers.define_negated_matcher :not_be_amount_of, :be_amount_of
 RSpec.describe "amount/rspec matchers", :aggregate_failures do
   describe "eq_amount" do
     it "accepts a compact-string expectation" do
-      expect(Amount.usdc("1.50")).to eq_amount("USDC|1.5")
+      expect(Amount.of_usdc("1.50")).to eq_amount("USDC|1.5")
     end
 
     it "accepts (:SYMBOL, value) expectation" do
-      expect(Amount.usdc("1.50")).to eq_amount(:USDC, "1.5")
+      expect(Amount.of_usdc("1.50")).to eq_amount(:USDC, "1.5")
     end
 
     it "accepts another Amount as expectation" do
-      expect(Amount.usdc("1.50")).to eq_amount(Amount.usdc("1.5"))
+      expect(Amount.of_usdc("1.50")).to eq_amount(Amount.of_usdc("1.5"))
     end
 
     it "accepts a hash payload (Amount.load form)" do
-      expect(Amount.usdc("1.50")).to eq_amount(v: 1, atomic: "1500000", symbol: "USDC")
+      expect(Amount.of_usdc("1.50")).to eq_amount(v: 1, atomic: "1500000", symbol: "USDC")
     end
 
     it "fails on different symbol" do
-      expect(Amount.usdc("1")).not_to eq_amount("SOL|1")
+      expect(Amount.of_usdc("1")).not_to eq_amount("SOL|1")
     end
   end
 
   describe "be_amount_of" do
     it "matches the symbol" do
-      expect(Amount.sol("1.5")).to be_amount_of(:SOL)
+      expect(Amount.of_sol("1.5")).to be_amount_of(:SOL)
     end
 
     it "composes with define_negated_matcher" do
-      expect(Amount.usdc("1")).to not_be_amount_of(:SOL)
+      expect(Amount.of_usdc("1")).to not_be_amount_of(:SOL)
     end
   end
 
   describe "predicate matchers" do
-    specify { expect(Amount.usdc(0, from: :atomic)).to be_zero_amount }
-    specify { expect(Amount.usdc("1")).to be_positive_amount }
-    specify { expect(Amount.usdc("-1")).to be_negative_amount }
+    specify { expect(Amount.of_usdc(0, from: :atomic)).to be_zero_amount }
+    specify { expect(Amount.of_usdc("1")).to be_positive_amount }
+    specify { expect(Amount.of_usdc("-1")).to be_negative_amount }
   end
 
   describe "be_approximately_amount" do
     it "passes within the tolerance window" do
-      expect(Amount.usdc("1.51")).to be_approximately_amount(:USDC, "1.50", within: "0.05")
+      expect(Amount.of_usdc("1.51")).to be_approximately_amount(:USDC, "1.50", within: "0.05")
     end
 
     it "fails outside the window", aggregate_failures: false do
       expect {
-        expect(Amount.usdc("2.00")).to be_approximately_amount(:USDC, "1.50", within: "0.05")
+        expect(Amount.of_usdc("2.00")).to be_approximately_amount(:USDC, "1.50", within: "0.05")
       }.to raise_error(RSpec::Expectations::ExpectationNotMetError)
     end
 
     it "accepts an Amount as expected and within" do
-      expected = Amount.usdc("1.50")
-      delta = Amount.usdc("0.10")
-      expect(Amount.usdc("1.55")).to be_approximately_amount(expected, within: delta)
+      expected = Amount.of_usdc("1.50")
+      delta = Amount.of_usdc("0.10")
+      expect(Amount.of_usdc("1.55")).to be_approximately_amount(expected, within: delta)
     end
   end
 
   describe "have_amount_column (AR matcher)" do
-    let(:holding) { create(:treasury_holding, balance: "USDC|10.50", fee: Amount.sol("0.5")) }
+    let(:holding) { create(:treasury_holding, balance: "USDC|10.50", fee: Amount.of_sol("0.5")) }
 
     it "matches a multi-symbol amount column" do
       expect(holding).to have_amount_column(:balance, "USDC|10.5")
     end
 
     it "matches a fixed-symbol amount column" do
-      expect(holding).to have_amount_column(:fee, Amount.sol("0.5"))
+      expect(holding).to have_amount_column(:fee, Amount.of_sol("0.5"))
     end
   end
 

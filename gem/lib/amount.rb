@@ -30,11 +30,11 @@ require_relative "amount/serialization"
 # @example Constructing from a UI value
 #   Amount.register :USDC, decimals: 6
 #
-#   Amount.usdc("1.50").atomic
+#   Amount.of_usdc("1.50").atomic
 #   # => 1500000
 #
 # @example Constructing from an atomic value
-#   Amount.usdc(1_500_000, from: :atomic).decimal.to_s("F")
+#   Amount.of_usdc(1_500_000, from: :atomic).decimal.to_s("F")
 #   # => "1.5"
 class Amount
   include Arithmetic
@@ -200,7 +200,7 @@ class Amount
 
   # @return [Amount::Registry::Entry]
   # @example Accessing display configuration for this amount
-  #   Amount.usdc("1").registry_entry.ui_decimals
+  #   Amount.of_usdc("1").registry_entry.ui_decimals
   #   # => 2
   def registry_entry
     @entry
@@ -208,7 +208,7 @@ class Amount
 
   # @return [Integer]
   # @example Reading the registered storage precision
-  #   Amount.usdc("1").decimals
+  #   Amount.of_usdc("1").decimals
   #   # => 6
   def decimals
     @entry.decimals
@@ -216,7 +216,7 @@ class Amount
 
   # @return [BigDecimal]
   # @example Converting the atomic value back to a decimal quantity
-  #   Amount.usdc(1_500_000, from: :atomic).decimal.to_s("F")
+  #   Amount.of_usdc(1_500_000, from: :atomic).decimal.to_s("F")
   #   # => "1.5"
   def decimal
     BigDecimal(@atomic) / (BigDecimal(10)**decimals)
@@ -226,7 +226,7 @@ class Amount
 
   # @return [String]
   # @example Console-friendly inspection
-  #   Amount.usdc("1.50").inspect
+  #   Amount.of_usdc("1.50").inspect
   #   # => "#<Amount USDC $1.50>"
   def inspect
     "#<#{self.class} #{symbol} #{ui}>"
