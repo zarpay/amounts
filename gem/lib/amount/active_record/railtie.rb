@@ -8,7 +8,7 @@ class Amount
       end
 
       generators do
-        require_relative "../../../generators/amount/active_record/registry_generator"
+        require_relative "../../generators/amount/active_record/registry_generator"
       end
     end
   end
