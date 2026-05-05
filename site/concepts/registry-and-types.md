@@ -24,12 +24,14 @@ An amount’s symbol determines:
 
 ## Generated constructors
 
-Valid Ruby method names become convenience constructors:
+When a registered symbol downcases to a valid Ruby method name, the registry generates a convenience constructor on `Amount` with an `of_` prefix:
 
 ```ruby
 Amount.of_usdc("1.50")
 Amount.of_gold("2.5")
 ```
+
+The prefix avoids collisions with methods that already exist on `Object` — `try`, `then`, `tap`, `send`, `display`, `format`, and similar names that ActiveSupport or Ruby core already define. Without it, `:TRY` (Turkish Lira) would be unregistrable in any Rails app.
 
 This is just ergonomic sugar on top of:
 
