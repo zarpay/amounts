@@ -43,6 +43,7 @@ class Amount
       @entries       = {}
       @default_rates = {}
       @locked        = false
+      @resolver      = nil
 
       @lock = Mutex.new
       @generated_constructors = GeneratedConstructors.new
@@ -120,11 +121,37 @@ class Amount
     #   Amount.registry.lookup(:USDC).decimals
     #   # => 6
     def lookup(symbol)
-      @lock.synchronize do
-        @entries.fetch(symbol.to_sym) do
-          raise UnknownType, "#{symbol} is not registered"
-        end
-      end
+      sym = symbol.to_sym
+      entry = @lock.synchronize { @entries[sym] }
+      return entry if entry
+
+      entry = resolve_and_fetch(sym)
+      return entry if entry
+
+      raise UnknownType, "#{symbol} is not registered"
+    end
+
+    # Registers a resolver invoked when {#lookup} misses, BEFORE it raises
+    # {UnknownType}. The block receives the missing symbol and is expected to
+    # register it as a side effect (e.g. from a database row); lookup then
+    # retries once. This turns the registry into a read-through cache: a
+    # process that booted before a type was registered can resolve it lazily
+    # instead of raising — useful when types are created at runtime and the
+    # registry is per-process in-memory state. Pass no block to clear it.
+    #
+    # The resolver runs WITHOUT the registry lock held (it will call
+    # {#register}, which locks) and is guarded against re-entrancy per thread,
+    # so a resolver that itself triggers a miss cannot recurse forever. A
+    # resolver that raises is swallowed and the original {UnknownType} is raised.
+    #
+    # @yieldparam symbol [Symbol] the missing type
+    # @return [void]
+    # @example Resolve unknown types from a database
+    #   Amount.registry.resolve_missing do |symbol|
+    #     Token.for_amount_key(symbol)&.register_amount_type
+    #   end
+    def resolve_missing(&block)
+      @lock.synchronize { @resolver = block }
     end
 
     # @return [Array<Symbol>]
@@ -145,6 +172,7 @@ class Amount
         @generated_constructors.remove_all
         @entries.clear
         @default_rates.clear
+        @resolver = nil
       end
     end
 
@@ -225,6 +253,29 @@ class Amount
     end
 
     private
+
+    # Runs the missing-type resolver (if any) outside the lock and returns the
+    # entry it registered, or nil. Per-thread re-entrancy guard prevents a
+    # resolver that triggers its own lookup miss from recursing; a raising
+    # resolver falls through to nil so lookup surfaces the real UnknownType.
+    def resolve_and_fetch(sym)
+      resolver = @lock.synchronize { @resolver }
+      return nil unless resolver
+
+      guard = (Thread.current[:amount_registry_resolving] ||= [])
+      return nil if guard.include?(sym)
+
+      guard.push(sym)
+      begin
+        resolver.call(sym)
+      rescue StandardError
+        return nil
+      ensure
+        guard.delete(sym)
+      end
+
+      @lock.synchronize { @entries[sym] }
+    end
 
     def ensure_unlocked!
       raise RegistryLocked, "registry is locked" if @locked

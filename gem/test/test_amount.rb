@@ -672,4 +672,60 @@ class AmountCustomClassTest < Minitest::Test
 
     assert_instance_of Amount, instance
   end
+
+  # ----- resolve_missing: read-through resolution of unknown types -----
+
+  def test_lookup_resolves_a_missing_type_via_the_resolver
+    seen = []
+    Amount.registry.resolve_missing do |symbol|
+      seen << symbol
+      Amount.register(symbol, decimals: 6) if symbol == :WORMHOLE_USDC
+    end
+
+    amount = Amount.new(1_000_000, :WORMHOLE_USDC)
+
+    assert_equal [ :WORMHOLE_USDC ], seen
+    assert_equal 1_000_000, amount.atomic
+    assert Amount.registry.registered?(:WORMHOLE_USDC)
+  end
+
+  def test_lookup_still_raises_when_the_resolver_registers_nothing
+    called = false
+    Amount.registry.resolve_missing { |_symbol| called = true }
+
+    assert_raises(Amount::Registry::UnknownType) { Amount.registry.lookup(:NOPE) }
+    assert called, "resolver should have been consulted before raising"
+  end
+
+  def test_a_raising_resolver_surfaces_the_original_unknown_type
+    Amount.registry.resolve_missing { |_symbol| raise "resolver boom" }
+
+    error = assert_raises(Amount::Registry::UnknownType) { Amount.registry.lookup(:NOPE) }
+    assert_match(/NOPE is not registered/, error.message)
+  end
+
+  def test_resolver_reentrancy_is_guarded_against_infinite_recursion
+    depth = 0
+    Amount.registry.resolve_missing do |symbol|
+      depth += 1
+      Amount.registry.lookup(symbol) # a resolver that re-triggers the same miss
+    end
+
+    assert_raises(Amount::Registry::UnknownType) { Amount.registry.lookup(:LOOPY) }
+    assert_equal 1, depth, "resolver must run once per lookup, not recurse"
+  end
+
+  def test_resolve_missing_with_no_block_clears_the_resolver
+    Amount.registry.resolve_missing { |symbol| Amount.register(symbol, decimals: 6) }
+    Amount.registry.resolve_missing # clears it
+
+    assert_raises(Amount::Registry::UnknownType) { Amount.registry.lookup(:GONE) }
+  end
+
+  def test_clear_resets_the_resolver
+    Amount.registry.resolve_missing { |symbol| Amount.register(symbol, decimals: 6) }
+    Amount.registry.clear!
+
+    assert_raises(Amount::Registry::UnknownType) { Amount.registry.lookup(:GONE) }
+  end
 end
