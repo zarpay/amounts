@@ -98,7 +98,7 @@ export default defineConfig({
         ],
       },
     ],
-    socialLinks: [{ icon: 'github', link: 'https://github.com/sebscholl/amounts' }],
+    socialLinks: [{ icon: 'github', link: 'https://github.com/zarpay/amounts' }],
     outline: {
       level: [2, 3],
       label: 'On this page',
