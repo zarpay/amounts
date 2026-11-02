@@ -11,7 +11,7 @@ Three independent packages, each with its own Gemfile and dependencies:
 
 | Path | What it is |
 |---|---|
-| `gem/` | The published gem: `lib/`, `test/` (Minitest), `spec/` (RSpec matchers), gemspec, `CHANGELOG.md` |
+| `gem/` | The published gem: `lib/` (concerns in `lib/amount/concerns/`), `test/` (Minitest, mirrors `lib/`), `spec/` (RSpec matchers), gemspec, `CHANGELOG.md` |
 | `demo/` | A Rails 8.1 app that exercises every public feature against `../gem` (path-pinned). Its specs are the integration suite |
 | `site/` | The VitePress docs at https://zarpay.github.io/amounts/, deployed from `main` by `docs.yml` |
 
@@ -20,17 +20,15 @@ Three independent packages, each with its own Gemfile and dependencies:
 From `gem/`, matching CI (`.github/workflows/ci.yml`):
 
 ```sh
-bundle exec ruby -Ilib:test test/test_amount.rb              # core Minitest
-bundle exec rspec spec/amount_rspec_matchers_spec.rb         # core RSpec matchers
-bundle exec ruby -Ilib:test test/test_active_record.rb       # ActiveRecord adapter
-bundle exec rspec spec/active_record_rspec_matchers_spec.rb  # ActiveRecord matchers
-bundle exec ruby -Ilib:test test/test_registry_generator.rb  # Rails generator
-bundle exec rake lint                                        # RuboCop; must be clean
+bundle exec rake test:core            # core Minitest (no Rails in the process)
+bundle exec rake spec:core            # core RSpec matchers
+bundle exec rake test:active_record   # ActiveRecord adapter + Rails generator
+bundle exec rake spec:active_record   # ActiveRecord matchers
+bundle exec rake test:integration     # PostgreSQL; skips without AMOUNTS_POSTGRES_URL
+bundle exec rake lint                 # RuboCop; must be clean
+bundle exec rake                      # all of the above
+bundle exec ruby -Ilib:test test/amount/concerns/arithmetic_test.rb   # one file
 ```
-
-`bundle exec rake` alone does not run the Minitest files above: its test pattern is
-`test/**/*_test.rb`. Run them directly. The PostgreSQL integration test needs
-`AMOUNTS_POSTGRES_URL` and skips without it.
 
 From `demo/`: `bin/rails db:migrate RAILS_ENV=test && bundle exec rspec`.
 From `site/`: `npm install && npm run build`.
@@ -39,6 +37,10 @@ Finish every gem change with the gem commands passing, and the demo suite too wh
 behavior changes.
 
 ## Rules that shape the code
+
+Detailed rules live in `.claude/rules/` and load when you touch the files they cover:
+`concerns.md` (keeping `Amount` thin; where concerns go and their shape) and `tests.md`
+(one test class per file, test paths mirror `lib/`, one assertion per test).
 
 - **The core is Rails-agnostic.** Only `lib/amount/active_record.rb`, `lib/amount/active_record/`,
   `lib/generators/` and the guarded railtie hook in `lib/amounts.rb` may load Rails,
@@ -50,7 +52,10 @@ behavior changes.
 - **No implicit cross-type math.** Mixing types needs an explicit directional rate; don't add
   shortcuts around that.
 - **Display units are not conversions.** Keep the two separate.
-- **Behavioral changes need tests** in `gem/test` (and `gem/spec` for matchers). When public
+- **`Amount` stays thin.** New behavior goes in a concern in `gem/lib/amount/concerns/`,
+  not in `gem/lib/amount.rb`.
+- **Behavioral changes need tests** in `gem/test` (and `gem/spec` for matchers), in the
+  file that mirrors the code under test, one assertion per test. When public
   behavior or API changes, update `gem/README.md`, the relevant `site/` page, and the `demo/`
   if it covers that feature.
 

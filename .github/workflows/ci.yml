@@ -36,12 +36,12 @@ jobs:
           BUNDLE_WITHOUT: active_record:development:quality
 
       - name: Core Minitest
-        run: bundle exec ruby -Ilib:test test/test_amount.rb
+        run: bundle exec rake test:core
         env:
           BUNDLE_WITHOUT: active_record:development:quality
 
       - name: Core RSpec
-        run: bundle exec rspec spec/amount_rspec_matchers_spec.rb
+        run: bundle exec rake spec:core
         env:
           BUNDLE_WITHOUT: active_record:development:quality
 
@@ -69,14 +69,14 @@ jobs:
           BUNDLE_WITH: active_record
           BUNDLE_WITHOUT: development:quality
 
-      - name: ActiveRecord Minitest
-        run: bundle exec ruby -Ilib:test test/test_active_record.rb
+      - name: ActiveRecord and generator Minitest
+        run: bundle exec rake test:active_record
         env:
           BUNDLE_WITH: active_record
           BUNDLE_WITHOUT: development:quality
 
       - name: ActiveRecord RSpec
-        run: bundle exec rspec spec/active_record_rspec_matchers_spec.rb
+        run: bundle exec rake spec:active_record
         env:
           BUNDLE_WITH: active_record
           BUNDLE_WITHOUT: development:quality

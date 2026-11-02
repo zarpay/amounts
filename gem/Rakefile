@@ -2,17 +2,54 @@
 
 require "bundler/gem_tasks"
 require "rake/testtask"
-require "rspec/core/rake_task"
-require "rubocop/rake_task"
-Rake::TestTask.new(:test) do |task|
-  task.libs << "lib"
-  task.libs << "test"
-  task.pattern = "test/**/*_test.rb"
+
+# Each group runs in its own process: ActiveSupport patches core classes, and
+# test/dummy (integration) defines models that collide with the SQLite ones.
+TEST_GROUPS = {
+  core: FileList["test/amount_test.rb", "test/amount/**/*_test.rb"].exclude(
+    "test/amount/active_record_test.rb", "test/amount/active_record/**/*"
+  ),
+  active_record: FileList[
+    "test/amount/active_record_test.rb", "test/amount/active_record/**/*_test.rb", "test/generators/**/*_test.rb"
+  ],
+  integration: FileList["test/integration/**/*_test.rb"]
+}.freeze
+
+namespace :test do
+  TEST_GROUPS.each do |group, files|
+    Rake::TestTask.new(group) do |task|
+      task.libs << "lib" << "test"
+      task.test_files = files
+    end
+  end
 end
 
-RuboCop::RakeTask.new(:rubocop)
-RSpec::Core::RakeTask.new(:spec)
+desc "Run every Minitest group"
+task test: TEST_GROUPS.keys.map { |group| "test:#{group}" }
 
-task lint: %i[rubocop]
+# RuboCop and RSpec are optional bundle groups in CI; define their tasks only
+# when installed.
+begin
+  require "rspec/core/rake_task"
 
-task default: %i[test spec rubocop]
+  namespace :spec do
+    RSpec::Core::RakeTask.new(:core) { |task| task.pattern = "spec/amount/rspec/**/*_spec.rb" }
+    RSpec::Core::RakeTask.new(:active_record) { |task| task.pattern = "spec/amount/active_record/**/*_spec.rb" }
+  end
+
+  desc "Run every RSpec group"
+  task spec: %w[spec:core spec:active_record]
+rescue LoadError
+  nil
+end
+
+begin
+  require "rubocop/rake_task"
+
+  RuboCop::RakeTask.new(:rubocop)
+  task lint: %i[rubocop]
+rescue LoadError
+  nil
+end
+
+task default: %i[test spec lint]

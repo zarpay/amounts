@@ -1,3 +1,8 @@
+require:
+  - ./rubocop/cop/amounts/one_assertion_per_test
+  - ./rubocop/cop/amounts/one_test_class_per_file
+  - ./rubocop/cop/amounts/mirrored_test_path
+
 AllCops:
   NewCops: enable
   SuggestExtensions: false
@@ -87,3 +92,28 @@ Gemspec/DevelopmentDependencies:
 
 Gemspec/RequireMFA:
   Enabled: false
+
+# Project cops (rubocop/cop/amounts/). See .claude/rules/tests.md.
+Amounts/OneAssertionPerTest:
+  Enabled: true
+  Include:
+    - "test/**/*_test.rb"
+    - "spec/**/*_spec.rb"
+
+Amounts/OneTestClassPerFile:
+  Enabled: true
+  Include:
+    - "test/**/*_test.rb"
+    - "spec/**/*_spec.rb"
+
+Amounts/MirroredTestPath:
+  Enabled: true
+  Include:
+    - "test/**/*_test.rb"
+    - "spec/**/*_spec.rb"
+  # These directories don't mirror lib/ (see .claude/rules/tests.md).
+  Exclude:
+    - "test/support/**/*"
+    - "test/dummy/**/*"
+    - "test/integration/**/*"
+    - "spec/support/**/*"

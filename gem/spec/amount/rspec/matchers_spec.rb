@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
-require_relative "spec_helper"
+require_relative "../../spec_helper"
 
-RSpec.describe "Amount RSpec matchers" do
+RSpec.describe Amount::RSpec::Matchers do
   describe "eq_amount" do
     it "matches a parse string" do
       expect(Amount.of_usdc("1.50")).to eq_amount("USDC|1.50")
