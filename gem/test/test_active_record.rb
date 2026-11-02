@@ -295,6 +295,62 @@ class AmountActiveRecordTest < Minitest::Test
     assert_includes holding.errors[:amount], "cannot compare USDC to USD for greater_than"
   end
 
+  def test_amount_validator_adds_errors_by_key_with_interpolations
+    holding = ValidatedHolding.new(amount: "USD|100.00", reserve: "USDC|1.25")
+    holding.valid?
+
+    assert_includes holding.errors.details[:amount], { error: :amount_symbol, expected: :USDC }
+
+    low = ValidatedHolding.new(amount: "USDC|0.00", reserve: "USDC|1.25")
+    low.valid?
+
+    assert_includes low.errors.details[:amount], { error: :greater_than, count: "USDC|0.00" }
+  end
+
+  def test_amount_validator_incomparable_error_details
+    klass = Class.new(::ActiveRecord::Base) do
+      self.table_name = "holdings"
+
+      has_amount :amount
+      validates :amount, amount: { greater_than: "USD|1.00" }
+    end
+
+    holding = klass.new(amount: "USDC|2.00")
+    holding.valid?
+
+    assert_includes holding.errors.details[:amount],
+                    { error: :amount_incomparable, symbol: :USDC, other_symbol: :USD, option: :greater_than }
+  end
+
+  def test_amount_validator_messages_can_be_translated_by_the_app
+    original_locales = I18n.available_locales
+    I18n.available_locales = original_locales | [:de]
+    # rubocop:disable Style/FormatStringToken
+    I18n.backend.store_translations(:de, errors: { messages: {
+                                      amount_symbol: "muss das Symbol %{expected} haben",
+                                      greater_than: "muss groesser als %{count} sein"
+                                    } })
+    # rubocop:enable Style/FormatStringToken
+    holding = ValidatedHolding.new(amount: "USD|100.00", reserve: "USDC|1.25")
+    low = ValidatedHolding.new(amount: "USDC|0.00", reserve: "USDC|1.25")
+
+    I18n.with_locale(:de) do
+      holding.valid?
+      low.valid?
+
+      assert_includes holding.errors[:amount], "muss das Symbol USDC haben"
+      assert_includes low.errors[:amount], "muss groesser als USDC|0.00 sein"
+    end
+  ensure
+    I18n.available_locales = original_locales
+  end
+
+  def test_locale_file_is_loaded_once
+    Amount::ActiveRecord.install_locale!
+
+    assert_equal 1, I18n.load_path.count(Amount::ActiveRecord::LOCALE_PATH)
+  end
+
   def test_amount_validator_uses_registered_rate_for_cross_type_threshold_when_available
     Amount.register_default_rate :USD, :USDC, "1"
 

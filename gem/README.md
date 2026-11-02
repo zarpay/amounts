@@ -316,6 +316,35 @@ ALTER TABLE holdings ADD CONSTRAINT amount_both_or_neither
   CHECK ((amount_atomic IS NULL) = (amount_symbol IS NULL));
 ```
 
+### Validation messages
+
+`validates :amount, amount: { symbol: :USDC, greater_than: 0 }` adds errors by
+I18n key, so apps can translate or reword them. The English defaults ship in
+`lib/amount/active_record/locale/en.yml`, which the gem adds to `I18n.load_path`
+when `amount/active_record` loads (Rails or plain ActiveRecord).
+
+| Case | Key | Interpolations | English default |
+|---|---|---|---|
+| Not an Amount | `:amount_type` | | `must be an Amount` |
+| Wrong symbol | `:amount_symbol` | `expected` | `must have symbol %{expected}` |
+| Invalid constraint | `:amount_invalid_constraint` | `option`, `message` | `has invalid %{option} constraint: %{message}` |
+| Incomparable | `:amount_incomparable` | `symbol`, `other_symbol`, `option` | `cannot compare %{symbol} to %{other_symbol} for %{option}` |
+| Comparisons | Rails' `:greater_than`, `:greater_than_or_equal_to`, `:less_than`, `:less_than_or_equal_to` | `count` (the other amount's `to_s`) | Rails' own, e.g. `must be greater than %{count}` |
+| Fallback | Rails' `:invalid` | | `is invalid` |
+
+Override any of them in your own locale files:
+
+```yaml
+de:
+  errors:
+    messages:
+      amount_symbol: "muss das Symbol %{expected} haben"
+```
+
+`record.errors.details` reports the keys and interpolation values.
+Apps that already translate Rails' `greater_than` etc. get those translations
+for free.
+
 ### SQLite Note
 
 The adapter supports SQLite for general integration tests and development, but SQLite does not preserve `DECIMAL(78,0)` values above 64-bit range exactly under ActiveRecord's default numeric handling. For exact wei-scale persistence, use PostgreSQL or another database with true arbitrary-precision numeric behavior.

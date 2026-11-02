@@ -15,6 +15,15 @@ class Amount
         define_amount_validation(definition)
       end
 
+      # Anonymous classes have no `model_name`, which Rails needs to build
+      # messages from error keys. Fall back to a stable placeholder so
+      # validations on `Class.new(ApplicationRecord)` models still report.
+      def model_name
+        return super if name
+
+        @model_name ||= ::ActiveModel::Name.new(self, nil, "AnonymousModel")
+      end
+
       def amount_attribute_definitions
         @amount_attribute_definitions ||= {}
       end

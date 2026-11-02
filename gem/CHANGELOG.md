@@ -1,5 +1,24 @@
 # Changelog
 
+## Unreleased
+
+### Changed
+
+- `AmountValidator` now adds errors by I18n key instead of hard-coded English
+  strings, so apps can translate or reword them: `:amount_type`,
+  `:amount_symbol`, `:amount_invalid_constraint`, `:amount_incomparable`, plus
+  Rails' own `:greater_than`, `:greater_than_or_equal_to`, `:less_than`,
+  `:less_than_or_equal_to` and `:invalid`. English defaults ship in
+  `lib/amount/active_record/locale/en.yml`, loaded into `I18n.load_path` when
+  `amount/active_record` is required (once, with or without Rails). With no app
+  translations, message text is unchanged. `errors.details` now reports the
+  keys and interpolation values.
+
+### Fixed
+
+- Anonymous ActiveRecord classes using `has_amount` get a fallback
+  `model_name`, so validation messages can be generated for them.
+
 ## 0.0.8 - 2026-05-05
 
 ### Changed
