@@ -1,5 +1,22 @@
 # Changelog
 
+## 0.0.9 - 2026-07-16
+
+### Added
+
+- `Registry#resolve_missing { |symbol| ... }` — an optional resolver invoked
+  when `#lookup` misses, before it raises `UnknownType`. The block receives the
+  missing symbol and is expected to register it as a side effect (e.g. from a
+  database row); lookup then retries once. This turns the registry into a
+  read-through cache, so a process that booted before a type was registered can
+  resolve it lazily instead of raising — the failure mode when types are created
+  at runtime and the registry is per-process, in-memory state. The resolver runs
+  without the registry lock held, is guarded against per-thread re-entrancy, and
+  a resolver that raises falls through to the original `UnknownType`. Because all
+  construction paths (`Amount.new`, conversions, generated constructors,
+  `register_default_rate`) funnel through `#lookup`, one resolver covers them all.
+- `#clear!` now also resets the resolver.
+
 ## 0.0.8 - 2026-05-05
 
 ### Changed
