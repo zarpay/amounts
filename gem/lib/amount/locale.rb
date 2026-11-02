@@ -44,27 +44,62 @@ class Amount
       }
     end
 
+    # Picks a form from a plural hash without I18n: `:one` when the number
+    # equals 1, else `:other`. Strings pass through.
+    # @param label [String, Hash, nil]
+    # @param count [BigDecimal, nil]
+    def plain(label, count)
+      return label unless label.is_a?(Hash)
+
+      count == 1 && label.key?(:one) ? label[:one] : label[:other]
+    end
+
     # Label of a registered type: its `label_key`, then
     # `amounts.units.<symbol downcased>`, then `display_symbol`.
     # @return [String, nil]
-    def type_label(entry, locale)
+    def type_label(entry, locale, count = nil)
       key = entry.label_key || "amounts.units.#{entry.symbol.to_s.downcase}"
-      translate(key, locale, entry.display_symbol)
+      translate(key, locale, entry.display_symbol, count)
     end
 
     # Label of a display unit: the spec's `label_key`, then
     # `amounts.display_units.<symbol downcased>.<unit>`, then the spec's
     # `:symbol`, then the type's label.
     # @return [String, nil]
-    def unit_label(entry, unit, spec, locale)
+    def unit_label(entry, unit, spec, locale, count = nil)
       key = spec[:label_key] || "amounts.display_units.#{entry.symbol.to_s.downcase}.#{unit}"
-      translate(key, locale, spec[:symbol] || type_label(entry, locale))
+      translate(key, locale, spec[:symbol] || type_label(entry, locale, count), count)
     end
 
-    # Looks a key up with a default so a miss never yields "translation missing".
-    def translate(key, locale, default)
-      found = ::I18n.t(key.to_s, locale:, default: nil)
-      found.is_a?(String) ? found : default
+    # Looks a key up so a miss never yields "translation missing". A plural
+    # hash (translation or default) is resolved with the locale's rules when a
+    # count is given, else to its `:other` form.
+    def translate(key, locale, default, count = nil)
+      found = lookup(key.to_s, locale, count)
+      return found if found.is_a?(String)
+
+      default.is_a?(Hash) ? pick_plural(default, locale, count) : default
+    end
+
+    def lookup(key, locale, count)
+      opts = count.nil? ? {} : { count: whole(count) }
+      found = ::I18n.t(key, locale:, default: nil, **opts)
+      found.is_a?(Hash) ? pick_plural(found, locale, count) : found
+    rescue ::I18n::InvalidPluralizationData => e
+      e.entry[:other]
+    end
+
+    def pick_plural(forms, locale, count)
+      return forms[:other] if count.nil?
+
+      ::I18n.t("amounts.plural", locale:, default: forms, count: whole(count))
+    rescue ::I18n::InvalidPluralizationData
+      forms[:other]
+    end
+
+    # 1.0 -> 1, so custom pluralization rules can match integers.
+    def whole(count)
+      count.frac.zero? ? count.to_i : count
     end
 
     # Rewrites a plain "-1234.50" style number with the locale's characters.

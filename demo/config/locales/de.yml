@@ -5,9 +5,13 @@ de:
       separator: ","
   amounts:
     units:
-      gold: "Feinunze"
+      gold:
+        one: "Feinunze"
+        other: "Feinunzen"
     display_units:
       gold:
-        oz_t: "Feinunze"
+        oz_t:
+          one: "Feinunze"
+          other: "Feinunzen"
         gram: "Gramm"
         kg: "Kilogramm"
