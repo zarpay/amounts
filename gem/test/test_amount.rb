@@ -675,7 +675,9 @@ class AmountCustomClassTest < Minitest::Test
   end
 end
 
-class AmountLocaleTest < Minitest::Test
+# Default types plus a fresh I18n backend with en, de and fr number formats,
+# restored after each test.
+module LocaleTestSetup
   def setup
     AmountTestSupport.register_default_types!
     @previous_locale = I18n.locale
@@ -694,6 +696,20 @@ class AmountLocaleTest < Minitest::Test
     I18n.locale = @previous_locale
     Amount.registry.clear!
   end
+
+  private
+
+  # Runs the block as if the i18n gem were not loaded.
+  def without_i18n
+    i18n = Object.send(:remove_const, :I18n)
+    yield
+  ensure
+    Object.const_set(:I18n, i18n)
+  end
+end
+
+class AmountLocaleTest < Minitest::Test
+  include LocaleTestSetup
 
   def test_not_localizing_is_unchanged
     assert_equal "$122500.00", Amount.of_usd("122500").ui
@@ -957,14 +973,294 @@ class AmountLocaleTest < Minitest::Test
       assert_equal "$1500.00", Amount.of_usd("1500").ui
     end
   end
+end
+
+class AmountFormattableTest < Minitest::Test
+  include LocaleTestSetup
+
+  NBSP = "\u00A0"
+
+  # Template primitives
+
+  def test_fill_places_number_and_label
+    assert_equal "12.50 €", Amount::Formattable.fill("%n %u", number: "12.50", label: "€")
+    assert_equal "€12.50", Amount::Formattable.fill("%u%n", number: "12.50", label: "€")
+  end
+
+  def test_fill_does_not_expand_placeholders_inside_the_values
+    assert_equal "5 %n", Amount::Formattable.fill("%n %u", number: "5", label: "%n")
+  end
+
+  def test_template_for_matches_the_legacy_layouts
+    assert_equal "%u%n", Amount::Formattable.template_for(:prefix)
+    assert_equal "%n %u", Amount::Formattable.template_for(:suffix)
+    assert_equal "%n %u", Amount::Formattable.template_for(nil)
+  end
+
+  def test_valid_template_requires_a_string_with_the_number
+    assert Amount::Formattable.valid_template?("%n")
+    refute Amount::Formattable.valid_template?("%u")
+    refute Amount::Formattable.valid_template?(:'%n')
+    refute Amount::Formattable.valid_template?(nil)
+  end
+
+  # Amount#display_format
+
+  def test_display_format_is_part_of_the_amount_api
+    assert_includes Amount.ancestors, Amount::Formattable
+    assert_includes Class.new(Amount).ancestors, Amount::Formattable
+  end
+
+  def test_display_format_returns_the_registered_template
+    assert_equal "%u%n", Amount.of_usd("1").display_format
+    assert_equal "%n %u", Amount.of_sol("1").display_format
+  end
+
+  def test_display_format_for_a_display_unit
+    register_mass
+
+    assert_equal "%n#{NBSP}%u", Amount.new("1", :MASS).display_format(unit: :kilo)
+    assert_equal "%u%n", Amount.new("1", :MASS).display_format(unit: :pre)
+    assert_equal "[%u] %n", Amount.new("1", :MASS).display_format(unit: "plain")
+  end
+
+  def test_display_format_for_a_locale
+    register_eur_with_german_template
+
+    assert_equal "%u%n", Amount.of_eur("1").display_format(locale: :en)
+    assert_equal "%n#{NBSP}%u", Amount.of_eur("1").display_format(locale: :de)
+    assert_equal "%u%n", Amount.of_eur("1").display_format
+  end
+
+  def test_display_format_for_an_unknown_display_unit_raises
+    register_mass
+
+    assert_raises(Amount::Registry::InvalidDisplayUnit) { Amount.new("1", :MASS).display_format(unit: :ton) }
+    assert_raises(Amount::Registry::InvalidDisplayUnit) { Amount.of_usd("1").display_format(unit: :cents) }
+  end
+
+  def test_display_format_with_a_locale_requires_i18n
+    without_i18n do
+      assert_raises(ArgumentError) { Amount.of_usd("1").display_format(locale: :de) }
+    end
+  end
+
+  # Registration
+
+  def test_display_position_is_stored_as_its_template
+    assert_equal "%u%n", Amount.registry.lookup(:USD).display_format
+    assert_equal "%n %u", Amount.registry.lookup(:SOL).display_format
+  end
+
+  def test_display_position_defaults_to_suffix
+    Amount.register :PTS, decimals: 0
+
+    entry = Amount.registry.lookup(:PTS)
+    assert_equal :suffix, entry.display_position
+    assert_equal "%n %u", entry.display_format
+  end
+
+  def test_display_format_leaves_display_position_unset
+    Amount.register :EUR, decimals: 2, display_format: "%u%n"
+
+    assert_nil Amount.registry.lookup(:EUR).display_position
+  end
+
+  def test_display_format_and_display_position_together_raise
+    error = assert_raises(ArgumentError) do
+      Amount.register :EUR, decimals: 2, display_format: "%u%n", display_position: :prefix
+    end
+
+    assert_match(/not both/, error.message)
+    refute Amount.registry.registered?(:EUR)
+  end
+
+  def test_display_format_without_number_raises
+    assert_raises(ArgumentError) { Amount.register :EUR, decimals: 2, display_format: "%u" }
+    assert_raises(ArgumentError) { Amount.register :EUR, decimals: 2, display_format: :'%n' }
+  end
+
+  def test_display_unit_format_and_position_together_raise
+    assert_raises(Amount::Registry::InvalidDisplayUnit) do
+      Amount.register :EUR, decimals: 2,
+                            display_units: { cents: { scale: 100, format: "%n %u", position: :prefix } }
+    end
+  end
+
+  def test_display_unit_format_without_number_raises
+    assert_raises(Amount::Registry::InvalidDisplayUnit) do
+      Amount.register :EUR, decimals: 2, display_units: { cents: { scale: 100, format: "%u" } }
+    end
+  end
+
+  # Rendering without templates
+
+  def test_output_without_templates_is_unchanged
+    assert_equal "$1.50", Amount.of_usdc("1.5").ui
+    assert_equal "$-5.00", Amount.of_usd("-5").ui
+    assert_equal "1.5000 oz t", Amount.of_gold("1.5").ui
+    assert_equal "46.65 g", Amount.of_gold("1.5").ui(unit: :gram)
+    assert_equal "$1,500.00", Amount.of_usd("1500").ui(locale: :en)
+    assert_equal "$1.500,00", Amount.of_usd("1500").ui(locale: :de)
+  end
+
+  # Rendering a type's template
+
+  def test_display_format_places_number_and_label
+    Amount.register :EUR, decimals: 2, display_symbol: "€", display_format: "%u %n"
+
+    assert_equal "€ 12.50", Amount.of_eur("12.5").ui
+  end
+
+  def test_display_format_keeps_the_sign_in_the_number
+    Amount.register :EUR, decimals: 2, display_symbol: "€", display_format: "%u%n"
+
+    assert_equal "€-12.50", Amount.of_eur("-12.5").ui
+  end
+
+  def test_display_format_keeps_non_breaking_spaces
+    Amount.register :EUR, decimals: 2, display_symbol: "€", display_format: "%n#{NBSP}%u"
+
+    assert_equal "12.50#{NBSP}€", Amount.of_eur("12.5").ui
+  end
+
+  def test_display_format_places_a_plural_label
+    Amount.register :SEARCHES, decimals: 0,
+                               display_symbol: { one: "search", other: "searches" },
+                               display_format: "%u: %n"
+
+    assert_equal "search: 1", Amount.of_searches(1).ui
+    assert_equal "searches: 3", Amount.of_searches(3).ui
+  end
+
+  def test_display_format_works_without_i18n
+    Amount.register :EUR, decimals: 2, display_symbol: "€", display_format: "%n#{NBSP}%u"
+
+    without_i18n { assert_equal "12.50#{NBSP}€", Amount.of_eur("12.5").ui }
+  end
+
+  def test_undecorated_output_is_the_number_alone
+    Amount.register :EUR, decimals: 2, display_symbol: "€", display_format: "[%u] %n"
+
+    assert_equal "12.50", Amount.of_eur("12.5").ui(decorated: false)
+  end
+
+  def test_empty_label_renders_the_number_alone
+    Amount.register :BARE, decimals: 0, display_symbol: "", display_format: "%n %u"
+
+    assert_equal "7", Amount.of_bare(7).ui
+  end
+
+  def test_wire_format_ignores_display_format
+    Amount.register :EUR, decimals: 2, display_symbol: "€", display_format: "%u%n"
+
+    assert_equal "EUR|12.50", Amount.of_eur("12.5").to_s
+  end
+
+  # Locale templates for a type
+
+  def test_locale_template_differs_between_en_and_de
+    register_eur_with_german_template
+
+    assert_equal "€1,234.50", Amount.of_eur("1234.5").ui(locale: :en)
+    assert_equal "1.234,50#{NBSP}€", Amount.of_eur("1234.5").ui(locale: :de)
+  end
+
+  def test_locale_template_keeps_the_sign_in_the_number
+    register_eur_with_german_template
+
+    assert_equal "-1.234,50#{NBSP}€", Amount.of_eur("-1234.5").ui(locale: :de)
+  end
+
+  def test_locale_template_is_ignored_when_not_localizing
+    register_eur_with_german_template
+
+    assert_equal "€1234.50", Amount.of_eur("1234.5").ui
+  end
+
+  def test_locale_template_follows_i18n_locale_when_localize_is_on
+    register_eur_with_german_template
+    Amount.localize = true
+    I18n.locale = :de
+
+    assert_equal "1.234,50#{NBSP}€", Amount.of_eur("1234.5").ui
+  end
+
+  def test_locale_template_overrides_display_position
+    I18n.backend.store_translations(:de, amounts: { formats: { usd: "%n %u" } })
+
+    assert_equal "1.500,00 $", Amount.of_usd("1500").ui(locale: :de)
+  end
+
+  def test_locale_template_uses_the_translated_label
+    Amount.register :SEARCHES, decimals: 0
+    I18n.backend.store_translations(:de, amounts: { units: { searches: "Suchen" }, formats: { searches: "%u: %n" } })
+
+    assert_equal "Suchen: 1.500", Amount.new(1500, :SEARCHES).ui(locale: :de)
+  end
+
+  def test_locale_template_without_number_is_ignored
+    register_eur_with_german_template
+    I18n.backend.store_translations(:de, amounts: { formats: { eur: "%u" } })
+
+    assert_equal "€1.234,50", Amount.of_eur("1234.5").ui(locale: :de)
+  end
+
+  # Display units
+
+  def test_display_unit_format_places_number_and_label
+    register_mass
+
+    assert_equal "1.00#{NBSP}kg", Amount.new("1", :MASS).ui(unit: :kilo)
+  end
+
+  def test_display_unit_position_still_works
+    register_mass
+
+    assert_equal "p1.00", Amount.new("1", :MASS).ui(unit: :pre)
+  end
+
+  def test_display_unit_without_template_uses_the_types
+    register_mass
+
+    assert_equal "[x] 1.00", Amount.new("1", :MASS).ui(unit: :plain)
+  end
+
+  def test_display_unit_locale_template_overrides_its_format
+    register_mass
+    I18n.backend.store_translations(:de, amounts: { display_unit_formats: { mass: { kilo: "%u %n" } } })
+
+    assert_equal "kg 1,00", Amount.new("1", :MASS).ui(unit: :kilo, locale: :de)
+    assert_equal "1.00#{NBSP}kg", Amount.new("1", :MASS).ui(unit: :kilo, locale: :en)
+  end
+
+  def test_display_unit_without_template_uses_the_types_locale_template
+    register_mass
+    I18n.backend.store_translations(:de, amounts: { formats: { mass: "%u: %n" } })
+
+    assert_equal "x: 1,00", Amount.new("1", :MASS).ui(unit: :plain, locale: :de)
+    assert_equal "p1,00", Amount.new("1", :MASS).ui(unit: :pre, locale: :de)
+  end
+
+  def test_display_unit_undecorated_output_is_the_number_alone
+    register_mass
+
+    assert_equal "1.00", Amount.new("1", :MASS).ui(unit: :kilo, decorated: false)
+  end
 
   private
 
-  def without_i18n
-    i18n = Object.send(:remove_const, :I18n)
-    yield
-  ensure
-    Object.const_set(:I18n, i18n)
+  def register_eur_with_german_template
+    Amount.register :EUR, decimals: 2, display_symbol: "€", display_format: "%u%n"
+    I18n.backend.store_translations(:de, amounts: { formats: { eur: "%n#{NBSP}%u" } })
+  end
+
+  def register_mass
+    Amount.register :MASS, decimals: 2, display_symbol: "mass", display_format: "[%u] %n", display_units: {
+      kilo: { scale: 1, symbol: "kg", format: "%n#{NBSP}%u" },
+      pre: { scale: 1, symbol: "p", position: :prefix },
+      plain: { scale: 1, symbol: "x" }
+    }
   end
 end
 

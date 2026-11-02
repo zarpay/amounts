@@ -59,7 +59,7 @@ RSpec.describe "Auric Vault localized display", :integration, type: :model do
     expect(bullion.weight_label(locale: :de)).to eq("12,5000 Feinunzen")
     expect(bullion.weight_label(unit: :kg, locale: :de)).to eq("0,38879 Kilogramm")
     expect(bullion.appraisal_label(locale: :en)).to eq("$25,000.00")
-    expect(bullion.appraisal_label(locale: :de)).to eq("$25.000,00")
+    expect(bullion.appraisal_label(locale: :de)).to eq("25.000,00\u00A0$")
   end
 
   it "parses typed numbers in a locale and round-trips ui output" do
@@ -101,8 +101,14 @@ RSpec.describe "Auric Vault localized display", :integration, type: :model do
 
   it "follows I18n.locale when Amount.localize is on" do
     Amount.localize = true
-    I18n.with_locale(:de) { expect(bullion.appraisal_label).to eq("$25.000,00") }
+    I18n.with_locale(:de) { expect(bullion.appraisal_label).to eq("25.000,00\u00A0$") }
     I18n.with_locale(:en) { expect(bullion.appraisal_label).to eq("$25,000.00") }
+  end
+
+  it "places the unit with the locale's template, keeping its non-breaking space" do
+    expect(bullion.appraisal_label(locale: :de)).to eq("25.000,00\u00A0$")
+    expect(bullion.appraisal_label(locale: :en)).to eq("$25,000.00")
+    expect(bullion.appraisal.ui(locale: :de, decorated: false)).to eq("25.000,00")
   end
 
   it "keeps the wire format locale-free" do
@@ -114,6 +120,6 @@ RSpec.describe "Auric Vault localized display", :integration, type: :model do
   end
 
   it "formats large and negative values with grouping" do
-    expect(Amount.of_usdc("-1234567.5").ui(locale: :de)).to eq("$-1.234.567,50")
+    expect(Amount.of_usdc("-1234567.5").ui(locale: :de)).to eq("-1.234.567,50\u00A0$")
   end
 end
