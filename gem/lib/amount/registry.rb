@@ -2,7 +2,7 @@
 
 require "bigdecimal"
 require "thread"
-require_relative "formattable"
+require_relative "concerns/formattable"
 require_relative "registry/generated_constructors"
 
 class Amount

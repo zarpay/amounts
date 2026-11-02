@@ -6,16 +6,24 @@ require "forwardable"
 require_relative "amount/version"
 require_relative "amount/registry"
 require_relative "amount/locale"
-require_relative "amount/formattable"
 require_relative "amount/compact"
 require_relative "amount/display"
 require_relative "amount/parser"
 require_relative "amount/ui_parser"
-require_relative "amount/arithmetic"
-require_relative "amount/allocation"
-require_relative "amount/comparison"
-require_relative "amount/conversion"
-require_relative "amount/serialization"
+
+# Concerns: modules mixed into Amount. Files live in amount/concerns/, but the
+# constants are Amount::<Name> (the folder is not a namespace).
+require_relative "amount/concerns/registration"
+require_relative "amount/concerns/localization"
+require_relative "amount/concerns/parsing"
+require_relative "amount/concerns/construction"
+require_relative "amount/concerns/coercion"
+require_relative "amount/concerns/arithmetic"
+require_relative "amount/concerns/allocation"
+require_relative "amount/concerns/comparison"
+require_relative "amount/concerns/conversion"
+require_relative "amount/concerns/serialization"
+require_relative "amount/concerns/formattable"
 
 # Represents a precise quantity of a registered fungible type.
 #
@@ -24,22 +32,26 @@ require_relative "amount/serialization"
 # strings or decimals, while integer inputs are treated as atomic counts unless
 # `from:` overrides inference.
 #
-# Behavior is composed from a set of focused mixins:
+# This class holds only an amount's identity: its atomic value, its symbol and
+# registry entry, and the decimal view of the value. Everything else comes
+# from concerns:
+# - {Registration}  — `Amount.registry`, `register`, `register_default_rate`,
+#   `with_registry`
+# - {Localization}  — `Amount.localize`
+# - {Parsing}       — `Amount.parse`, `Amount.parse_ui`
+# - {Construction}  — input inference, `Amount.new` dispatch to a registered
+#   subclass, `build`
+# - {Coercion}      — `Amount.coerce_decimal`, cross-type operand coercion
 # - {Arithmetic}    — `+`, `-`, `*`, `/`, `abs`, `-@`
 # - {Comparison}    — `<=>`, `==`, `eql?`, `hash`, `same_type?`, sign predicates
 # - {Conversion}    — `to(:SYMBOL, rate:)`
 # - {Allocation}    — `split(n)`, `allocate(weights)`
-# - {Serialization} — `to_h`
+# - {Serialization} — `to_h`, `as_json`, `Amount.load`
 # - {Formattable}   — `display_format(unit:, locale:)`, where the number and
 #   unit go
 #
-# New behavior belongs in a concern like {Formattable}, not in this class: a
-# plain Ruby module in `lib/amount/<concern>.rb` (the core can't use
-# `ActiveSupport::Concern`) that owns its constants, its public instance
-# methods with YARD docs, its private helpers, and any stateless helpers other
-# parts of the gem share as `self.` methods. It relies only on Amount's public
-# surface (`symbol`, `registry_entry`, ...) and has its own section in
-# `test/test_amount.rb`.
+# New behavior belongs in a concern, not in this class. See
+# `.claude/rules/concerns.md` for the shape a concern takes.
 #
 # @example Constructing from a UI value
 #   Amount.register :USDC, decimals: 6
@@ -51,6 +63,11 @@ require_relative "amount/serialization"
 #   Amount.of_usdc(1_500_000, from: :atomic).decimal.to_s("F")
 #   # => "1.5"
 class Amount
+  include Registration
+  include Localization
+  include Parsing
+  include Construction
+  include Coercion
   include Arithmetic
   include Allocation
   include Comparison
@@ -65,164 +82,11 @@ class Amount
   class InvalidInput < Error; end
   class UnregisteredType < Error; end
 
-  class << self
-    # Whether `ui` formats numbers for `I18n.locale` when no `locale:` is
-    # given. Defaults to `false`.
-    # @return [Boolean]
-    def localize?
-      @localize ? true : false
-    end
-    alias localize localize?
-
-    # @param value [Boolean]
-    # @raise [ArgumentError] when enabling without I18n loaded
-    def localize=(value)
-      Locale.require_i18n! if value
-      @localize = value ? true : false
-    end
-
-    # @return [Amount::Registry]
-    # @example Accessing the shared registry
-    #   Amount.registry.locked?
-    #   # => false
-    def registry
-      Amount.instance_variable_get(:@registry) ||
-        replace_registry(Registry.new)
-    end
-
-    # @param symbol [Symbol, String]
-    # @param opts [Hash]
-    # @return [void]
-    # @example Registering a type
-    #   Amount.register :USDC,
-    #     decimals: 6,
-    #     display_symbol: "$",
-    #     display_position: :prefix,
-    #     ui_decimals: 2
-    def register(symbol, **opts)
-      registry.register(symbol, **opts)
-    end
-
-    # @param from [Symbol, String]
-    # @param to [Symbol, String]
-    # @param rate [String, Numeric, BigDecimal]
-    # @return [void]
-    # @example Registering a directional default rate
-    #   Amount.register_default_rate :USD, :USDC, "1"
-    def register_default_rate(from, to, rate)
-      registry.register_default_rate(from, to, rate)
-    end
-
-    # Parses the compact client-facing string representation.
-    #
-    # Accepts either the default form `SYMBOL|amount` or the explicit versioned
-    # form `v1:SYMBOL|amount`.
-    #
-    # @param str [String]
-    # @return [Amount]
-    # @raise [InvalidInput]
-    # @example Parsing the default compact format
-    #   Amount.parse("USDC|1.50")
-    #
-    # @example Parsing the explicit versioned compact format
-    #   Amount.parse("v1:USDC|1.50")
-    def parse(str)
-      Parser.new(str).parse
-    end
-
-    # Parses text typed by a person, in a locale's number format.
-    #
-    # The effective locale is `locale:`, then `I18n.locale` when
-    # `Amount.localize` is true, else plain parsing (`.` decimal, no
-    # delimiters). Accepts surrounding whitespace, a leading `-` or `+`,
-    # delimiters in groups of three, and the type's label (any plural form) at
-    # either end. Never rounds.
-    #
-    # @param input [String]
-    # @param symbol [Symbol, String]
-    # @param locale [Symbol, String, nil]
-    # @return [Amount] an instance of the type's registered class
-    # @raise [InvalidInput] for too many decimals, misplaced delimiters, a
-    #   repeated separator, another type's label, or empty input
-    # @raise [Registry::UnknownType] for an unregistered symbol
-    # @example
-    #   Amount.parse_ui("1.500,50", :USD, locale: :de) # => USD|1500.50
-    def parse_ui(input, symbol, locale: nil)
-      UiParser.new(input, symbol, locale).parse
-    end
-
-    # When called as `Amount.new` for a symbol whose registry entry binds a
-    # custom class, dispatch the construction to that class instead of raising.
-    # Direct calls to a subclass (`GoldAmount.new(...)`) still go through the
-    # default `Class.new` path. Calls that target the wrong subclass continue
-    # to raise from `#initialize`.
-    #
-    # @param value [Integer, String, Float, BigDecimal, Rational]
-    # @param symbol [Symbol, String]
-    # @param from [Symbol, nil]
-    # @return [Amount]
-    def new(value, symbol, from: nil)
-      if equal?(::Amount)
-        entry_class = registry.lookup(symbol.to_sym).amount_class
-        return entry_class.new(value, symbol, from:) if entry_class && entry_class != ::Amount
-      end
-      super
-    end
-
-    # Coerces a numeric input to BigDecimal in a way that preserves Rational
-    # values. `BigDecimal(value.to_s)` raises `ArgumentError` for Rational
-    # because `Rational#to_s` produces strings like `"3/2"`. This helper is
-    # the single place every call site should use to convert a scalar / rate /
-    # display-unit scale into a BigDecimal.
-    #
-    # @param value [Numeric, BigDecimal, Rational, String]
-    # @return [BigDecimal]
-    def coerce_decimal(value)
-      case value
-      when BigDecimal then value
-      when Rational then BigDecimal(value, Float::DIG + 4)
-      else BigDecimal(value.to_s)
-      end
-    end
-
-    # Temporarily swaps the global registry. Intended for tests.
-    #
-    # @param registry [Amount::Registry]
-    # @yield
-    # @return [Object]
-    # @example Using a temporary registry
-    #   test_registry = Amount::Registry.new
-    #   Amount.with_registry(test_registry) do
-    #     Amount.register :TEST, decimals: 2
-    #   end
-    def with_registry(registry)
-      original = Amount.instance_variable_get(:@registry)
-      replace_registry(registry)
-      yield
-    ensure
-      replace_registry(original)
-    end
-
-    private
-
-    def replace_registry(registry)
-      current = Amount.instance_variable_get(:@registry)
-      current&.remove_generated_methods!
-      Amount.instance_variable_set(:@registry, registry)
-      registry&.activate_generated_methods!
-      registry
-    end
-  end
-
   attr_reader :atomic, :symbol, :display
 
   # Creates an amount for a registered symbol.
   #
-  # Input inference rules:
-  # - `Integer` => atomic units
-  # - `String` => UI decimal value
-  # - `Float`, `BigDecimal`, `Rational` => UI decimal value
-  # - `from:` overrides inference explicitly
+  # See {Construction} for how `value` is read.
   #
   # @param value [Integer, String, Float, BigDecimal, Rational]
   # @param symbol [Symbol, String] registered type identifier
@@ -239,12 +103,7 @@ class Amount
   def initialize(value, symbol, from: nil)
     @symbol = symbol.to_sym
     @entry = self.class.registry.lookup(@symbol)
-
-    expected = @entry.amount_class
-    if expected && expected != Amount && self.class != Amount && !instance_of?(expected)
-      raise InvalidInput, "use #{expected}.new for #{@symbol}"
-    end
-
+    ensure_registered_class!
     @atomic = infer_value(from, value)
     @display = Display.new(self)
   end
@@ -281,63 +140,5 @@ class Amount
   #   # => "#<Amount USDC $1.50>"
   def inspect
     "#<#{self.class} #{symbol} #{ui}>"
-  end
-
-  private
-
-  # Builds a same-symbol amount in the receiver's class. Used by every
-  # operator that returns an Amount so subclass identity propagates.
-  def build(atomic_value)
-    self.class.new(atomic_value, symbol, from: :atomic)
-  end
-
-  def ensure_same_type!(other)
-    return if same_type?(other)
-
-    raise TypeMismatch, "type mismatch: #{symbol} vs #{other.is_a?(Amount) ? other.symbol : other.class}"
-  end
-
-  def coerce_other_to_self_type(other)
-    return other if same_type?(other)
-    return unless other.is_a?(Amount)
-
-    other.to(symbol)
-  rescue Registry::NoDefaultRate
-    nil
-  end
-
-  def coerce_other_to_self_type!(other)
-    coerce_other_to_self_type(other) || raise(
-      TypeMismatch,
-      "type mismatch: #{symbol} vs #{other.is_a?(Amount) ? other.symbol : other.class}"
-    )
-  end
-
-  def infer_value(from, value)
-    case from || infer_type(value)
-    when :atomic then value.to_i
-    when :ui then ui_to_atomic(value)
-    when :float then ui_to_atomic(value.is_a?(Rational) ? value : value.to_s)
-    else
-      raise InvalidInput, "unknown amount format: #{value.inspect}"
-    end
-  end
-
-  def infer_type(value)
-    case value
-    when Integer then :atomic
-    when String then :ui
-    when Float, BigDecimal, Rational then :float
-    else
-      raise InvalidInput, "cannot infer type for #{value.class}"
-    end
-  end
-
-  def ui_to_atomic(value)
-    return (value * (10**decimals)).to_i if value.is_a?(Rational)
-
-    (BigDecimal(value.to_s) * (BigDecimal(10)**decimals)).to_i
-  rescue ArgumentError
-    raise InvalidInput, "cannot parse #{value.inspect} as #{symbol}"
   end
 end
