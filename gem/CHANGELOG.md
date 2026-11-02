@@ -5,14 +5,14 @@
 ### Added
 
 - Plural unit labels. `display_symbol:` (and a display unit's `symbol:`) accept
-  a hash such as `{ one: "search", other: "searches" }`, giving `1 search` /
+  a hash such as `{ singular: "search", plural: "searches" }`, giving `1 search` /
   `2 searches`. `register` raises (`Registry::InvalidDisplaySymbol`, or
-  `InvalidDisplayUnit` for a unit) unless the hash has `:other` and maps
+  `InvalidDisplayUnit` for a unit) unless the hash has `:plural` and maps
   Symbols to Strings. The count is the displayed number (after scaling and
-  rounding). Without localizing, `:one` is used when it equals 1, else
-  `:other`; when localizing, I18n translations and hashes are pluralized with
-  `count:` through the locale's rules (`few`, `many`, ...). A missing form falls
-  back to `:other`. `unit_label` takes `count:`; without it the `:other` form is
+  rounding). Without localizing, `:singular` is used when it equals 1, else
+  `:plural`; when localizing, I18n translations and hashes are pluralized with
+  `count:` through the locale's rules (`few`, `many`, ...).  `one`/`other` are accepted as aliases. A missing form falls
+  back to `:plural`. `unit_label` takes `count:`; without it the `:plural` form is
   used. String labels are unchanged.
 - Unit labels can come from I18n. `register` takes `label_key:` (String or
   Symbol); without it the key is `amounts.units.<symbol downcased>`. Display

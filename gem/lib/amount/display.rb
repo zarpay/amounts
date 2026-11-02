@@ -51,7 +51,7 @@ class Amount
     # @param unit [Symbol, nil] display unit
     # @param locale [Symbol, String, nil]
     # @param count [Numeric, String, nil] the number the label agrees with, for
-    #   plural labels. Without it the `:other` form is used.
+    #   plural labels. Without it the `:plural` form is used.
     # @return [String]
     # @example
     #   Amount.of_searches(3).unit_label(locale: :de)  # => "Suchen"

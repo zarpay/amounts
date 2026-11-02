@@ -848,7 +848,7 @@ class AmountLocaleTest < Minitest::Test
 
   def test_hash_label_without_i18n
     without_i18n do
-      Amount.register :SEARCHES, decimals: 0, display_symbol: { one: "search", other: "searches" }
+      Amount.register :SEARCHES, decimals: 0, display_symbol: { singular: "search", plural: "searches" }
       assert_equal "1 search", Amount.new(1, :SEARCHES).ui
       assert_equal "0 searches", Amount.new(0, :SEARCHES).ui
       assert_equal "2 searches", Amount.new(2, :SEARCHES).ui
@@ -858,19 +858,19 @@ class AmountLocaleTest < Minitest::Test
   end
 
   def test_hash_label_agrees_with_displayed_number
-    Amount.register :SEARCHES, decimals: 2, display_symbol: { one: "search", other: "searches" }
+    Amount.register :SEARCHES, decimals: 2, display_symbol: { singular: "search", plural: "searches" }
     assert_equal "1.00 search", Amount.new(100, :SEARCHES).ui
     assert_equal "1.5 searches", Amount.new(150, :SEARCHES).ui(trim_zeros: true)
     assert_equal "1.00 search", Amount.new(100, :SEARCHES).ui(locale: :fr).sub(",", ".")
     # count is the displayed number: 1.04 floors to 1.0 at one ui decimal
-    Amount.register :RATED, decimals: 2, ui_decimals: 1, display_symbol: { one: "star", other: "stars" }
+    Amount.register :RATED, decimals: 2, ui_decimals: 1, display_symbol: { singular: "star", plural: "stars" }
     assert_equal "1.0 star", Amount.new(104, :RATED).ui
     assert_equal "1.1 stars", Amount.new(104, :RATED).ui(direction: :ceil)
   end
 
   def test_hash_display_unit_symbol
     Amount.register :MASS, decimals: 0, display_units: {
-      kilo: { scale: 1, symbol: { one: "kilo", other: "kilos" }, ui_decimals: 0 }
+      kilo: { scale: 1, symbol: { singular: "kilo", plural: "kilos" }, ui_decimals: 0 }
     }
     assert_equal "1 kilo", Amount.new(1, :MASS).ui(unit: :kilo)
     assert_equal "3 kilos", Amount.new(3, :MASS).ui(unit: :kilo)
@@ -880,7 +880,7 @@ class AmountLocaleTest < Minitest::Test
 
   def test_i18n_plural_labels
     Amount.register :SEARCHES, decimals: 0
-    I18n.backend.store_translations(:en, amounts: { units: { searches: { one: "search", other: "searches" } } })
+    I18n.backend.store_translations(:en, amounts: { units: { searches: { singular: "search", plural: "searches" } } })
     assert_equal "1 search", Amount.new(1, :SEARCHES).ui(locale: :en)
     assert_equal "0 searches", Amount.new(0, :SEARCHES).ui(locale: :en)
     assert_equal "2 searches", Amount.new(2, :SEARCHES).ui(locale: :en)
@@ -889,8 +889,16 @@ class AmountLocaleTest < Minitest::Test
     assert_equal "1 SEARCHES", Amount.new(1, :SEARCHES).ui
   end
 
+  def test_i18n_singular_plural_keys
+    Amount.register :SEARCHES, decimals: 0
+    I18n.backend.store_translations(:en, amounts: { units: { searches: { singular: "search", plural: "searches" } } })
+    assert_equal "1 search", Amount.new(1, :SEARCHES).ui(locale: :en)
+    assert_equal "2 searches", Amount.new(2, :SEARCHES).ui(locale: :en)
+    assert_equal "searches", Amount.new(1, :SEARCHES).unit_label(locale: :en)
+  end
+
   def test_i18n_plural_hash_default_uses_locale_rules
-    Amount.register :SEARCHES, decimals: 0, display_symbol: { one: "search", other: "searches" }
+    Amount.register :SEARCHES, decimals: 0, display_symbol: { singular: "search", plural: "searches" }
     assert_equal "1 search", Amount.new(1, :SEARCHES).ui(locale: :en)
     assert_equal "2 searches", Amount.new(2, :SEARCHES).ui(locale: :en)
   end
@@ -922,16 +930,16 @@ class AmountLocaleTest < Minitest::Test
 
   def test_invalid_hash_labels_rejected
     error = assert_raises(Amount::Registry::InvalidDisplaySymbol) do
-      Amount.register :SEARCHES, decimals: 0, display_symbol: { one: "search" }
+      Amount.register :SEARCHES, decimals: 0, display_symbol: { singular: "search" }
     end
-    assert_match(/:other/, error.message)
+    assert_match(/:plural/, error.message)
     assert_raises(Amount::Registry::InvalidDisplaySymbol) do
-      Amount.register :SEARCHES, decimals: 0, display_symbol: { "other" => "x" }
+      Amount.register :SEARCHES, decimals: 0, display_symbol: { "plural" => "x" }
     end
     error = assert_raises(Amount::Registry::InvalidDisplayUnit) do
-      Amount.register :MASS, decimals: 0, display_units: { kilo: { scale: 1, symbol: { one: "kilo" } } }
+      Amount.register :MASS, decimals: 0, display_units: { kilo: { scale: 1, symbol: { singular: "kilo" } } }
     end
-    assert_match(/:other/, error.message)
+    assert_match(/:plural/, error.message)
     refute Amount.registry.registered?(:SEARCHES)
   end
 

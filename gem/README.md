@@ -262,20 +262,20 @@ the same rules as `ui`.
 
 Labels can agree with the number: `1 search`, `2 searches`. `count` is the
 number as displayed, after unit scaling and rounding (`direction:`) and before
-formatting, so `1.00` is one and `1.50` is other.
+formatting, so `1.00` is singular and `1.50` is plural.
 
 In code, without I18n, give `display_symbol:` (or a display unit's `symbol:`) a
-hash. It must have `:other`; `register` raises otherwise.
+hash. It must have `:plural`; `register` raises otherwise.
 
 ```ruby
-Amount.register :SEARCHES, decimals: 0, display_symbol: { one: "search", other: "searches" }
+Amount.register :SEARCHES, decimals: 0, display_symbol: { singular: "search", plural: "searches" }
 
 Amount.of_searches(1).ui   # => "1 search"
 Amount.of_searches(0).ui   # => "0 searches"
 Amount.of_searches(2).ui   # => "2 searches"
 ```
 
-The hash uses `:one` when the displayed number equals 1, else `:other`. When
+The hash uses `:singular` when the displayed number equals 1, else `:plural`. When
 localizing with I18n loaded, the locale's pluralization rules decide instead,
 so a hash can carry `few`, `many`, ... too. I18n translations can be plural
 hashes as well:
@@ -285,12 +285,12 @@ en:
   amounts:
     units:
       searches:
-        one: "search"
-        other: "searches"
+        singular: "search"
+        plural: "searches"
 ```
 
 `unit_label(count: nil)` takes the same behavior; without a number it uses
-`:other`: `Amount.of_searches(1).unit_label(count: 1) # => "search"`.
+`:plural`: `Amount.of_searches(1).unit_label(count: 1) # => "search"`.
 String labels behave exactly as before.
 
 ### Serialization
