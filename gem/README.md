@@ -290,6 +290,13 @@ Templates are used exactly as given; nothing inserts non-breaking spaces for
 you, so put them in your locale files. Negative numbers keep their sign inside
 `%n` (`"$-5.00"`).
 
+`display_format(unit: nil, locale: nil)` returns the template `ui` would use,
+for rendering the number and label yourself:
+
+```ruby
+Amount.of_eur("12.5").display_format(locale: :de)  # => "%n\u00A0%u"
+```
+
 ### Serialization
 
 ```ruby

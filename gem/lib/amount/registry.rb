@@ -2,7 +2,7 @@
 
 require "bigdecimal"
 require "thread"
-require_relative "display_format"
+require_relative "formattable"
 require_relative "registry/generated_constructors"
 
 class Amount
@@ -40,7 +40,18 @@ class Amount
       :amount_class,
       :trim_zeros,
       keyword_init: true
-    )
+    ) do
+      # @param unit [Symbol, String]
+      # @return [Hash] the display unit's spec
+      # @raise [InvalidDisplayUnit] when the type has no such display unit
+      def display_unit(unit)
+        raise InvalidDisplayUnit, "#{symbol} has no display_units configured" unless display_units
+
+        display_units.fetch(unit.to_sym) do
+          raise InvalidDisplayUnit, "unknown display unit #{unit} for #{symbol}"
+        end
+      end
+    end
 
     def initialize
       @entries       = {}
@@ -108,7 +119,7 @@ class Amount
           display_symbol:,
           label_key: label_key&.to_s,
           display_position: display_format ? nil : (display_position || :suffix),
-          display_format: display_format || DisplayFormat.for_position(display_position),
+          display_format: display_format || Formattable.template_for(display_position),
           ui_decimals:,
           display_units:,
           default_display:,
@@ -249,7 +260,7 @@ class Amount
 
     def validate_display_format!(format, position)
       raise ArgumentError, "pass display_format or display_position, not both" if position
-      return if DisplayFormat.valid?(format)
+      return if Formattable.valid_template?(format)
 
       raise ArgumentError, "display_format must be a String containing %n"
     end
@@ -276,7 +287,7 @@ class Amount
       if spec.key?(:position)
         raise InvalidDisplayUnit, "display_unit #{key} takes :format or :position, not both"
       end
-      return if DisplayFormat.valid?(spec[:format])
+      return if Formattable.valid_template?(spec[:format])
 
       raise InvalidDisplayUnit, "display_unit #{key} :format must be a String containing %n"
     end

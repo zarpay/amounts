@@ -258,6 +258,15 @@ Precedence:
 A locale template without `%n` is ignored, so a typo in a locale file falls
 back to the configured template instead of dropping the number.
 
+`display_format` returns the template that `ui` would use, following the same
+precedence, for when you place the number and label yourself:
+
+```ruby
+eur.display_format                    # => "%u%n"
+eur.display_format(locale: :de)       # => "%n\u00A0%u"
+Amount.of_gold("1").display_format(unit: :gram)  # => "%n\u00A0%u"
+```
+
 Symbols are downcased in keys. Templates are used exactly as given: nothing
 inserts non-breaking spaces automatically, so put them in your locale files
 (`"%n\u00A0%u"` in YAML double quotes, or the literal character) wherever the

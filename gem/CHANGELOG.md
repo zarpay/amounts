@@ -17,6 +17,12 @@
   `InvalidDisplayUnit`. `Registry::Entry#display_format` always holds the
   type's template, and `#display_position` is `nil` for a type registered
   with `display_format:`.
+- `Amount#display_format(unit: nil, locale: nil)` returns the template `ui`
+  uses for the type or a display unit, with the same locale precedence.
+  Template behavior lives in the new `Amount::Formattable` concern, included
+  in `Amount`.
+- `Registry::Entry#display_unit(unit)` returns a display unit's spec, raising
+  `InvalidDisplayUnit` for an unknown unit.
 - Unit labels can come from I18n. `register` takes `label_key:` (String or
   Symbol); without it the key is `amounts.units.<symbol downcased>`. Display
   units take `label_key:` in their spec, defaulting to

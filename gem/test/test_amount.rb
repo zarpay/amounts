@@ -886,33 +886,74 @@ class AmountLocaleTest < Minitest::Test
   end
 end
 
-class AmountDisplayFormatTest < Minitest::Test
+class AmountFormattableTest < Minitest::Test
   include LocaleTestSetup
 
-  NBSP = " "
+  NBSP = "\u00A0"
 
-  # DisplayFormat
+  # Template primitives
 
-  def test_apply_fills_number_and_label
-    assert_equal "12.50 €", Amount::DisplayFormat.apply("%n %u", number: "12.50", label: "€")
-    assert_equal "€12.50", Amount::DisplayFormat.apply("%u%n", number: "12.50", label: "€")
+  def test_fill_places_number_and_label
+    assert_equal "12.50 €", Amount::Formattable.fill("%n %u", number: "12.50", label: "€")
+    assert_equal "€12.50", Amount::Formattable.fill("%u%n", number: "12.50", label: "€")
   end
 
-  def test_apply_does_not_expand_placeholders_inside_the_values
-    assert_equal "5 %n", Amount::DisplayFormat.apply("%n %u", number: "5", label: "%n")
+  def test_fill_does_not_expand_placeholders_inside_the_values
+    assert_equal "5 %n", Amount::Formattable.fill("%n %u", number: "5", label: "%n")
   end
 
-  def test_for_position_matches_the_legacy_layouts
-    assert_equal "%u%n", Amount::DisplayFormat.for_position(:prefix)
-    assert_equal "%n %u", Amount::DisplayFormat.for_position(:suffix)
-    assert_equal "%n %u", Amount::DisplayFormat.for_position(nil)
+  def test_template_for_matches_the_legacy_layouts
+    assert_equal "%u%n", Amount::Formattable.template_for(:prefix)
+    assert_equal "%n %u", Amount::Formattable.template_for(:suffix)
+    assert_equal "%n %u", Amount::Formattable.template_for(nil)
   end
 
-  def test_valid_requires_a_string_with_the_number
-    assert Amount::DisplayFormat.valid?("%n")
-    refute Amount::DisplayFormat.valid?("%u")
-    refute Amount::DisplayFormat.valid?(:'%n')
-    refute Amount::DisplayFormat.valid?(nil)
+  def test_valid_template_requires_a_string_with_the_number
+    assert Amount::Formattable.valid_template?("%n")
+    refute Amount::Formattable.valid_template?("%u")
+    refute Amount::Formattable.valid_template?(:'%n')
+    refute Amount::Formattable.valid_template?(nil)
+  end
+
+  # Amount#display_format
+
+  def test_display_format_is_part_of_the_amount_api
+    assert_includes Amount.ancestors, Amount::Formattable
+    assert_includes Class.new(Amount).ancestors, Amount::Formattable
+  end
+
+  def test_display_format_returns_the_registered_template
+    assert_equal "%u%n", Amount.of_usd("1").display_format
+    assert_equal "%n %u", Amount.of_sol("1").display_format
+  end
+
+  def test_display_format_for_a_display_unit
+    register_mass
+
+    assert_equal "%n#{NBSP}%u", Amount.new("1", :MASS).display_format(unit: :kilo)
+    assert_equal "%u%n", Amount.new("1", :MASS).display_format(unit: :pre)
+    assert_equal "[%u] %n", Amount.new("1", :MASS).display_format(unit: "plain")
+  end
+
+  def test_display_format_for_a_locale
+    register_eur_with_german_template
+
+    assert_equal "%u%n", Amount.of_eur("1").display_format(locale: :en)
+    assert_equal "%n#{NBSP}%u", Amount.of_eur("1").display_format(locale: :de)
+    assert_equal "%u%n", Amount.of_eur("1").display_format
+  end
+
+  def test_display_format_for_an_unknown_display_unit_raises
+    register_mass
+
+    assert_raises(Amount::Registry::InvalidDisplayUnit) { Amount.new("1", :MASS).display_format(unit: :ton) }
+    assert_raises(Amount::Registry::InvalidDisplayUnit) { Amount.of_usd("1").display_format(unit: :cents) }
+  end
+
+  def test_display_format_with_a_locale_requires_i18n
+    without_i18n do
+      assert_raises(ArgumentError) { Amount.of_usd("1").display_format(locale: :de) }
+    end
   end
 
   # Registration

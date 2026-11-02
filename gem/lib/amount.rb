@@ -6,6 +6,7 @@ require "forwardable"
 require_relative "amount/version"
 require_relative "amount/registry"
 require_relative "amount/locale"
+require_relative "amount/formattable"
 require_relative "amount/display"
 require_relative "amount/parser"
 require_relative "amount/arithmetic"
@@ -27,6 +28,16 @@ require_relative "amount/serialization"
 # - {Conversion}    — `to(:SYMBOL, rate:)`
 # - {Allocation}    — `split(n)`, `allocate(weights)`
 # - {Serialization} — `to_h`
+# - {Formattable}   — `display_format(unit:, locale:)`, where the number and
+#   unit go
+#
+# New behavior belongs in a concern like {Formattable}, not in this class: a
+# plain Ruby module in `lib/amount/<concern>.rb` (the core can't use
+# `ActiveSupport::Concern`) that owns its constants, its public instance
+# methods with YARD docs, its private helpers, and any stateless helpers other
+# parts of the gem share as `self.` methods. It relies only on Amount's public
+# surface (`symbol`, `registry_entry`, ...) and has its own section in
+# `test/test_amount.rb`.
 #
 # @example Constructing from a UI value
 #   Amount.register :USDC, decimals: 6
@@ -43,6 +54,7 @@ class Amount
   include Comparison
   include Conversion
   include Serialization
+  include Formattable
 
   extend Forwardable
 

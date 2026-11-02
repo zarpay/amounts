@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require_relative "display_format"
-
 class Amount
   # Internal: decides the effective locale and reads number formatting from
   # I18n. I18n is used only when it is already loaded; it is never required.
@@ -61,26 +59,6 @@ class Amount
     def unit_label(entry, unit, spec, locale)
       key = spec[:label_key] || "amounts.display_units.#{entry.symbol.to_s.downcase}.#{unit}"
       translate(key, locale, spec[:symbol] || type_label(entry, locale))
-    end
-
-    # Template of a registered type at `amounts.formats.<symbol downcased>`.
-    # @return [String, nil] nil when missing or without `%n`
-    def type_format(entry, locale)
-      template("amounts.formats.#{entry.symbol.to_s.downcase}", locale)
-    end
-
-    # Template of a display unit at
-    # `amounts.display_unit_formats.<symbol downcased>.<unit>`.
-    # @return [String, nil] nil when missing or without `%n`
-    def unit_format(entry, unit, locale)
-      template("amounts.display_unit_formats.#{entry.symbol.to_s.downcase}.#{unit}", locale)
-    end
-
-    # A translated template, ignored unless it places the number, so a typo
-    # in a locale file can't drop the amount from the output.
-    def template(key, locale)
-      found = translate(key, locale, nil)
-      found if DisplayFormat.valid?(found)
     end
 
     # Looks a key up with a default so a miss never yields "translation missing".

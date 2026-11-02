@@ -70,7 +70,7 @@ class Amount
     # @param unit [Symbol]
     # @return [BigDecimal]
     def in_unit(unit)
-      unit_spec = fetch_display_unit(unit)
+      unit_spec = @entry.display_unit(unit)
       @amount.decimal * Amount.coerce_decimal(unit_spec[:scale])
     end
 
@@ -85,7 +85,7 @@ class Amount
     end
 
     def render_display_unit(unit, direction, decorated:, trim_zeros:, locale:)
-      spec = fetch_display_unit(unit)
+      spec = @entry.display_unit(unit)
       scaled = @amount.decimal * Amount.coerce_decimal(spec[:scale])
       decimals = spec[:ui_decimals] || @entry.ui_decimals
       rounded = round(scaled, decimals, direction)
@@ -95,62 +95,24 @@ class Amount
       decorate(formatted, unit, spec, locale)
     end
 
-    # Places the number and its label with the type's or display unit's
-    # template. Without a label there is nothing to place, so the number is
-    # returned alone.
+    # Places the number and its label with the template from
+    # {Formattable#display_format}. Without a label there is nothing to place,
+    # so the number is returned alone.
     def decorate(number, unit, spec, locale)
       label = label(unit, locale, spec)
       return number if label.nil? || label.empty?
 
-      DisplayFormat.apply(template(unit, locale, spec), number:, label:)
-    end
-
-    # The template for the type or one of its display units, mirroring how
-    # labels resolve:
-    #
-    # - type: `amounts.formats.<symbol>` (when localizing), then the entry's
-    #   `display_format`, which the registry derives from `display_position`
-    #   when no template was given.
-    # - display unit: `amounts.display_unit_formats.<symbol>.<unit>` (when
-    #   localizing), then the spec's `:format`, then its `:position`, then the
-    #   type's template.
-    def template(unit, locale, spec)
-      return type_template(locale) unless spec
-
-      (locale && Locale.unit_format(@entry, unit.to_sym, locale)) ||
-        configured_unit_template(spec) ||
-        type_template(locale)
-    end
-
-    def type_template(locale)
-      (locale && Locale.type_format(@entry, locale)) || @entry.display_format
-    end
-
-    def configured_unit_template(spec)
-      return spec[:format] if spec[:format]
-
-      DisplayFormat.for_position(spec[:position]) if spec[:position]
+      Formattable.fill(@amount.display_format(unit:, locale:), number:, label:)
     end
 
     def label(unit, locale, spec = nil)
-      spec ||= fetch_display_unit(unit) if unit
+      spec ||= @entry.display_unit(unit) if unit
       if spec
         return spec[:symbol] || @entry.display_symbol unless locale
 
         Locale.unit_label(@entry, unit.to_sym, spec, locale)
       else
         locale ? Locale.type_label(@entry, locale) : @entry.display_symbol
-      end
-    end
-
-    def fetch_display_unit(unit)
-      units = @entry.display_units
-      unless units
-        raise Registry::InvalidDisplayUnit, "#{@entry.symbol} has no display_units configured"
-      end
-
-      units.fetch(unit.to_sym) do
-        raise Registry::InvalidDisplayUnit, "unknown display unit #{unit} for #{@entry.symbol}"
       end
     end
 
