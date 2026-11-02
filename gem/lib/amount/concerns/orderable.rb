@@ -3,10 +3,10 @@
 class Amount
   # Comparison, equality, hashing, and sign predicates for `Amount`.
   #
-  # Pulls in `Comparable` itself so consumers only need `include Comparison`
+  # Pulls in `Comparable` itself so consumers only need `include Orderable`
   # to get `<`, `<=`, `>`, `>=`, `between?`, `clamp`, and `Enumerable#min`/
   # `#max` alongside the explicit `<=>` / `==` / `eql?` / `hash` defined here.
-  module Comparison
+  module Orderable
     include Comparable
     # @param other [Object]
     # @return [Boolean]

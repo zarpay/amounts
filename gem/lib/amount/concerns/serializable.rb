@@ -1,12 +1,12 @@
 # frozen_string_literal: true
 
 class Amount
-  # Versioned hash serialization. `include Serialization` does both halves:
+  # Versioned hash serialization. `include Serializable` does both halves:
   # the instance side (`#to_h`) is mixed in directly, and the class-level
   # entry point (`Amount.load`) is auto-extended onto the including class
   # via the `included` hook below. The compact-string format is the
   # responsibility of {Amount::Parser}.
-  module Serialization
+  module Serializable
     VERSION = 1
 
     def self.included(base)
@@ -14,7 +14,7 @@ class Amount
     end
 
     # Class-level methods automatically extended onto any class that does
-    # `include Serialization`.
+    # `include Serializable`.
     module ClassMethods
       # @param payload [Hash]
       # @return [Amount]

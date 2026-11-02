@@ -7,7 +7,7 @@ module RuboCop
       # that file (see `.claude/rules/tests.md`):
       #
       #   test/amount/ui_parser_test.rb            -> lib/amount/ui_parser.rb, AmountUiParserTest
-      #   test/amount/concerns/arithmetic_test.rb  -> lib/amount/concerns/arithmetic.rb, AmountArithmeticTest
+      #   test/amount/concerns/calculable_test.rb  -> lib/amount/concerns/calculable.rb, AmountCalculableTest
       #   test/generators/amount/active_record/registry_generator_test.rb
       #     -> lib/generators/amount/active_record/registry_generator.rb,
       #        AmountActiveRecordRegistryGeneratorTest

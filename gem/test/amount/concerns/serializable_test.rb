@@ -3,7 +3,7 @@
 require "json"
 require_relative "../../test_helper"
 
-class AmountSerializationTest < Minitest::Test
+class AmountSerializableTest < Minitest::Test
   class GoldAmount < Amount
     def purity_estimate
       "24k"

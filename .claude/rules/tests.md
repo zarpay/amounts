@@ -34,7 +34,7 @@ named after the constant under test, with `::` removed and `Test` appended:
 | Under test | Test file | Test class |
 |---|---|---|
 | `lib/amount.rb` | `test/amount_test.rb` | `AmountTest` |
-| `lib/amount/concerns/arithmetic.rb` | `test/amount/concerns/arithmetic_test.rb` | `AmountArithmeticTest` |
+| `lib/amount/concerns/calculable.rb` | `test/amount/concerns/calculable_test.rb` | `AmountCalculableTest` |
 | `lib/amount/ui_parser.rb` | `test/amount/ui_parser_test.rb` | `AmountUiParserTest` |
 | `lib/amount/active_record/type.rb` | `test/amount/active_record/type_test.rb` | `AmountActiveRecordTypeTest` |
 | `lib/generators/amount/active_record/registry_generator.rb` | `test/generators/amount/active_record/registry_generator_test.rb` | `AmountActiveRecordRegistryGeneratorTest` |
@@ -44,10 +44,10 @@ Class names are flat (no `class Amount; class ArithmeticTest`), so `ActiveRecord
 inside a test always means `::ActiveRecord`.
 
 Put a test in the file of the code that **owns the behavior**, not the entry point it
-calls through: `Amount.parse_ui` lives in `Parsing`, but the rules it tests (delimiters,
+calls through: `Amount.parse_ui` lives in `Parsable`, but the rules it tests (delimiters,
 labels, signs) are `UiParser`'s, so they go in `ui_parser_test.rb`. Behavior that only
 exists in combination (a registered subclass surviving `+`) goes with the concern that
-promises it (`Arithmetic`).
+promises it (`Calculable`).
 
 `Amounts/MirroredTestPath` checks that the lib file exists and that the class (or the
 constant passed to `describe`) matches the path, ignoring case and underscores. The only
@@ -108,7 +108,7 @@ bundle exec rake test:active_record    # test/amount/active_record{_test.rb,/**}
 bundle exec rake test:integration      # test/integration/** (skips without AMOUNTS_POSTGRES_URL;
                                        # with it set, an unreachable database fails)
 bundle exec rake spec                  # spec:core then spec:active_record, separate processes
-bundle exec ruby -Ilib:test test/amount/concerns/arithmetic_test.rb   # one file
+bundle exec ruby -Ilib:test test/amount/concerns/calculable_test.rb   # one file
 BUNDLE_GEMFILE=gemfiles/rails_7.1.gemfile bundle exec rake test:active_record   # one Rails version
 ```
 

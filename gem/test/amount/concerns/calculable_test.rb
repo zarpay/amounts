@@ -3,7 +3,7 @@
 require "bigdecimal"
 require_relative "../../test_helper"
 
-class AmountArithmeticTest < Minitest::Test
+class AmountCalculableTest < Minitest::Test
   class GoldAmount < Amount
     def purity_estimate
       "24k"

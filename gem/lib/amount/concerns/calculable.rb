@@ -6,7 +6,7 @@ class Amount
   #
   # All operators preserve the receiver's class via `build`, so subclass
   # identity (`GoldAmount`) survives through `+`, `-`, `*`, `/`, `abs`, `-@`.
-  module Arithmetic
+  module Calculable
     # @return [Amount]
     # @example
     #   Amount.of_usdc("-1").abs

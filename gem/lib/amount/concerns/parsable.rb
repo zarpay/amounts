@@ -9,12 +9,12 @@ class Amount
   #   `to_s` writes. See {Parser}.
   # - {Amount.parse_ui} reads what a person typed, in a locale's number
   #   format. See {UiParser}.
-  module Parsing
+  module Parsable
     def self.included(base)
       base.extend(ClassMethods)
     end
 
-    # Class-level methods extended onto any class that does `include Parsing`.
+    # Class-level methods extended onto any class that does `include Parsable`.
     module ClassMethods
       # Parses the compact client-facing string representation.
       #

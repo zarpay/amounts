@@ -16,13 +16,13 @@ class Amount
   # Class identity: a type registered with `class:` is always built as that
   # class. `Amount.new` dispatches to it, and every operator that returns an
   # amount goes through {#build} so the receiver's class carries through.
-  module Construction
+  module Constructible
     def self.included(base)
       base.extend(ClassMethods)
     end
 
     # Class-level methods extended onto any class that does
-    # `include Construction`.
+    # `include Constructible`.
     module ClassMethods
       # When called as `Amount.new` for a symbol whose registry entry binds a
       # custom class, dispatch the construction to that class instead of

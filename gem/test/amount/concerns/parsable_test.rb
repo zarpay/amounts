@@ -3,7 +3,7 @@
 require "i18n"
 require_relative "../../test_helper"
 
-class AmountParsingTest < Minitest::Test
+class AmountParsableTest < Minitest::Test
   class GoldAmount < Amount
     def purity = "24k"
   end

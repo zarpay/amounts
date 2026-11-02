@@ -2,7 +2,7 @@
 
 require_relative "../../test_helper"
 
-class AmountConstructionTest < Minitest::Test
+class AmountConstructibleTest < Minitest::Test
   class GoldAmount < Amount
     def purity_estimate
       "24k"
@@ -90,7 +90,7 @@ class AmountConstructionTest < Minitest::Test
     use_gold_amount_registry!
     other = Class.new(Amount)
 
-    assert_match(/use AmountConstructionTest::GoldAmount\.new for GOLD/,
+    assert_match(/use AmountConstructibleTest::GoldAmount\.new for GOLD/,
                  error_from(Amount::InvalidInput) { other.new("1", :GOLD) }.message)
   end
 

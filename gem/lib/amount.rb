@@ -17,16 +17,16 @@ require_relative "amount/ui_parser"
 
 # Concerns: modules mixed into Amount. Files live in amount/concerns/, but the
 # constants are Amount::<Name> (the folder is not a namespace).
-require_relative "amount/concerns/registration"
-require_relative "amount/concerns/localization"
-require_relative "amount/concerns/parsing"
-require_relative "amount/concerns/construction"
-require_relative "amount/concerns/coercion"
-require_relative "amount/concerns/arithmetic"
-require_relative "amount/concerns/allocation"
-require_relative "amount/concerns/comparison"
-require_relative "amount/concerns/conversion"
-require_relative "amount/concerns/serialization"
+require_relative "amount/concerns/registrable"
+require_relative "amount/concerns/localizable"
+require_relative "amount/concerns/parsable"
+require_relative "amount/concerns/constructible"
+require_relative "amount/concerns/coercible"
+require_relative "amount/concerns/calculable"
+require_relative "amount/concerns/allocatable"
+require_relative "amount/concerns/orderable"
+require_relative "amount/concerns/convertible"
+require_relative "amount/concerns/serializable"
 require_relative "amount/concerns/formattable"
 
 # Represents a precise quantity of a registered fungible type.
@@ -39,18 +39,18 @@ require_relative "amount/concerns/formattable"
 # This class holds only an amount's identity: its atomic value, its symbol and
 # registry entry, and the decimal view of the value. Everything else comes
 # from concerns:
-# - {Registration}  — `Amount.registry`, `register`, `register_default_rate`,
+# - {Registrable}  — `Amount.registry`, `register`, `register_default_rate`,
 #   `with_registry`
-# - {Localization}  — `Amount.localize`
-# - {Parsing}       — `Amount.parse`, `Amount.parse_ui`
-# - {Construction}  — input inference, `Amount.new` dispatch to a registered
+# - {Localizable}  — `Amount.localize`
+# - {Parsable}       — `Amount.parse`, `Amount.parse_ui`
+# - {Constructible}  — input inference, `Amount.new` dispatch to a registered
 #   subclass, `build`
-# - {Coercion}      — `Amount.coerce_decimal`, cross-type operand coercion
-# - {Arithmetic}    — `+`, `-`, `*`, `/`, `abs`, `-@`
-# - {Comparison}    — `<=>`, `==`, `eql?`, `hash`, `same_type?`, sign predicates
-# - {Conversion}    — `to(:SYMBOL, rate:)`
-# - {Allocation}    — `split(n)`, `allocate(weights)`
-# - {Serialization} — `to_h`, `as_json`, `Amount.load`
+# - {Coercible}      — `Amount.coerce_decimal`, cross-type operand coercion
+# - {Calculable}    — `+`, `-`, `*`, `/`, `abs`, `-@`
+# - {Orderable}    — `<=>`, `==`, `eql?`, `hash`, `same_type?`, sign predicates
+# - {Convertible}    — `to(:SYMBOL, rate:)`
+# - {Allocatable}    — `split(n)`, `allocate(weights)`
+# - {Serializable} — `to_h`, `as_json`, `Amount.load`
 # - {Formattable}   — `display_format(unit:, locale:)`, where the number and
 #   unit go
 #
@@ -67,16 +67,16 @@ require_relative "amount/concerns/formattable"
 #   Amount.of_usdc(1_500_000, from: :atomic).decimal.to_s("F")
 #   # => "1.5"
 class Amount
-  include Registration
-  include Localization
-  include Parsing
-  include Construction
-  include Coercion
-  include Arithmetic
-  include Allocation
-  include Comparison
-  include Conversion
-  include Serialization
+  include Registrable
+  include Localizable
+  include Parsable
+  include Constructible
+  include Coercible
+  include Calculable
+  include Allocatable
+  include Orderable
+  include Convertible
+  include Serializable
   include Formattable
 
   extend Forwardable
@@ -90,7 +90,7 @@ class Amount
 
   # Creates an amount for a registered symbol.
   #
-  # See {Construction} for how `value` is read.
+  # See {Constructible} for how `value` is read.
   #
   # @param value [Integer, String, Float, BigDecimal, Rational]
   # @param symbol [Symbol, String] registered type identifier
