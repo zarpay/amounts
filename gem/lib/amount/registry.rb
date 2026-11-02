@@ -25,6 +25,7 @@ class Amount
     class RegistryLocked < StandardError; end
     class AlreadyRegistered < StandardError; end
     class InvalidDisplayUnit < StandardError; end
+    class InvalidDisplaySymbol < StandardError; end
 
     Entry = Struct.new(
       :symbol,
@@ -58,7 +59,9 @@ class Amount
     #
     # @param symbol [Symbol, String] registered type identifier
     # @param decimals [Integer] number of storage decimals
-    # @param display_symbol [String] symbol used by UI helpers
+    # @param display_symbol [String, Hash] symbol used by UI helpers. A hash
+    #   (`{ one: "search", other: "searches" }`) gives plural forms and must
+    #   have `:other`
     # @param label_key [String, Symbol, nil] I18n key for the unit label, used
     #   when localizing. Defaults to `amounts.units.<symbol downcased>`;
     #   a missing translation falls back to `display_symbol`
@@ -89,6 +92,7 @@ class Amount
         ensure_unlocked!
         raise AlreadyRegistered, "#{symbol} already registered" if @entries.key?(symbol)
 
+        validate_display_symbol!(:display_symbol, display_symbol, InvalidDisplaySymbol)
         validate_display_units!(display_units, default_display) if display_units
 
         entry = Entry.new(
@@ -248,7 +252,22 @@ class Amount
         unless spec.is_a?(Hash) && spec.key?(:scale)
           raise InvalidDisplayUnit, "display_unit #{key} must have :scale"
         end
+
+        validate_display_symbol!("display_unit #{key} :symbol", spec[:symbol], InvalidDisplayUnit) if spec[:symbol]
       end
+    end
+
+    def validate_display_symbol!(name, value, error)
+      return unless value.is_a?(Hash)
+
+      unless value.key?(:other)
+        raise error, "#{name} hash must have an :other key (got #{value.keys.inspect})"
+      end
+
+      bad = value.reject { |k, v| k.is_a?(Symbol) && v.is_a?(String) }
+      return if bad.empty?
+
+      raise error, "#{name} hash must map Symbol plural keys to String labels (got #{bad.inspect})"
     end
   end
 end

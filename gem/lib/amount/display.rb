@@ -50,11 +50,15 @@ class Amount
     # (or the display unit's `:symbol`).
     # @param unit [Symbol, nil] display unit
     # @param locale [Symbol, String, nil]
+    # @param count [Numeric, String, nil] the number the label agrees with, for
+    #   plural labels. Without it the `:other` form is used.
     # @return [String]
     # @example
     #   Amount.of_searches(3).unit_label(locale: :de)  # => "Suchen"
-    def unit_label(unit: nil, locale: nil)
-      label(unit, Locale.effective(locale))
+    #   Amount.of_searches(1).unit_label(count: 1)     # => "search" (hash display_symbol)
+    def unit_label(unit: nil, locale: nil, count: nil)
+      count = Amount.coerce_decimal(count) unless count.nil?
+      label(unit, Locale.effective(locale), nil, count)
     end
 
     # @return [String]
@@ -77,7 +81,7 @@ class Amount
       formatted = format_number(rounded, @entry.ui_decimals, resolve_trim(trim_zeros), locale)
       return formatted unless decorated
 
-      apply_symbol(formatted, label(nil, locale), @entry.display_position)
+      apply_symbol(formatted, label(nil, locale, nil, rounded), @entry.display_position)
     end
 
     def render_display_unit(unit, direction, decorated:, trim_zeros:, locale:)
@@ -90,19 +94,19 @@ class Amount
 
       apply_symbol(
         formatted,
-        label(unit, locale, spec),
+        label(unit, locale, spec, rounded),
         spec[:position] || @entry.display_position
       )
     end
 
-    def label(unit, locale, spec = nil)
+    def label(unit, locale, spec = nil, count = nil)
       spec ||= fetch_display_unit(unit) if unit
       if spec
-        return spec[:symbol] || @entry.display_symbol unless locale
+        return Locale.plain(spec[:symbol] || @entry.display_symbol, count) unless locale
 
-        Locale.unit_label(@entry, unit.to_sym, spec, locale)
+        Locale.unit_label(@entry, unit.to_sym, spec, locale, count)
       else
-        locale ? Locale.type_label(@entry, locale) : @entry.display_symbol
+        locale ? Locale.type_label(@entry, locale, count) : Locale.plain(@entry.display_symbol, count)
       end
     end
 
