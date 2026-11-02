@@ -262,6 +262,18 @@ RSpec.describe Amount, :aggregate_failures do
       expect(Amount.of_usdc("122500").ui(locale: :de)).to eq("122.500,00\u00A0$")
     end
 
+    it "renders compact notation for large numbers" do
+      expect(Amount.of_usdc("1500000").ui).to eq("$1500000.00")
+      expect(Amount.of_usdc("1500000").ui(compact: true)).to eq("$1.5M")
+      expect(Amount.of_logs(1_999_999).ui(compact: true)).to eq("1.99M logs")
+      expect(Amount.of_logs(1_999_999).ui(compact: true, direction: :ceil)).to eq("2M logs")
+      expect(Amount.of_logs(999).ui(compact: true)).to eq("999 logs")
+      expect(Amount.of_logs(1_234_567).ui(compact: { precision: 2 }, decorated: false)).to eq("1.2M")
+      expect(Amount.of_gold("1000").ui(unit: :gram, compact: true)).to eq("31.1K g")
+      expect(Amount.of_usdc("1500000").ui(compact: true, locale: :en)).to eq("$1.5 Million")
+      expect(Amount.of_usdc("1500000").ui(compact: true, locale: :de)).to eq("1,5 Mio.\u00A0$")
+    end
+
     it "renders display units" do
       expect(Amount.of_gold("1.0").ui(unit: :gram)).to eq("31.10 g")
       expect(Amount.of_gold("1.0").ui(unit: :kg)).to eq("0.03110 kg")

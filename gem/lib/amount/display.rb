@@ -5,6 +5,19 @@ require "bigdecimal"
 class Amount
   # Formats amounts for UI output without changing their type.
   class Display
+    # Rounds to `decimals` places (negative rounds to tens, hundreds, ...),
+    # down with `:floor` and up with `:ceil`, like `ui`'s `direction:`.
+    # @param value [BigDecimal]
+    # @param decimals [Integer]
+    # @param direction [Symbol]
+    # @return [BigDecimal]
+    def self.round(value, decimals, direction)
+      factor = BigDecimal(10)**decimals
+      scaled = value * factor
+      truncated = direction == :ceil ? scaled.ceil : scaled.floor
+      truncated / factor
+    end
+
     # @param amount [Amount]
     def initialize(amount)
       @amount = amount
@@ -28,6 +41,12 @@ class Amount
     # @param locale [Symbol, String, nil] format the number with this locale's
     #   `number.format` delimiter and separator (requires I18n). When `nil`,
     #   uses `I18n.locale` if `Amount.localize` is true, else plain output.
+    # @param compact [Boolean, Hash] show numbers of one thousand or more in
+    #   compact notation (`1.5M`, or `1,5 Mio.` with a locale's
+    #   `number.human.decimal_units` keys). `true` keeps 3 significant digits;
+    #   `{ precision: 2 }` changes that. Rounds in `direction` and trims
+    #   trailing zeros. The label and template wrap the compacted number; plural
+    #   labels agree with the full value. See {Compact}.
     # @return [String]
     # @example
     #   Amount.of_usdc("1.50").ui                       # => "$1.50"
@@ -39,13 +58,24 @@ class Amount
     #   # amounts.formats.eur: "%n\u00A0%u"
     #   Amount.of_eur("12.5").ui(locale: :en)           # => "€12.50"
     #   Amount.of_eur("12.5").ui(locale: :de)           # => "12,50\u00A0€"
-    def ui(unit: nil, direction: :floor, decorated: true, trim_zeros: nil, locale: nil)
+    #   Amount.of_usd("1500000").ui(compact: true)      # => "$1.5M"
+    #   Amount.of_tokens(50_000_000).ui(compact: true, decorated: false)  # => "50M"
+    def ui(unit: nil, direction: :floor, decorated: true, trim_zeros: nil, locale: nil, compact: false)
       locale = Locale.effective(locale)
-      if unit
-        render_display_unit(unit, direction, decorated:, trim_zeros:, locale:)
-      else
-        render_default(direction, decorated:, trim_zeros:, locale:)
-      end
+      precision = Compact.precision(compact)
+      spec = @entry.display_unit(unit) if unit
+      value = spec ? @amount.decimal * Amount.coerce_decimal(spec[:scale]) : @amount.decimal
+      decimals = spec&.dig(:ui_decimals) || @entry.ui_decimals
+      rounded = round(value, decimals, direction)
+      formatted =
+        if precision && Compact.applies?(value)
+          Compact.format(value, precision:, direction:, locale:)
+        else
+          format_number(rounded, decimals, resolve_trim(trim_zeros, spec), locale)
+        end
+      return formatted unless decorated
+
+      decorate(formatted, rounded, unit, spec, locale)
     end
 
     # The unit label alone, for column headers and chips that render it
@@ -80,25 +110,6 @@ class Amount
 
     private
 
-    def render_default(direction, decorated:, trim_zeros:, locale:)
-      rounded = round(@amount.decimal, @entry.ui_decimals, direction)
-      formatted = format_number(rounded, @entry.ui_decimals, resolve_trim(trim_zeros), locale)
-      return formatted unless decorated
-
-      decorate(formatted, rounded, nil, nil, locale)
-    end
-
-    def render_display_unit(unit, direction, decorated:, trim_zeros:, locale:)
-      spec = @entry.display_unit(unit)
-      scaled = @amount.decimal * Amount.coerce_decimal(spec[:scale])
-      decimals = spec[:ui_decimals] || @entry.ui_decimals
-      rounded = round(scaled, decimals, direction)
-      formatted = format_number(rounded, decimals, resolve_trim(trim_zeros, spec), locale)
-      return formatted unless decorated
-
-      decorate(formatted, rounded, unit, spec, locale)
-    end
-
     # Places the number and its label with the template from
     # {Formattable#display_format}. The label agrees with `count`, the number
     # as displayed. Without a label there is nothing to place, so the number is
@@ -122,10 +133,7 @@ class Amount
     end
 
     def round(value, decimals, direction)
-      factor = BigDecimal(10)**decimals
-      scaled = value * factor
-      truncated = direction == :ceil ? scaled.ceil : scaled.floor
-      truncated / factor
+      self.class.round(value, decimals, direction)
     end
 
     def format_number(value, decimals, trim, locale = nil)
