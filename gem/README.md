@@ -353,13 +353,16 @@ Amount.of_usd("1500000").ui(compact: true)                        # => "$1.5M"
 Amount.of_gold("1000").ui(unit: :gram, compact: true)             # => "31.1K g"
 ```
 
-Not localizing, the scale words are `K`, `M`, `B` and `T`, joined as `"%n%u"`.
-When localizing, they come from `number.human.decimal_units.units`
-(`thousand`, `million`, `billion`, `trillion`, optionally plural hashes counted
-with the compacted number), joined by `number.human.decimal_units.format`
-(default `"%n %u"`), the same keys Rails' `number_to_human` reads. A scale with
-no translation falls back to its short form. Numbers past trillions stay in
-trillions (`1,500T`).
+Not localizing, the scale words are `K`, `M`, `B`, `T`, `Qa` (quadrillion),
+`Qi` (quintillion), `Sx`, `Sp`, `Oc`, `No` and `Dc` (decillion, 10^33), joined
+as `"%n%u"`. When localizing, they come from `number.human.decimal_units.units`
+(`thousand`, `million`, `billion`, `trillion`, `quadrillion`, `quintillion`,
+`sextillion`, `septillion`, `octillion`, `nonillion`, `decillion`, optionally
+plural hashes counted with the compacted number), joined by
+`number.human.decimal_units.format` (default `"%n %u"`), the same keys Rails'
+`number_to_human` reads (Rails itself stops at `quadrillion`). A scale with no
+translation falls back to its short form. Numbers past decillions stay in
+decillions (`1500Dc`).
 
 ```yaml
 de:

@@ -338,14 +338,15 @@ Amount.of_tokens(999).ui(compact: true)                           # => "999 TOKE
 
 | | Words | Joined by |
 |---|---|---|
-| Not localizing | `K`, `M`, `B`, `T` | `"%n%u"` → `1.5M` |
-| Localizing | `number.human.decimal_units.units.{thousand,million,billion,trillion}` | `number.human.decimal_units.format`, default `"%n %u"` |
+| Not localizing | `K`, `M`, `B`, `T`, `Qa`, `Qi`, `Sx`, `Sp`, `Oc`, `No`, `Dc` | `"%n%u"` → `1.5M` |
+| Localizing | `number.human.decimal_units.units.{thousand,million,billion,trillion,quadrillion,quintillion,sextillion,septillion,octillion,nonillion,decillion}` | `number.human.decimal_units.format`, default `"%n %u"` |
 
 These are the keys Rails' `number_to_human` reads, so an app with `rails-i18n`
 already has them. A word may be a plural hash (`{ one: "Million", other:
 "Millionen" }`), counted with the compacted number. A scale with no translation
-falls back to its short form. Numbers past trillions stay in trillions
-(`1,500T`).
+falls back to its short form. Rails' own locale files stop at `quadrillion`, so
+larger scales use their short forms unless the app adds the keys. The scale runs
+up to decillions (10^33, `Dc`); numbers past that stay in decillions (`1500Dc`).
 
 ```yaml
 de:

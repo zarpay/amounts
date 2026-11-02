@@ -1297,9 +1297,21 @@ class AmountCompactTest < Minitest::Test
     assert_equal "1T TOKENS", tokens(1_000_000_000_000).ui(compact: true)
   end
 
-  def test_beyond_trillions_stays_in_trillions
-    assert_equal "1500T TOKENS", tokens(1_500_000_000_000_000).ui(compact: true)
-    assert_equal "1.500T TOKENS", tokens(1_500_000_000_000_000).ui(compact: true, locale: :de)
+  def test_scales_past_trillions
+    assert_equal "1.5Qa TOKENS", tokens(1_500_000_000_000_000).ui(compact: true)
+    assert_equal "1Qi TOKENS", tokens(10**18).ui(compact: true)
+    assert_equal "1Sx TOKENS", tokens(10**21).ui(compact: true)
+    assert_equal "1Sp TOKENS", tokens(10**24).ui(compact: true)
+    assert_equal "1Oc TOKENS", tokens(10**27).ui(compact: true)
+    assert_equal "1No TOKENS", tokens(10**30).ui(compact: true)
+    assert_equal "1Dc TOKENS", tokens(10**33).ui(compact: true)
+    assert_equal "999Qi TOKENS", tokens((10**21) - 1).ui(compact: true)
+    assert_equal "1Sx TOKENS", tokens((10**21) - 1).ui(compact: true, direction: :ceil)
+  end
+
+  def test_beyond_decillions_stays_in_decillions
+    assert_equal "1500Dc TOKENS", tokens(15 * (10**35)).ui(compact: true)
+    assert_equal "1.500Dc TOKENS", tokens(15 * (10**35)).ui(compact: true, locale: :de)
   end
 
   # Precision and rounding
@@ -1412,13 +1424,16 @@ class AmountCompactTest < Minitest::Test
 
   def test_en_with_rails_keys
     store_decimal_units(:en, format: "%n %u", units: {
-                          unit: "", thousand: "Thousand", million: "Million", billion: "Billion", trillion: "Trillion"
+                          unit: "", thousand: "Thousand", million: "Million", billion: "Billion", trillion: "Trillion",
+                          quadrillion: "Quadrillion"
                         })
 
     assert_equal "50 Million TOKENS", tokens(50_000_000).ui(compact: true, locale: :en)
     assert_equal "1.23 Thousand TOKENS", tokens(1_234).ui(compact: true, locale: :en)
     assert_equal "$1.5 Billion", Amount.of_usd("1500000000").ui(compact: true, locale: :en)
-    assert_equal "1,500 Trillion TOKENS", tokens(1_500_000_000_000_000).ui(compact: true, locale: :en)
+    assert_equal "1.5 Quadrillion TOKENS", tokens(1_500_000_000_000_000).ui(compact: true, locale: :en)
+    # no `quintillion` key: falls back to the short form
+    assert_equal "2Qi TOKENS", tokens(2 * (10**18)).ui(compact: true, locale: :en)
   end
 
   def test_de_with_its_own_keys

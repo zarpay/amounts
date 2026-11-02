@@ -8,7 +8,8 @@
   or `$1.5M`. It keeps 3 significant digits (`compact: { precision: 2 }` to
   change it), rounds in `direction:` (so `1_999_999` floors to `1.99M`), trims
   trailing zeros and moves up a scale when rounding reaches it. Numbers below
-  one thousand are formatted as usual. Scale words are `K`/`M`/`B`/`T` joined
+  one thousand are formatted as usual. Scale words run from `K`/`M`/`B`/`T`
+  through `Qa`/`Qi`/`Sx`/`Sp`/`Oc`/`No` to `Dc` (decillion, 10^33), joined
   as `"%n%u"`; when localizing they come from
   `number.human.decimal_units.units` (pluralized with the compacted number)
   joined by `number.human.decimal_units.format` (default `"%n %u"`), falling

@@ -6,7 +6,7 @@ class Amount
   # Internal: compact notation for large numbers, used by `ui(compact: true)`.
   #
   # A number of at least one thousand is divided by the largest scale it
-  # reaches (thousand, million, billion, trillion), rounded to a number of
+  # reaches (thousand, million, ... up to decillion, 10**33), rounded to a number of
   # significant digits in the given direction, trimmed of trailing zeros and
   # joined with a scale word:
   #
@@ -15,7 +15,10 @@ class Amount
   #   `number.human.decimal_units.format` (default `"%n %u"`), the keys Rails'
   #   `number_to_human` uses. A scale without a translation falls back to the
   #   short form below.
-  # - otherwise the word is `K`, `M`, `B` or `T`, joined as `"%n%u"`.
+  # - otherwise the word is `K`, `M`, `B`, `T`, `Qa`, `Qi`, `Sx`, `Sp`, `Oc`,
+  #   `No` or `Dc`, joined as `"%n%u"`.
+  #
+  # Numbers past decillions stay in decillions (`1500Dc`).
   #
   # Numbers below one thousand are not compacted; {Display} formats them as
   # usual.
@@ -35,7 +38,14 @@ class Amount
       [3, :thousand, "K"],
       [6, :million, "M"],
       [9, :billion, "B"],
-      [12, :trillion, "T"]
+      [12, :trillion, "T"],
+      [15, :quadrillion, "Qa"],
+      [18, :quintillion, "Qi"],
+      [21, :sextillion, "Sx"],
+      [24, :septillion, "Sp"],
+      [27, :octillion, "Oc"],
+      [30, :nonillion, "No"],
+      [33, :decillion, "Dc"]
     ].freeze
 
     module_function
