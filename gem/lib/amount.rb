@@ -238,7 +238,7 @@ class Amount
     BigDecimal(@atomic) / (BigDecimal(10)**decimals)
   end
 
-  def_delegators :display, :formatted, :ui, :to_s, :in_unit
+  def_delegators :display, :formatted, :ui, :unit_label, :to_s, :in_unit
 
   # @return [String]
   # @example Console-friendly inspection

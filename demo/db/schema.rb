@@ -11,6 +11,14 @@
 # It's strongly recommended that you check this file into your version control system.
 
 ActiveRecord::Schema[8.1].define(version: 2026_01_01_000005) do
+  create_table "bullion_holdings", force: :cascade do |t|
+    t.decimal "appraisal_atomic", precision: 78
+    t.string "appraisal_symbol", limit: 10
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.decimal "weight_atomic", precision: 78, null: false
+  end
+
   create_table "exchange_trades", force: :cascade do |t|
     t.decimal "bought_atomic", precision: 78, null: false
     t.string "bought_symbol", limit: 10, null: false

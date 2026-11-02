@@ -3,3 +3,7 @@ de:
     format:
       delimiter: "."
       separator: ","
+  amounts:
+    display_units:
+      gold:
+        gram: "Gramm"

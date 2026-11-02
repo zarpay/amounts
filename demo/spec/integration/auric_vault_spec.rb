@@ -55,10 +55,17 @@ RSpec.describe "Auric Vault localized display", :integration, type: :model do
   end
 
   it "formats labels for an explicit locale" do
-    expect(bullion.weight_label(unit: :gram, locale: :de)).to eq("388,79 g")
+    expect(bullion.weight_label(unit: :gram, locale: :de)).to eq("388,79 Gramm")
     expect(bullion.weight_label(locale: :de)).to eq("12,5000 oz t")
     expect(bullion.appraisal_label(locale: :en)).to eq("$25,000.00")
     expect(bullion.appraisal_label(locale: :de)).to eq("$25.000,00")
+  end
+
+  it "translates unit labels from I18n" do
+    weight = bullion.weight
+    expect(weight.unit_label(unit: :gram, locale: :de)).to eq("Gramm")
+    expect(weight.unit_label(unit: :gram, locale: :en)).to eq("g")
+    expect(weight.unit_label(unit: :gram)).to eq("g")
   end
 
   it "follows I18n.locale when Amount.localize is on" do

@@ -225,6 +225,24 @@ from `number.format`) only when you pass `locale:` or set `Amount.localize = tru
 Both require I18n to be loaded and raise `ArgumentError` otherwise. `to_s`,
 `formatted`, serialization and `Amount.parse` never depend on the locale.
 
+Unit labels can be translated too. When localizing, the label comes from the
+type's `label_key:` (default `amounts.units.<symbol downcased>`), then falls back
+to `display_symbol`. Display units use their spec's `label_key:` (default
+`amounts.display_units.<symbol downcased>.<unit>`), then the unit's `:symbol`,
+then the type's label. Missing keys never yield "translation missing".
+
+```ruby
+Amount.register :SEARCHES, decimals: 0, label_key: "amounts.units.searches"
+# en: amounts.units.searches: "searches"   de: "Suchen"
+
+Amount.of_searches(3).ui(locale: :de)          # => "3 Suchen"
+Amount.of_searches(3).unit_label(locale: :de)  # => "Suchen"
+Amount.of_gold("1").unit_label(unit: :gram)    # => "g" (not localizing)
+```
+
+`unit_label(unit: nil, locale: nil)` returns the label alone, following the same
+rules as `ui`.
+
 ### Serialization
 
 ```ruby

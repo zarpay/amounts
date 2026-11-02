@@ -763,6 +763,96 @@ class AmountLocaleTest < Minitest::Test
     assert_equal Amount.of_usd("122500.5"), Amount.parse(amount.to_s)
   end
 
+  def test_type_label_fallback_chain
+    Amount.register :SEARCHES, decimals: 0, display_symbol: "searches-sym"
+    Amount.register :CREDITS, decimals: 0, display_symbol: "cr", label_key: :'custom.credits'
+    searches = Amount.new(3, :SEARCHES)
+    credits = Amount.new(3, :CREDITS)
+
+    # 3. nothing translated: display_symbol
+    assert_equal "3 searches-sym", searches.ui(locale: :en)
+    assert_equal "searches-sym", searches.unit_label(locale: :en)
+
+    # 2. conventional key
+    I18n.backend.store_translations(:en, amounts: { units: { searches: "searches", credits: "conv" } })
+    assert_equal "3 searches", searches.ui(locale: :en)
+    assert_equal "searches", searches.unit_label(locale: :en)
+
+    # 1. label_key wins over the conventional key; a missing label_key falls back to display_symbol
+    assert_equal "3 cr", credits.ui(locale: :en)
+    I18n.backend.store_translations(:en, custom: { credits: "credits" })
+    assert_equal "3 credits", credits.ui(locale: :en)
+  end
+
+  def test_two_locales_two_labels
+    Amount.register :SEARCHES, decimals: 0
+    I18n.backend.store_translations(:en, amounts: { units: { searches: "searches" } })
+    I18n.backend.store_translations(:de, amounts: { units: { searches: "Suchen" } })
+    amount = Amount.new(1500, :SEARCHES)
+
+    assert_equal "1,500 searches", amount.ui(locale: :en)
+    assert_equal "1.500 Suchen", amount.ui(locale: :de)
+    assert_equal "Suchen", amount.unit_label(locale: :de)
+  end
+
+  def test_labels_unchanged_when_not_localizing
+    Amount.register :SEARCHES, decimals: 0
+    I18n.backend.store_translations(:en, amounts: { units: { searches: "translated" } })
+
+    assert_equal "3 SEARCHES", Amount.new(3, :SEARCHES).ui
+    assert_equal "SEARCHES", Amount.new(3, :SEARCHES).unit_label
+    assert_equal "g", Amount.of_gold("1").unit_label(unit: :gram)
+  end
+
+  def test_localize_uses_i18n_locale_for_labels
+    Amount.register :SEARCHES, decimals: 0
+    I18n.backend.store_translations(:de, amounts: { units: { searches: "Suchen" } })
+    Amount.localize = true
+    I18n.locale = :de
+
+    assert_equal "3 Suchen", Amount.new(3, :SEARCHES).ui
+    assert_equal "Suchen", Amount.new(3, :SEARCHES).unit_label
+  end
+
+  def test_display_unit_label_fallback_chain
+    gold = Amount.of_gold("1000")
+
+    # no translation: unit :symbol
+    assert_equal "31.103,50 g", gold.ui(unit: :gram, locale: :de)
+    assert_equal "g", gold.unit_label(unit: :gram, locale: :de)
+
+    # conventional key
+    I18n.backend.store_translations(:de, amounts: { display_units: { gold: { gram: "Gramm" } } })
+    assert_equal "31.103,50 Gramm", gold.ui(unit: :gram, locale: :de)
+    assert_equal "Gramm", gold.unit_label(unit: :gram, locale: :de)
+    assert_equal "g", gold.unit_label(unit: :gram, locale: :en)
+  end
+
+  def test_display_unit_label_key_and_type_label_fallback
+    Amount.register :MASS, decimals: 2, display_symbol: "mass", display_units: {
+      kilo: { scale: 1, label_key: "my.kilo" },
+      plain: { scale: 1 }
+    }
+    mass = Amount.new("1", :MASS)
+
+    # no spec :symbol and no key: type label (display_symbol)
+    assert_equal "mass", mass.unit_label(unit: :plain, locale: :en)
+    assert_equal "mass", mass.unit_label(unit: :kilo, locale: :en)
+
+    I18n.backend.store_translations(:en, amounts: { units: { mass: "Mass" } })
+    assert_equal "Mass", mass.unit_label(unit: :plain, locale: :en)
+
+    I18n.backend.store_translations(:en, my: { kilo: "kg" })
+    assert_equal "1.00 kg", mass.ui(unit: :kilo, locale: :en)
+  end
+
+  def test_unit_label_errors
+    assert_raises(Amount::Registry::InvalidDisplayUnit) { Amount.of_gold("1").unit_label(unit: :nope) }
+    without_i18n do
+      assert_raises(ArgumentError) { Amount.of_usd("1").unit_label(locale: :de) }
+    end
+  end
+
   def test_locale_without_i18n_raises
     without_i18n do
       error = assert_raises(ArgumentError) { Amount.of_usd("1").ui(locale: :de) }

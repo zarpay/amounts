@@ -44,6 +44,29 @@ class Amount
       }
     end
 
+    # Label of a registered type: its `label_key`, then
+    # `amounts.units.<symbol downcased>`, then `display_symbol`.
+    # @return [String, nil]
+    def type_label(entry, locale)
+      key = entry.label_key || "amounts.units.#{entry.symbol.to_s.downcase}"
+      translate(key, locale, entry.display_symbol)
+    end
+
+    # Label of a display unit: the spec's `label_key`, then
+    # `amounts.display_units.<symbol downcased>.<unit>`, then the spec's
+    # `:symbol`, then the type's label.
+    # @return [String, nil]
+    def unit_label(entry, unit, spec, locale)
+      key = spec[:label_key] || "amounts.display_units.#{entry.symbol.to_s.downcase}.#{unit}"
+      translate(key, locale, spec[:symbol] || type_label(entry, locale))
+    end
+
+    # Looks a key up with a default so a miss never yields "translation missing".
+    def translate(key, locale, default)
+      found = ::I18n.t(key.to_s, locale:, default: nil)
+      found.is_a?(String) ? found : default
+    end
+
     # Rewrites a plain "-1234.50" style number with the locale's characters.
     # @param str [String] output of `format("%.Nf", value)`
     # @return [String]

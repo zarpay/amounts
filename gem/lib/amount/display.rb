@@ -44,6 +44,19 @@ class Amount
       end
     end
 
+    # The unit label alone, for column headers and chips that render it
+    # separately. Follows the same rules as `ui`: translated through I18n only
+    # when a locale is given or `Amount.localize` is true, else `display_symbol`
+    # (or the display unit's `:symbol`).
+    # @param unit [Symbol, nil] display unit
+    # @param locale [Symbol, String, nil]
+    # @return [String]
+    # @example
+    #   Amount.of_searches(3).unit_label(locale: :de)  # => "Suchen"
+    def unit_label(unit: nil, locale: nil)
+      label(unit, Locale.effective(locale))
+    end
+
     # @return [String]
     def to_s
       rounded = round(@amount.decimal, @entry.ui_decimals, :floor)
@@ -64,7 +77,7 @@ class Amount
       formatted = format_number(rounded, @entry.ui_decimals, resolve_trim(trim_zeros), locale)
       return formatted unless decorated
 
-      apply_symbol(formatted, @entry.display_symbol, @entry.display_position)
+      apply_symbol(formatted, label(nil, locale), @entry.display_position)
     end
 
     def render_display_unit(unit, direction, decorated:, trim_zeros:, locale:)
@@ -77,9 +90,20 @@ class Amount
 
       apply_symbol(
         formatted,
-        spec[:symbol] || @entry.display_symbol,
+        label(unit, locale, spec),
         spec[:position] || @entry.display_position
       )
+    end
+
+    def label(unit, locale, spec = nil)
+      spec ||= fetch_display_unit(unit) if unit
+      if spec
+        return spec[:symbol] || @entry.display_symbol unless locale
+
+        Locale.unit_label(@entry, unit.to_sym, spec, locale)
+      else
+        locale ? Locale.type_label(@entry, locale) : @entry.display_symbol
+      end
     end
 
     def fetch_display_unit(unit)

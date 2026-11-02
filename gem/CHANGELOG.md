@@ -4,6 +4,16 @@
 
 ### Added
 
+- Unit labels can come from I18n. `register` takes `label_key:` (String or
+  Symbol); without it the key is `amounts.units.<symbol downcased>`. Display
+  units take `label_key:` in their spec, defaulting to
+  `amounts.display_units.<symbol downcased>.<unit>`. Lookups only happen when
+  localizing (`locale:` or `Amount.localize = true`). Fallbacks: a type falls
+  back to `display_symbol`; a display unit to its `:symbol`, then the type's
+  label. A missing key never renders "translation missing". Output is
+  unchanged when not localizing.
+- `Amount#unit_label(unit: nil, locale: nil)` returns the label alone, with
+  the same rules as `ui`, for column headers and chips.
 - `ui` can format numbers for a locale: `ui(locale: :de)` uses the locale's
   `number.format` delimiter and separator (`"$122.500,00"`), falling back to
   `,` and `.` for missing keys. Works with `unit:`, `decorated: false`,

@@ -130,6 +130,44 @@ Missing `number.format` keys fall back to `,` and `.`. Using `locale:` or
 and `direction` are unchanged, and `to_s`, `formatted`, `as_json`, serialization and
 `Amount.parse` never depend on the locale.
 
+## Translated unit labels
+
+When localizing (`locale:` or `Amount.localize = true`), labels are looked up in
+I18n. Otherwise they come from `display_symbol` exactly as before.
+
+```ruby
+Amount.register :SEARCHES, decimals: 0, label_key: "amounts.units.searches"
+# without label_key the key is amounts.units.<symbol downcased>
+```
+
+```yaml
+en:
+  amounts:
+    units:
+      searches: "searches"
+    display_units:
+      gold:
+        gram: "g"
+de:
+  amounts:
+    units:
+      searches: "Suchen"
+```
+
+- **Types:** `label_key`, then `amounts.units.<symbol>`, then `display_symbol`.
+- **Display units:** the spec's `label_key:`, then
+  `amounts.display_units.<symbol>.<unit>`, then the unit's `:symbol`, then the
+  type's label.
+
+A missing key never renders "translation missing". To get the label alone, for
+column headers or chips, use `unit_label`:
+
+```ruby
+Amount.of_searches(3).ui(locale: :de)             # => "3 Suchen"
+Amount.of_searches(3).unit_label(locale: :de)     # => "Suchen"
+Amount.of_gold("1").unit_label(unit: :gram)       # => "g"
+```
+
 ## What display units are not
 
 They are not:
