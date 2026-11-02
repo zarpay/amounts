@@ -85,7 +85,7 @@ module Vault
 
     # Appraisal value for display, optionally localized.
     #
-    #   appraisal_label(locale: :de)  # => "$25.000,00"
+    #   appraisal_label(locale: :de)  # => "25.000,00 $" (non-breaking space, from de.yml)
     def appraisal_label(locale: nil)
       return nil if appraisal.nil?
 

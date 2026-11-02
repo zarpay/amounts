@@ -35,6 +35,8 @@ class Amount
     #   Amount.of_gold("1").ui(unit: :gram)             # => "31.10 g"
     #   Amount.of_gold("1").ui(unit: :gram, decorated: false)  # => "31.10"
     #   Amount.of_sol("2.5").ui(trim_zeros: true)       # => "2.5 SOL"
+    #   # with display_format: "%u %n" and amounts.formats.eur: "%n\u00A0%u" in :de
+    #   Amount.of_eur("12.5").ui(locale: :de)           # => "12,50\u00A0€"
     def ui(unit: nil, direction: :floor, decorated: true, trim_zeros: nil, locale: nil)
       locale = Locale.effective(locale)
       if unit
@@ -77,7 +79,7 @@ class Amount
       formatted = format_number(rounded, @entry.ui_decimals, resolve_trim(trim_zeros), locale)
       return formatted unless decorated
 
-      apply_symbol(formatted, label(nil, locale), @entry.display_position)
+      apply_template(formatted, label(nil, locale), type_template(locale))
     end
 
     def render_display_unit(unit, direction, decorated:, trim_zeros:, locale:)
@@ -88,11 +90,31 @@ class Amount
       formatted = format_number(rounded, decimals, resolve_trim(trim_zeros, spec), locale)
       return formatted unless decorated
 
-      apply_symbol(
-        formatted,
-        label(unit, locale, spec),
-        spec[:position] || @entry.display_position
-      )
+      apply_template(formatted, label(unit, locale, spec), unit_template(unit, spec, locale))
+    end
+
+    POSITION_TEMPLATES = { prefix: "%u%n", suffix: "%n %u" }.freeze
+    private_constant :POSITION_TEMPLATES
+
+    # Locale `amounts.formats.<symbol>`, then `display_format`, then the
+    # template for `display_position`.
+    def type_template(locale)
+      (locale && Locale.type_format(@entry, locale)) ||
+        @entry.display_format ||
+        position_template(@entry.display_position)
+    end
+
+    # Locale `amounts.display_unit_formats.<symbol>.<unit>`, then the spec's
+    # `:format`, then its `:position`, then the type's template.
+    def unit_template(unit, spec, locale)
+      (locale && Locale.unit_format(@entry, unit.to_sym, locale)) ||
+        spec[:format] ||
+        (spec[:position] && position_template(spec[:position])) ||
+        type_template(locale)
+    end
+
+    def position_template(position)
+      position == :prefix ? POSITION_TEMPLATES[:prefix] : POSITION_TEMPLATES[:suffix]
     end
 
     def label(unit, locale, spec = nil)
@@ -137,10 +159,10 @@ class Amount
       @entry.trim_zeros
     end
 
-    def apply_symbol(str, symbol, position)
-      return str if symbol.nil? || symbol.empty?
+    def apply_template(number, label, template)
+      return number if label.nil? || label.empty?
 
-      position == :prefix ? "#{symbol}#{str}" : "#{str} #{symbol}"
+      template.gsub(/%[nu]/, "%n" => number, "%u" => label)
     end
   end
 end

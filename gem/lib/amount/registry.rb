@@ -32,6 +32,7 @@ class Amount
       :display_symbol,
       :label_key,
       :display_position,
+      :display_format,
       :ui_decimals,
       :display_units,
       :default_display,
@@ -62,7 +63,13 @@ class Amount
     # @param label_key [String, Symbol, nil] I18n key for the unit label, used
     #   when localizing. Defaults to `amounts.units.<symbol downcased>`;
     #   a missing translation falls back to `display_symbol`
-    # @param display_position [Symbol] either `:prefix` or `:suffix`
+    # @param display_position [Symbol] either `:prefix` (`"%u%n"`) or
+    #   `:suffix` (`"%n %u"`, the default). Can't be combined with
+    #   `display_format`
+    # @param display_format [String, nil] template for decorated UI output:
+    #   `%n` is the formatted number (with its sign), `%u` the label. Used as
+    #   given, non-breaking spaces included. When localizing,
+    #   `amounts.formats.<symbol downcased>` overrides it
     # @param ui_decimals [Integer] decimals displayed by default UI formatting
     # @param display_units [Hash, nil] optional display-only scaling definitions
     # @param default_display [Symbol, nil] optional default display unit key
@@ -78,8 +85,8 @@ class Amount
     #     display_symbol: "$",
     #     display_position: :prefix,
     #     ui_decimals: 2
-    def register(symbol, decimals:, display_symbol: symbol.to_s, label_key: nil, display_position: :suffix,
-                 ui_decimals: decimals, display_units: nil, default_display: nil,
+    def register(symbol, decimals:, display_symbol: symbol.to_s, label_key: nil, display_position: nil,
+                 display_format: nil, ui_decimals: decimals, display_units: nil, default_display: nil,
                  trim_zeros: false, class: nil)
       raise ArgumentError, "symbol must not be blank" if symbol.nil? || symbol.to_s.empty?
 
@@ -89,6 +96,7 @@ class Amount
         ensure_unlocked!
         raise AlreadyRegistered, "#{symbol} already registered" if @entries.key?(symbol)
 
+        validate_display_format!(display_format, display_position)
         validate_display_units!(display_units, default_display) if display_units
 
         entry = Entry.new(
@@ -96,7 +104,8 @@ class Amount
           decimals:,
           display_symbol:,
           label_key: label_key&.to_s,
-          display_position:,
+          display_position: display_format ? nil : (display_position || :suffix),
+          display_format:,
           ui_decimals:,
           display_units:,
           default_display:,
@@ -235,6 +244,14 @@ class Amount
       raise RegistryLocked, "registry is locked" if @locked
     end
 
+    def validate_display_format!(format, position)
+      return if format.nil?
+
+      raise ArgumentError, "pass display_format or display_position, not both" if position
+      raise ArgumentError, "display_format must be a String" unless format.is_a?(String)
+      raise ArgumentError, "display_format must contain %n" unless format.include?("%n")
+    end
+
     def validate_display_units!(units, default)
       unless units.is_a?(Hash) && !units.empty?
         raise InvalidDisplayUnit, "display_units must be a non-empty hash"
@@ -248,7 +265,22 @@ class Amount
         unless spec.is_a?(Hash) && spec.key?(:scale)
           raise InvalidDisplayUnit, "display_unit #{key} must have :scale"
         end
+
+        validate_unit_format!(key, spec)
       end
+    end
+
+    def validate_unit_format!(key, spec)
+      return unless spec.key?(:format)
+
+      if spec.key?(:position)
+        raise InvalidDisplayUnit, "display_unit #{key} takes :format or :position, not both"
+      end
+
+      format = spec[:format]
+      return if format.is_a?(String) && format.include?("%n")
+
+      raise InvalidDisplayUnit, "display_unit #{key} :format must be a String containing %n"
     end
   end
 end

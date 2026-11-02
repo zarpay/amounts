@@ -4,6 +4,10 @@ de:
       delimiter: "."
       separator: ","
   amounts:
+    # German puts the currency after the number. The space is a non-breaking
+    # space (\u00A0) so "25.000,00 $" never wraps apart.
+    formats:
+      usdc: "%n\u00A0%u"
     units:
       gold: "Feinunze"
     display_units:

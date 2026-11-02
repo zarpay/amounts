@@ -4,6 +4,17 @@
 
 ### Added
 
+- `display_format:` on `register` and `format:` on display unit specs: a
+  template for decorated `ui` output where `%n` is the formatted number (with
+  its sign) and `%u` the label, e.g. `"%u%n"` or `"%n\u00A0%u"`. Templates are
+  used as given, non-breaking spaces included. When localizing,
+  `amounts.formats.<symbol downcased>` and
+  `amounts.display_unit_formats.<symbol downcased>.<unit>` override them.
+  Without a template, `display_position: :prefix` / `:suffix` render exactly as
+  before. Passing both `display_format:` and `display_position:` raises
+  `ArgumentError`; a display unit with both `:format` and `:position` raises
+  `InvalidDisplayUnit`. A type registered with `display_format:` has a `nil`
+  `display_position` on its registry entry.
 - Unit labels can come from I18n. `register` takes `label_key:` (String or
   Symbol); without it the key is `amounts.units.<symbol downcased>`. Display
   units take `label_key:` in their spec, defaulting to

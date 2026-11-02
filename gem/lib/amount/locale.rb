@@ -61,6 +61,19 @@ class Amount
       translate(key, locale, spec[:symbol] || type_label(entry, locale))
     end
 
+    # Locale template at `amounts.formats.<symbol downcased>`, if any.
+    # @return [String, nil]
+    def type_format(entry, locale)
+      translate("amounts.formats.#{entry.symbol.to_s.downcase}", locale, nil)
+    end
+
+    # Locale template at
+    # `amounts.display_unit_formats.<symbol downcased>.<unit>`, if any.
+    # @return [String, nil]
+    def unit_format(entry, unit, locale)
+      translate("amounts.display_unit_formats.#{entry.symbol.to_s.downcase}.#{unit}", locale, nil)
+    end
+
     # Looks a key up with a default so a miss never yields "translation missing".
     def translate(key, locale, default)
       found = ::I18n.t(key.to_s, locale:, default: nil)
