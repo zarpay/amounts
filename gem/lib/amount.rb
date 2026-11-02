@@ -5,6 +5,7 @@ require "forwardable"
 
 require_relative "amount/version"
 require_relative "amount/registry"
+require_relative "amount/locale"
 require_relative "amount/display"
 require_relative "amount/parser"
 require_relative "amount/arithmetic"
@@ -51,6 +52,21 @@ class Amount
   class UnregisteredType < Error; end
 
   class << self
+    # Whether `ui` formats numbers for `I18n.locale` when no `locale:` is
+    # given. Defaults to `false`.
+    # @return [Boolean]
+    def localize?
+      @localize ? true : false
+    end
+    alias localize localize?
+
+    # @param value [Boolean]
+    # @raise [ArgumentError] when enabling without I18n loaded
+    def localize=(value)
+      Locale.require_i18n! if value
+      @localize = value ? true : false
+    end
+
     # @return [Amount::Registry]
     # @example Accessing the shared registry
     #   Amount.registry.locked?

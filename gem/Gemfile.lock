@@ -211,6 +211,7 @@ PLATFORMS
 DEPENDENCIES
   activerecord (>= 7.1, < 8.0)
   amounts!
+  i18n (>= 1.14)
   irb (>= 1.13)
   minitest (>= 5.0, < 6.0)
   pg (>= 1.5)

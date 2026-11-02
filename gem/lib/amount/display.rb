@@ -25,6 +25,9 @@ class Amount
     #   number. When `nil` (the default), falls back to the display unit's
     #   setting, then the registry entry's setting. An explicit `true` or
     #   `false` overrides both.
+    # @param locale [Symbol, String, nil] format the number with this locale's
+    #   `number.format` delimiter and separator (requires I18n). When `nil`,
+    #   uses `I18n.locale` if `Amount.localize` is true, else plain output.
     # @return [String]
     # @example
     #   Amount.of_usdc("1.50").ui                       # => "$1.50"
@@ -32,11 +35,12 @@ class Amount
     #   Amount.of_gold("1").ui(unit: :gram)             # => "31.10 g"
     #   Amount.of_gold("1").ui(unit: :gram, decorated: false)  # => "31.10"
     #   Amount.of_sol("2.5").ui(trim_zeros: true)       # => "2.5 SOL"
-    def ui(unit: nil, direction: :floor, decorated: true, trim_zeros: nil)
+    def ui(unit: nil, direction: :floor, decorated: true, trim_zeros: nil, locale: nil)
+      locale = Locale.effective(locale)
       if unit
-        render_display_unit(unit, direction, decorated:, trim_zeros:)
+        render_display_unit(unit, direction, decorated:, trim_zeros:, locale:)
       else
-        render_default(direction, decorated:, trim_zeros:)
+        render_default(direction, decorated:, trim_zeros:, locale:)
       end
     end
 
@@ -55,20 +59,20 @@ class Amount
 
     private
 
-    def render_default(direction, decorated:, trim_zeros:)
+    def render_default(direction, decorated:, trim_zeros:, locale:)
       rounded = round(@amount.decimal, @entry.ui_decimals, direction)
-      formatted = format_number(rounded, @entry.ui_decimals, resolve_trim(trim_zeros))
+      formatted = format_number(rounded, @entry.ui_decimals, resolve_trim(trim_zeros), locale)
       return formatted unless decorated
 
       apply_symbol(formatted, @entry.display_symbol, @entry.display_position)
     end
 
-    def render_display_unit(unit, direction, decorated:, trim_zeros:)
+    def render_display_unit(unit, direction, decorated:, trim_zeros:, locale:)
       spec = fetch_display_unit(unit)
       scaled = @amount.decimal * Amount.coerce_decimal(spec[:scale])
       decimals = spec[:ui_decimals] || @entry.ui_decimals
       rounded = round(scaled, decimals, direction)
-      formatted = format_number(rounded, decimals, resolve_trim(trim_zeros, spec))
+      formatted = format_number(rounded, decimals, resolve_trim(trim_zeros, spec), locale)
       return formatted unless decorated
 
       apply_symbol(
@@ -96,9 +100,10 @@ class Amount
       truncated / factor
     end
 
-    def format_number(value, decimals, trim)
+    def format_number(value, decimals, trim, locale = nil)
       str = format("%.#{decimals}f", value)
-      trim ? str.sub(/(\.\d*?)0+\z/, '\1').chomp('.') : str
+      str = str.sub(/(\.\d*?)0+\z/, '\1').chomp('.') if trim
+      locale ? Locale.apply(str, locale) : str
     end
 
     def resolve_trim(call_site, spec = nil)

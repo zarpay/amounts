@@ -67,15 +67,29 @@ module Vault
       weight&.in_unit(unit)
     end
 
-    # Rendered string in the requested unit (or default oz_t).
+    # Rendered string in the requested unit (or default oz_t). Pass `locale:`
+    # to format the number with that locale's delimiter and separator (read
+    # from I18n `number.format`); without it the output is unchanged.
     #
     #   weight_label                               # => "12.5000 oz t"
     #   weight_label(unit: :gram)                  # => "388.79 g"
     #   weight_label(unit: :kg, direction: :ceil)  # => "0.38880 kg"
-    def weight_label(unit: nil, direction: :floor)
+    #   weight_label(unit: :gram, locale: :de)     # => "388,79 g"
+    def weight_label(unit: nil, direction: :floor, locale: nil)
       return nil if weight.nil?
 
-      unit ? weight.ui(unit: unit, direction: direction) : weight.ui(direction: direction)
+      opts = { direction: direction, locale: locale }.compact
+      opts[:unit] = unit if unit
+      weight.ui(**opts)
+    end
+
+    # Appraisal value for display, optionally localized.
+    #
+    #   appraisal_label(locale: :de)  # => "$25.000,00"
+    def appraisal_label(locale: nil)
+      return nil if appraisal.nil?
+
+      locale ? appraisal.ui(locale: locale) : appraisal.ui
     end
 
     # -------------------------------------------------------------------------

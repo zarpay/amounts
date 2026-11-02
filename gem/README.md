@@ -215,7 +215,15 @@ amount.ui
 amount.ui(direction: :ceil)
 amount.ui(unit: :gram)
 amount.in_unit(:gram)
+amount.ui(locale: :de)   # => "$122.500,00" (needs the i18n gem)
+
+Amount.localize = true   # ui follows I18n.locale
 ```
+
+`ui` formats numbers for a locale (thousands delimiter and decimal separator
+from `number.format`) only when you pass `locale:` or set `Amount.localize = true`.
+Both require I18n to be loaded and raise `ArgumentError` otherwise. `to_s`,
+`formatted`, serialization and `Amount.parse` never depend on the locale.
 
 ### Serialization
 
