@@ -44,14 +44,14 @@ class Amount
       }
     end
 
-    # Picks a form from a plural hash without I18n: `:singular` when the number
-    # equals 1, else `:plural`. Strings pass through.
+    # Picks a form from a plural hash without I18n: `:one` when the number
+    # equals 1, else `:other`. Strings pass through.
     # @param label [String, Hash, nil]
     # @param count [BigDecimal, nil]
     def plain(label, count)
       return label unless label.is_a?(Hash)
 
-      count == 1 && label.key?(:singular) ? label[:singular] : label[:plural]
+      count == 1 && label.key?(:one) ? label[:one] : label[:other]
     end
 
     # Label of a registered type: its `label_key`, then
@@ -73,7 +73,7 @@ class Amount
 
     # Looks a key up so a miss never yields "translation missing". A plural
     # hash (translation or default) is resolved with the locale's rules when a
-    # count is given, else to its `:plural` form.
+    # count is given, else to its `:other` form.
     def translate(key, locale, default, count = nil)
       found = lookup(key.to_s, locale, count)
       return found if found.is_a?(String)
@@ -81,25 +81,15 @@ class Amount
       default.is_a?(Hash) ? pick_plural(default, locale, count) : default
     end
 
-    # Maps `:singular`/`:plural` to the `:one`/`:other` keys I18n pluralizes
-    # on. Other plural keys (`:zero`, `:two`, `:few`, `:many`) pass through.
-    def normalize(forms)
-      forms = forms.dup
-      forms[:one] = forms.delete(:singular) if forms.key?(:singular) && !forms.key?(:one)
-      forms[:other] = forms.delete(:plural) if forms.key?(:plural) && !forms.key?(:other)
-      forms
-    end
-
     def lookup(key, locale, count)
       opts = count.nil? ? {} : { count: whole(count) }
       found = ::I18n.t(key, locale:, default: nil, **opts)
       found.is_a?(Hash) ? pick_plural(found, locale, count) : found
     rescue ::I18n::InvalidPluralizationData => e
-      pick_plural(e.entry, locale, count)
+      e.entry[:other]
     end
 
     def pick_plural(forms, locale, count)
-      forms = normalize(forms)
       return forms[:other] if count.nil?
 
       ::I18n.t("amounts.plural", locale:, default: forms, count: whole(count))

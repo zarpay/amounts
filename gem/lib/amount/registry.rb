@@ -60,8 +60,8 @@ class Amount
     # @param symbol [Symbol, String] registered type identifier
     # @param decimals [Integer] number of storage decimals
     # @param display_symbol [String, Hash] symbol used by UI helpers. A hash
-    #   (`{ singular: "search", plural: "searches" }`) gives plural forms and
-    #   must have `:plural`
+    #   (`{ one: "search", other: "searches" }`) gives plural forms and must
+    #   have `:other`
     # @param label_key [String, Symbol, nil] I18n key for the unit label, used
     #   when localizing. Defaults to `amounts.units.<symbol downcased>`;
     #   a missing translation falls back to `display_symbol`
@@ -260,8 +260,8 @@ class Amount
     def validate_display_symbol!(name, value, error)
       return unless value.is_a?(Hash)
 
-      unless value.key?(:plural)
-        raise error, "#{name} hash must have an :plural key (got #{value.keys.inspect})"
+      unless value.key?(:other)
+        raise error, "#{name} hash must have an :other key (got #{value.keys.inspect})"
       end
 
       bad = value.reject { |k, v| k.is_a?(Symbol) && v.is_a?(String) }

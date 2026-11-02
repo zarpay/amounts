@@ -6,12 +6,12 @@ de:
   amounts:
     units:
       gold:
-        singular: "Feinunze"
-        plural: "Feinunzen"
+        one: "Feinunze"
+        other: "Feinunzen"
     display_units:
       gold:
         oz_t:
-          singular: "Feinunze"
-          plural: "Feinunzen"
+          one: "Feinunze"
+          other: "Feinunzen"
         gram: "Gramm"
         kg: "Kilogramm"
