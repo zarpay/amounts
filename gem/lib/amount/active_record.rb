@@ -24,6 +24,17 @@ class Amount
   #     has_amount :fee, symbol: :SOL
   #   end
   module ActiveRecord
+    # English defaults for the validator's error keys. Apps override them in
+    # their own locale files.
+    LOCALE_PATH = File.expand_path("active_record/locale/en.yml", __dir__).freeze
+
+    # Registers the gem's locale file with I18n, once.
+    #
+    # @return [void]
+    def self.install_locale!
+      ::I18n.load_path << LOCALE_PATH unless ::I18n.load_path.include?(LOCALE_PATH)
+    end
+
     # Installs the migration DSL and model macros into ActiveRecord.
     #
     # This is called automatically when the file is required.
@@ -41,4 +52,5 @@ class Amount
   end
 end
 
+Amount::ActiveRecord.install_locale!
 Amount::ActiveRecord.install!

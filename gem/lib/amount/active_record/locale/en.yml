@@ -1,0 +1,7 @@
+en:
+  errors:
+    messages:
+      amount_type: "must be an Amount"
+      amount_symbol: "must have symbol %{expected}"
+      amount_invalid_constraint: "has invalid %{option} constraint: %{message}"
+      amount_incomparable: "cannot compare %{symbol} to %{other_symbol} for %{option}"

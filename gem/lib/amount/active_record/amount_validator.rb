@@ -41,7 +41,7 @@ class Amount
       def validate_amount_instance(record, attribute, value)
         return if value.is_a?(::Amount)
 
-        record.errors.add(attribute, "must be an Amount")
+        record.errors.add(attribute, :amount_type)
       end
 
       def validate_symbol(record, attribute, value)
@@ -49,7 +49,7 @@ class Amount
         return unless expected_symbol
         return if value.symbol == expected_symbol
 
-        record.errors.add(attribute, "must have symbol #{expected_symbol}")
+        record.errors.add(attribute, :amount_symbol, expected: expected_symbol)
       end
 
       def validate_comparators(record, attribute, value)
@@ -61,7 +61,7 @@ class Amount
 
           compare_amounts(record, attribute, value, operator, other, option_name)
         rescue ::Amount::Error, ArgumentError => error
-          record.errors.add(attribute, "has invalid #{option_name} constraint: #{error.message}")
+          record.errors.add(attribute, :amount_invalid_constraint, option: option_name, message: error.message)
         end
       end
 
@@ -78,28 +78,19 @@ class Amount
       def compare_amounts(record, attribute, value, operator, other, option_name)
         comparison = value <=> other
         if comparison.nil?
-          record.errors.add(attribute, "cannot compare #{value.symbol} to #{other.symbol} for #{option_name}")
+          record.errors.add(attribute, :amount_incomparable,
+                            symbol: value.symbol, other_symbol: other.symbol, option: option_name)
           return
         end
 
         return if comparison.public_send(operator, 0)
 
-        record.errors.add(attribute, failure_message(option_name, other))
+        record.errors.add(attribute, failure_key(option_name), count: other.to_s)
       end
 
-      def failure_message(option_name, other)
-        case option_name
-        when :greater_than
-          "must be greater than #{other}"
-        when :greater_than_or_equal_to
-          "must be greater than or equal to #{other}"
-        when :less_than
-          "must be less than #{other}"
-        when :less_than_or_equal_to
-          "must be less than or equal to #{other}"
-        else
-          "is invalid"
-        end
+      # Rails' own keys, so apps that translate them get these for free.
+      def failure_key(option_name)
+        COMPARATORS.key?(option_name) ? option_name : :invalid
       end
 
       def fetch_definition(record, attribute)
