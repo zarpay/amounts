@@ -62,6 +62,14 @@ RSpec.describe "Auric Vault localized display", :integration, type: :model do
     expect(bullion.appraisal_label(locale: :de)).to eq("$25.000,00")
   end
 
+  it "parses typed numbers in a locale and round-trips ui output" do
+    typed = Amount.parse_ui("$25.000,00", :USDC, locale: :de)
+    expect(typed).to eq(bullion.appraisal)
+    expect(Amount.parse_ui("25,000.00", :USDC, locale: :en)).to eq(typed)
+    expect(Amount.parse_ui(bullion.appraisal_label(locale: :de), :USDC, locale: :de)).to eq(typed)
+    expect { Amount.parse_ui("25.000,0000001", :USDC, locale: :de) }.to raise_error(Amount::InvalidInput)
+  end
+
   it "translates unit labels from I18n" do
     weight = bullion.weight
     expect(weight.unit_label(unit: :gram, locale: :de)).to eq("Gramm")

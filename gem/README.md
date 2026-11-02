@@ -258,6 +258,26 @@ Amount.of_searches(3).unit_label(locale: :de)  # => "Suchen" (with that key in d
 `unit_label(unit: nil, locale: nil, count: nil)` returns the label alone, following
 the same rules as `ui`.
 
+### Parsing typed input
+
+`Amount.parse_ui` reads what a person types, in a locale's number format. The
+locale is `locale:`, then `I18n.locale` when `Amount.localize` is true, else
+plain parsing (`.` decimal, no delimiters). `Amount.parse` stays the compact
+wire format.
+
+```ruby
+Amount.parse_ui("1.500,50", :USD, locale: :de)   # => USD|1500.50
+Amount.parse_ui("1,500.50", :USD, locale: :en)   # => USD|1500.50
+Amount.parse_ui("1500.50", :USD)                 # => USD|1500.50
+Amount.parse_ui("1.500,50 €", :EUR, locale: :de) # label at either end, any plural form
+```
+
+It accepts surrounding whitespace (including NBSP), a leading `-` or `+`, and
+delimiters in groups of three. It raises `Amount::InvalidInput` for more
+decimal places than the type has (it never rounds), misplaced delimiters
+(`"1,50,0"`), a repeated separator, another type's label, or empty input.
+`ui(locale:)` output round-trips through `parse_ui(..., locale:)`.
+
 ### Plural labels
 
 Labels can agree with the number: `1 search`, `2 searches`. `count` is the

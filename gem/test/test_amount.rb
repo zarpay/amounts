@@ -967,3 +967,238 @@ class AmountLocaleTest < Minitest::Test
     Object.const_set(:I18n, i18n)
   end
 end
+
+class AmountParseUiTest < Minitest::Test
+  def setup
+    AmountTestSupport.register_default_types!
+    @previous_locale = I18n.locale
+    @previous_backend = I18n.backend
+    I18n.backend = I18n::Backend::Simple.new
+    I18n.available_locales = %i[en de fr]
+    I18n.backend.store_translations(:en, number: { format: { delimiter: ",", separator: "." } })
+    I18n.backend.store_translations(:de, number: { format: { delimiter: ".", separator: "," } })
+    I18n.backend.store_translations(:fr, number: { format: { delimiter: " ", separator: "," } })
+    Amount.localize = false
+  end
+
+  def teardown
+    Amount.localize = false
+    I18n.backend = @previous_backend
+    I18n.locale = @previous_locale
+    Amount.registry.clear!
+  end
+
+  def parse(input, symbol = :USD, **opts)
+    Amount.parse_ui(input, symbol, **opts)
+  end
+
+  def assert_rejected(input, symbol = :USD, **opts)
+    assert_raises(Amount::InvalidInput, "#{input.inspect} should be rejected") { parse(input, symbol, **opts) }
+  end
+
+  def test_issue_examples
+    assert_equal Amount.new("1500.50", :USD), parse("1.500,50", locale: :de)
+    assert_equal Amount.new("1500.50", :USD), parse("1,500.50", locale: :en)
+    assert_equal Amount.new("1500.50", :USD), parse("1500.50")
+    assert_equal 150_050, parse("1.500,50", locale: :de).atomic
+  end
+
+  def test_plain_parsing_has_no_delimiters
+    assert_equal 150_000, parse("1500").atomic
+    assert_rejected "1,500.50"
+    assert_rejected "1.500,50"
+  end
+
+  def test_localize_uses_i18n_locale
+    Amount.localize = true
+    I18n.locale = :de
+    assert_equal 150_050, parse("1.500,50").atomic
+    assert_equal 150_050, parse("1,500.50", locale: :en).atomic
+  end
+
+  def test_wire_parse_unchanged
+    assert_equal 150_050, Amount.parse("USD|1500.50").atomic
+  end
+
+  def test_whitespace_including_nbsp
+    assert_equal 150_050, parse("  1.500,50 \n", locale: :de).atomic
+    assert_equal 150_050, parse("  1,500.50 ", locale: :en).atomic
+    assert_equal 150_050, parse(" 1500.50 ").atomic
+    assert_equal 150_050, parse("1 500,50", locale: :fr).atomic
+    assert_equal 150_050, parse("1 500,50", locale: :fr).atomic
+  end
+
+  def test_signs
+    assert_equal(-150_050, parse("-1.500,50", locale: :de).atomic)
+    assert_equal(-150_050, parse("-1,500.50", locale: :en).atomic)
+    assert_equal 150_050, parse("+1,500.50", locale: :en).atomic
+    assert_equal(-150_050, parse("$-1,500.50", locale: :en).atomic)
+    assert_equal(-150_050, parse("-$1,500.50", locale: :en).atomic)
+    assert_rejected "--1.50"
+    assert_rejected "+-1.50"
+    assert_rejected "1.50-"
+  end
+
+  def test_delimiter_groups
+    assert_equal 123_456_789_00, parse("123,456,789.00", locale: :en).atomic
+    assert_equal 123_456_789_00, parse("123.456.789,00", locale: :de).atomic
+    assert_equal 150_000, parse("1500", locale: :en).atomic
+    assert_equal 150_000, parse("1500", locale: :de).atomic
+    %w[1,50,0 1,5000 12,34,567 ,500 1,,500 1,500,5].each { |bad| assert_rejected bad, locale: :en }
+    %w[1.50.0 1.5000 12.34.567 .500 1..500].each { |bad| assert_rejected bad, locale: :de }
+  end
+
+  def test_decimal_places
+    assert_equal 150_000, parse("1.500,00", locale: :de).atomic
+    assert_equal 150_050, parse("1.500,50", locale: :de).atomic
+    assert_equal 150_000, parse("1,500", :USD, locale: :en).atomic
+    assert_rejected "1,500.505", locale: :en
+    assert_rejected "1.500,505", locale: :de
+    assert_rejected "0.001"
+  end
+
+  def test_separator_used_twice
+    assert_rejected "1.500.50", locale: :en
+    assert_rejected "1,500,50", locale: :de
+    assert_rejected "1.50.50"
+  end
+
+  def test_malformed_numbers
+    ["", "   ", " ", "abc", "$", "1.", ".5", "1e3", "1,500.", "- ", "1 2"].each do |bad|
+      assert_rejected bad, locale: :en
+    end
+    assert_rejected nil
+  end
+
+  def test_labels_either_end
+    assert_equal 150_050, parse("$1,500.50", locale: :en).atomic
+    assert_equal 150_050, parse("$ 1,500.50", locale: :en).atomic
+    assert_equal 150_050, parse("1.500,50 $", locale: :de).atomic
+    assert_equal 150_050, parse("1.500,50$", locale: :de).atomic
+    assert_equal 2_500_000_000, parse("2.5 SOL", :SOL).atomic
+    assert_equal 1_500, parse("1.500 logs", :LOGS, locale: :de).atomic
+    assert_equal 1_500, parse("logs 1,500", :LOGS, locale: :en).atomic
+  end
+
+  def test_euro_suffix_label
+    Amount.register :EUR, decimals: 2, display_symbol: "€"
+    assert_equal 150_050, parse("1.500,50 €", :EUR, locale: :de).atomic
+    assert_equal 150_050, parse("€1,500.50", :EUR, locale: :en).atomic
+  end
+
+  def test_other_types_label_rejected
+    assert_rejected "1,500.50 SOL", :USD, locale: :en
+    assert_rejected "$1.500,50", :SOL, locale: :de
+    assert_rejected "1.500 logs", :USD, locale: :de
+    assert_rejected "$1,500.50 $", :USD, locale: :en
+  end
+
+  def test_plural_label_forms
+    Amount.register :SEARCHES, decimals: 0, display_symbol: { one: "search", other: "searches" }
+    assert_equal 1, parse("1 search", :SEARCHES).atomic
+    assert_equal 1500, parse("1,500 searches", :SEARCHES, locale: :en).atomic
+    assert_equal 1500, parse("1.500 searches", :SEARCHES, locale: :de).atomic
+    assert_rejected "1 logs", :SEARCHES
+  end
+
+  def test_translated_labels
+    Amount.register :SEARCHES, decimals: 0, display_symbol: "s"
+    I18n.backend.store_translations(:de, amounts: { units: { searches: { one: "Suche", other: "Suchen" } } })
+    assert_equal 1500, parse("1.500 Suchen", :SEARCHES, locale: :de).atomic
+    assert_equal 1, parse("1 Suche", :SEARCHES, locale: :de).atomic
+    assert_equal 1, parse("1 s", :SEARCHES, locale: :de).atomic
+    assert_rejected "1 Suchen", :SEARCHES, locale: :en
+  end
+
+  def test_decimals_zero
+    assert_equal 1_500_000, parse("1.500.000", :LOGS, locale: :de).atomic
+    assert_equal 1_500_000, parse("1,500,000", :LOGS, locale: :en).atomic
+    assert_equal(-1500, parse("-1,500", :LOGS, locale: :en).atomic)
+    assert_equal 0, parse("0", :LOGS).atomic
+    assert_rejected "1,5", :LOGS, locale: :en
+    assert_rejected "1.500,5", :LOGS, locale: :de
+    assert_rejected "1.500,0", :LOGS, locale: :de
+    assert_rejected "1500.5", :LOGS
+  end
+
+  def test_high_precision_is_exact
+    assert_equal 1_234_567_891, parse("1.234567891", :SOL).atomic
+    assert_equal 123_456_789_123_456_789_012_345_678, parse("123456789123456789.012345678", :SOL).atomic
+  end
+
+  def test_returns_amount_for_registered_class
+    assert_instance_of Amount, parse("1.50")
+  end
+
+  def test_unregistered_symbol_matches_new
+    new_error = assert_raises(Amount::Registry::UnknownType) { Amount.new("1", :NOPE) }
+    error = assert_raises(Amount::Registry::UnknownType) { parse("1", :NOPE) }
+    assert_equal new_error.message, error.message
+  end
+
+  def test_explicit_locale_without_i18n_raises
+    i18n = Object.send(:remove_const, :I18n)
+    assert_raises(ArgumentError) { parse("1.50", locale: :de) }
+    assert_equal 150, parse("1.50").atomic
+  ensure
+    Object.const_set(:I18n, i18n)
+  end
+
+  def test_round_trips_ui_output
+    values = %w[0 0.01 0.99 1 9.99 12.34 123.45 999.99 1000 1000.01 12345.67 123456.78 1234567.89
+                -0.01 -1 -999.99 -1000 -1234567.89 99999999999.99]
+    %i[en de fr].each do |locale|
+      values.each do |value|
+        amount = Amount.of_usd(value)
+        assert_equal amount, parse(amount.ui(locale:), locale:), "#{locale} #{value}"
+        assert_equal amount, parse(amount.ui(locale:, decorated: false), locale:), "#{locale} #{value} bare"
+      end
+      [0, 7, 999, 1000, 1_234_567, -1_500].each do |n|
+        logs = Amount.of_logs(n)
+        assert_equal logs, parse(logs.ui(locale:), :LOGS, locale:), "#{locale} #{n}"
+      end
+    end
+  end
+
+  def test_round_trips_over_a_range
+    (0..4000).step(7).each do |n|
+      cents = (n**3) + n
+      amount = Amount.new(cents, :USD)
+      %i[en de].each do |locale|
+        assert_equal amount, parse(amount.ui(locale:), locale:)
+        negative = -amount
+        assert_equal negative, parse(negative.ui(locale:), locale:)
+      end
+    end
+  end
+end
+
+class AmountParseUiCustomClassTest < Minitest::Test
+  class GoldAmount < Amount
+    def purity = "24k"
+  end
+
+  def setup
+    Amount.registry.clear!
+    Amount.register :GOLD, decimals: 4, display_symbol: "oz", class: GoldAmount
+    @previous_backend = I18n.backend
+    I18n.backend = I18n::Backend::Simple.new
+    I18n.backend.store_translations(:de, number: { format: { delimiter: ".", separator: "," } })
+  end
+
+  def teardown
+    I18n.backend = @previous_backend
+    Amount.registry.clear!
+  end
+
+  def test_returns_registered_class
+    amount = Amount.parse_ui("1.500,5 oz", :GOLD, locale: :de)
+    assert_instance_of GoldAmount, amount
+    assert_equal 15_005_000, amount.atomic
+    assert_equal "24k", amount.purity
+  end
+
+  def test_rejects_too_many_decimals
+    assert_raises(Amount::InvalidInput) { Amount.parse_ui("1,00001", :GOLD, locale: :de) }
+  end
+end
