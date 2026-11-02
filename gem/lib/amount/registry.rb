@@ -2,8 +2,6 @@
 
 require "bigdecimal"
 require "thread"
-require_relative "concerns/formattable"
-require_relative "registry/generated_constructors"
 
 class Amount
   # Stores registered amount types and default directional conversion rates.

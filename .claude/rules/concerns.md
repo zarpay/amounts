@@ -27,6 +27,16 @@ Name a concern for its capability: a noun (`Arithmetic`, `Conversion`, `Parsing`
 an *-able* adjective (`Formattable`). One capability per concern. If its doc comment
 needs "and" to say what it does, it is probably two concerns.
 
+## Loading
+
+All core loading happens in `gem/lib/amount.rb`, in dependency order. Core files under
+`gem/lib/amount/` never `require_relative` each other. The only other entry points are
+the documented optional adapters: `amount/active_record`, `amount/rspec` and
+`amount/active_record/rspec`. Each of these loads its own files.
+
+When a file moves, update its line in `gem/lib/amount.rb`. Don't leave a pointer file
+at the old path (a file whose only job is to `require_relative` the new location).
+
 ## Shape of a concern
 
 The core is Rails-agnostic, so a concern is a plain Ruby module, not

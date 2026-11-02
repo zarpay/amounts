@@ -81,6 +81,12 @@
 
 ### Changed
 
+- **Breaking:** the behavior modules moved to `lib/amount/concerns/`, and
+  their old file paths are gone: `amount/allocation`, `amount/arithmetic`,
+  `amount/comparison`, `amount/conversion`, `amount/formattable` and
+  `amount/serialization`. The constants are unchanged (`Amount::Arithmetic`,
+  ...). Migration: `require "amount"` (or `"amounts"`), which loads every core
+  file; requiring individual files under `amount/` was never supported.
 - `AmountValidator` now adds errors by I18n key instead of hard-coded English
   strings, so apps can translate or reword them: `:amount_type`,
   `:amount_symbol`, `:amount_invalid_constraint`, `:amount_incomparable`, plus

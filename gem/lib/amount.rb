@@ -3,8 +3,12 @@
 require "bigdecimal"
 require "forwardable"
 
+# Every core file loads from here, in dependency order; core files don't
+# require each other. The optional adapters (amount/active_record,
+# amount/rspec) are separate entry points that load their own files.
 require_relative "amount/version"
 require_relative "amount/registry"
+require_relative "amount/registry/generated_constructors"
 require_relative "amount/locale"
 require_relative "amount/compact"
 require_relative "amount/display"
