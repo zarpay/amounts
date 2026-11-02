@@ -35,6 +35,10 @@ class Amount
     #   Amount.of_gold("1").ui(unit: :gram)             # => "31.10 g"
     #   Amount.of_gold("1").ui(unit: :gram, decorated: false)  # => "31.10"
     #   Amount.of_sol("2.5").ui(trim_zeros: true)       # => "2.5 SOL"
+    #   # EUR registered with display_format: "%u%n"; de.yml has
+    #   # amounts.formats.eur: "%n\u00A0%u"
+    #   Amount.of_eur("12.5").ui(locale: :en)           # => "€12.50"
+    #   Amount.of_eur("12.5").ui(locale: :de)           # => "12,50\u00A0€"
     def ui(unit: nil, direction: :floor, decorated: true, trim_zeros: nil, locale: nil)
       locale = Locale.effective(locale)
       if unit
@@ -70,7 +74,7 @@ class Amount
     # @param unit [Symbol]
     # @return [BigDecimal]
     def in_unit(unit)
-      unit_spec = fetch_display_unit(unit)
+      unit_spec = @entry.display_unit(unit)
       @amount.decimal * Amount.coerce_decimal(unit_spec[:scale])
     end
 
@@ -81,43 +85,39 @@ class Amount
       formatted = format_number(rounded, @entry.ui_decimals, resolve_trim(trim_zeros), locale)
       return formatted unless decorated
 
-      apply_symbol(formatted, label(nil, locale, nil, rounded), @entry.display_position)
+      decorate(formatted, rounded, nil, nil, locale)
     end
 
     def render_display_unit(unit, direction, decorated:, trim_zeros:, locale:)
-      spec = fetch_display_unit(unit)
+      spec = @entry.display_unit(unit)
       scaled = @amount.decimal * Amount.coerce_decimal(spec[:scale])
       decimals = spec[:ui_decimals] || @entry.ui_decimals
       rounded = round(scaled, decimals, direction)
       formatted = format_number(rounded, decimals, resolve_trim(trim_zeros, spec), locale)
       return formatted unless decorated
 
-      apply_symbol(
-        formatted,
-        label(unit, locale, spec, rounded),
-        spec[:position] || @entry.display_position
-      )
+      decorate(formatted, rounded, unit, spec, locale)
+    end
+
+    # Places the number and its label with the template from
+    # {Formattable#display_format}. The label agrees with `count`, the number
+    # as displayed. Without a label there is nothing to place, so the number is
+    # returned alone.
+    def decorate(number, count, unit, spec, locale)
+      label = label(unit, locale, spec, count)
+      return number if label.nil? || label.empty?
+
+      Formattable.fill(@amount.display_format(unit:, locale:), number:, label:)
     end
 
     def label(unit, locale, spec = nil, count = nil)
-      spec ||= fetch_display_unit(unit) if unit
+      spec ||= @entry.display_unit(unit) if unit
       if spec
         return Locale.plain(spec[:symbol] || @entry.display_symbol, count) unless locale
 
         Locale.unit_label(@entry, unit.to_sym, spec, locale, count)
       else
         locale ? Locale.type_label(@entry, locale, count) : Locale.plain(@entry.display_symbol, count)
-      end
-    end
-
-    def fetch_display_unit(unit)
-      units = @entry.display_units
-      unless units
-        raise Registry::InvalidDisplayUnit, "#{@entry.symbol} has no display_units configured"
-      end
-
-      units.fetch(unit.to_sym) do
-        raise Registry::InvalidDisplayUnit, "unknown display unit #{unit} for #{@entry.symbol}"
       end
     end
 
@@ -139,12 +139,6 @@ class Amount
       return spec[:trim_zeros] if spec&.key?(:trim_zeros)
 
       @entry.trim_zeros
-    end
-
-    def apply_symbol(str, symbol, position)
-      return str if symbol.nil? || symbol.empty?
-
-      position == :prefix ? "#{symbol}#{str}" : "#{str} #{symbol}"
     end
   end
 end

@@ -293,6 +293,45 @@ en:
 `:other`: `Amount.of_searches(1).unit_label(count: 1) # => "search"`.
 String labels behave exactly as before.
 
+Where the number and label go is a template, like Rails'
+`number.currency.format.format`: `%n` is the formatted number (sign included)
+and `%u` the label. Set it with `display_format:` on `register` or `format:` on
+a display unit. `display_position` is shorthand for one: `:prefix` is `"%u%n"`
+and `:suffix` (the default) is `"%n %u"`. A type takes one or the other;
+passing both raises `ArgumentError`.
+
+```ruby
+Amount.register :EUR, decimals: 2, display_symbol: "€", display_format: "%u%n"
+```
+
+When localizing, `amounts.formats.<symbol downcased>` (and
+`amounts.display_unit_formats.<symbol downcased>.<unit>` for display units)
+overrides the configured template:
+
+```yaml
+de:
+  amounts:
+    formats:
+      eur: "%n\u00A0%u"   # non-breaking space: "12,50 €" never wraps apart
+```
+
+```ruby
+Amount.of_eur("12.5").ui(locale: :en)                    # => "€12.50"
+Amount.of_eur("12.5").ui(locale: :de)                    # => "12,50\u00A0€"
+Amount.of_eur("12.5").ui(locale: :de, decorated: false)  # => "12,50"
+```
+
+Templates are used exactly as given; nothing inserts non-breaking spaces for
+you, so put them in your locale files. Negative numbers keep their sign inside
+`%n` (`"$-5.00"`).
+
+`display_format(unit: nil, locale: nil)` returns the template `ui` would use,
+for rendering the number and label yourself:
+
+```ruby
+Amount.of_eur("12.5").display_format(locale: :de)  # => "%n\u00A0%u"
+```
+
 ### Serialization
 
 ```ruby

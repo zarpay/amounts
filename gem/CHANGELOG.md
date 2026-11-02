@@ -4,6 +4,25 @@
 
 ### Added
 
+- Templates for where the number and unit go. `register` takes
+  `display_format:` and display unit specs take `format:`, where `%n` is the
+  formatted number (sign included) and `%u` the label: `"%u%n"`,
+  `"%n\u00A0%u"`. Templates are used exactly as given, so non-breaking spaces
+  survive. When localizing, `amounts.formats.<symbol downcased>` and
+  `amounts.display_unit_formats.<symbol downcased>.<unit>` override them; a
+  locale template without `%n` is ignored. `display_position` stays as
+  shorthand for `"%u%n"` / `"%n %u"`, so existing output is unchanged.
+  Passing both `display_format:` and `display_position:` raises
+  `ArgumentError`; a display unit with both `:format` and `:position` raises
+  `InvalidDisplayUnit`. `Registry::Entry#display_format` always holds the
+  type's template, and `#display_position` is `nil` for a type registered
+  with `display_format:`.
+- `Amount#display_format(unit: nil, locale: nil)` returns the template `ui`
+  uses for the type or a display unit, with the same locale precedence.
+  Template behavior lives in the new `Amount::Formattable` concern, included
+  in `Amount`.
+- `Registry::Entry#display_unit(unit)` returns a display unit's spec, raising
+  `InvalidDisplayUnit` for an unknown unit.
 - Plural unit labels. `display_symbol:` (and a display unit's `symbol:`) accept
   a hash such as `{ one: "search", other: "searches" }`, giving `1 search` /
   `2 searches`. `register` raises (`Registry::InvalidDisplaySymbol`, or

@@ -259,7 +259,7 @@ RSpec.describe Amount, :aggregate_failures do
 
       expect(Amount.of_usdc("122500").ui).to eq("$122500.00")
       expect(Amount.of_usdc("122500").ui(locale: :en)).to eq("$122,500.00")
-      expect(Amount.of_usdc("122500").ui(locale: :de)).to eq("$122.500,00")
+      expect(Amount.of_usdc("122500").ui(locale: :de)).to eq("122.500,00\u00A0$")
     end
 
     it "renders display units" do

@@ -2,6 +2,7 @@
 
 require "bigdecimal"
 require "thread"
+require_relative "formattable"
 require_relative "registry/generated_constructors"
 
 class Amount
@@ -33,13 +34,25 @@ class Amount
       :display_symbol,
       :label_key,
       :display_position,
+      :display_format,
       :ui_decimals,
       :display_units,
       :default_display,
       :amount_class,
       :trim_zeros,
       keyword_init: true
-    )
+    ) do
+      # @param unit [Symbol, String]
+      # @return [Hash] the display unit's spec
+      # @raise [InvalidDisplayUnit] when the type has no such display unit
+      def display_unit(unit)
+        raise InvalidDisplayUnit, "#{symbol} has no display_units configured" unless display_units
+
+        display_units.fetch(unit.to_sym) do
+          raise InvalidDisplayUnit, "unknown display unit #{unit} for #{symbol}"
+        end
+      end
+    end
 
     def initialize
       @entries       = {}
@@ -65,7 +78,13 @@ class Amount
     # @param label_key [String, Symbol, nil] I18n key for the unit label, used
     #   when localizing. Defaults to `amounts.units.<symbol downcased>`;
     #   a missing translation falls back to `display_symbol`
-    # @param display_position [Symbol] either `:prefix` or `:suffix`
+    # @param display_position [Symbol, nil] `:prefix` (`"$1.50"`) or `:suffix`
+    #   (`"1.50 SOL"`, the default). Shorthand for the templates `"%u%n"` and
+    #   `"%n %u"`; can't be combined with `display_format`
+    # @param display_format [String, nil] template for decorated `ui` output,
+    #   where `%n` is the formatted number (sign included) and `%u` the label,
+    #   e.g. `"%n\u00A0%u"`. Used exactly as given. When localizing,
+    #   `amounts.formats.<symbol downcased>` overrides it
     # @param ui_decimals [Integer] decimals displayed by default UI formatting
     # @param display_units [Hash, nil] optional display-only scaling definitions
     # @param default_display [Symbol, nil] optional default display unit key
@@ -75,14 +94,16 @@ class Amount
     # @raise [AlreadyRegistered] if the symbol is already registered or the
     #   generated constructor would collide with an existing method
     # @raise [RegistryLocked] if the registry has been locked
+    # @raise [ArgumentError] if both `display_format` and `display_position`
+    #   are given, or `display_format` is not a String containing `%n`
     # @example
     #   Amount.register :USDC,
     #     decimals: 6,
     #     display_symbol: "$",
     #     display_position: :prefix,
     #     ui_decimals: 2
-    def register(symbol, decimals:, display_symbol: symbol.to_s, label_key: nil, display_position: :suffix,
-                 ui_decimals: decimals, display_units: nil, default_display: nil,
+    def register(symbol, decimals:, display_symbol: symbol.to_s, label_key: nil, display_position: nil,
+                 display_format: nil, ui_decimals: decimals, display_units: nil, default_display: nil,
                  trim_zeros: false, class: nil)
       raise ArgumentError, "symbol must not be blank" if symbol.nil? || symbol.to_s.empty?
 
@@ -93,6 +114,7 @@ class Amount
         raise AlreadyRegistered, "#{symbol} already registered" if @entries.key?(symbol)
 
         validate_display_symbol!(:display_symbol, display_symbol, InvalidDisplaySymbol)
+        validate_display_format!(display_format, display_position) if display_format
         validate_display_units!(display_units, default_display) if display_units
 
         entry = Entry.new(
@@ -100,7 +122,8 @@ class Amount
           decimals:,
           display_symbol:,
           label_key: label_key&.to_s,
-          display_position:,
+          display_position: display_format ? nil : (display_position || :suffix),
+          display_format: display_format || Formattable.template_for(display_position),
           ui_decimals:,
           display_units:,
           default_display:,
@@ -239,6 +262,13 @@ class Amount
       raise RegistryLocked, "registry is locked" if @locked
     end
 
+    def validate_display_format!(format, position)
+      raise ArgumentError, "pass display_format or display_position, not both" if position
+      return if Formattable.valid_template?(format)
+
+      raise ArgumentError, "display_format must be a String containing %n"
+    end
+
     def validate_display_units!(units, default)
       unless units.is_a?(Hash) && !units.empty?
         raise InvalidDisplayUnit, "display_units must be a non-empty hash"
@@ -253,8 +283,18 @@ class Amount
           raise InvalidDisplayUnit, "display_unit #{key} must have :scale"
         end
 
+        validate_unit_format!(key, spec) if spec.key?(:format)
         validate_display_symbol!("display_unit #{key} :symbol", spec[:symbol], InvalidDisplayUnit) if spec[:symbol]
       end
+    end
+
+    def validate_unit_format!(key, spec)
+      if spec.key?(:position)
+        raise InvalidDisplayUnit, "display_unit #{key} takes :format or :position, not both"
+      end
+      return if Formattable.valid_template?(spec[:format])
+
+      raise InvalidDisplayUnit, "display_unit #{key} :format must be a String containing %n"
     end
 
     def validate_display_symbol!(name, value, error)
