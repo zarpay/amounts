@@ -35,7 +35,9 @@ class Amount
     #   Amount.of_gold("1").ui(unit: :gram)             # => "31.10 g"
     #   Amount.of_gold("1").ui(unit: :gram, decorated: false)  # => "31.10"
     #   Amount.of_sol("2.5").ui(trim_zeros: true)       # => "2.5 SOL"
-    #   # with display_format: "%u %n" and amounts.formats.eur: "%n\u00A0%u" in :de
+    #   # EUR registered with display_format: "%u%n"; de.yml has
+    #   # amounts.formats.eur: "%n\u00A0%u"
+    #   Amount.of_eur("12.5").ui(locale: :en)           # => "€12.50"
     #   Amount.of_eur("12.5").ui(locale: :de)           # => "12,50\u00A0€"
     def ui(unit: nil, direction: :floor, decorated: true, trim_zeros: nil, locale: nil)
       locale = Locale.effective(locale)
@@ -79,7 +81,7 @@ class Amount
       formatted = format_number(rounded, @entry.ui_decimals, resolve_trim(trim_zeros), locale)
       return formatted unless decorated
 
-      apply_template(formatted, label(nil, locale), type_template(locale))
+      decorate(formatted, nil, nil, locale)
     end
 
     def render_display_unit(unit, direction, decorated:, trim_zeros:, locale:)
@@ -90,31 +92,44 @@ class Amount
       formatted = format_number(rounded, decimals, resolve_trim(trim_zeros, spec), locale)
       return formatted unless decorated
 
-      apply_template(formatted, label(unit, locale, spec), unit_template(unit, spec, locale))
+      decorate(formatted, unit, spec, locale)
     end
 
-    POSITION_TEMPLATES = { prefix: "%u%n", suffix: "%n %u" }.freeze
-    private_constant :POSITION_TEMPLATES
+    # Places the number and its label with the type's or display unit's
+    # template. Without a label there is nothing to place, so the number is
+    # returned alone.
+    def decorate(number, unit, spec, locale)
+      label = label(unit, locale, spec)
+      return number if label.nil? || label.empty?
 
-    # Locale `amounts.formats.<symbol>`, then `display_format`, then the
-    # template for `display_position`.
-    def type_template(locale)
-      (locale && Locale.type_format(@entry, locale)) ||
-        @entry.display_format ||
-        position_template(@entry.display_position)
+      DisplayFormat.apply(template(unit, locale, spec), number:, label:)
     end
 
-    # Locale `amounts.display_unit_formats.<symbol>.<unit>`, then the spec's
-    # `:format`, then its `:position`, then the type's template.
-    def unit_template(unit, spec, locale)
+    # The template for the type or one of its display units, mirroring how
+    # labels resolve:
+    #
+    # - type: `amounts.formats.<symbol>` (when localizing), then the entry's
+    #   `display_format`, which the registry derives from `display_position`
+    #   when no template was given.
+    # - display unit: `amounts.display_unit_formats.<symbol>.<unit>` (when
+    #   localizing), then the spec's `:format`, then its `:position`, then the
+    #   type's template.
+    def template(unit, locale, spec)
+      return type_template(locale) unless spec
+
       (locale && Locale.unit_format(@entry, unit.to_sym, locale)) ||
-        spec[:format] ||
-        (spec[:position] && position_template(spec[:position])) ||
+        configured_unit_template(spec) ||
         type_template(locale)
     end
 
-    def position_template(position)
-      position == :prefix ? POSITION_TEMPLATES[:prefix] : POSITION_TEMPLATES[:suffix]
+    def type_template(locale)
+      (locale && Locale.type_format(@entry, locale)) || @entry.display_format
+    end
+
+    def configured_unit_template(spec)
+      return spec[:format] if spec[:format]
+
+      DisplayFormat.for_position(spec[:position]) if spec[:position]
     end
 
     def label(unit, locale, spec = nil)
@@ -157,12 +172,6 @@ class Amount
       return spec[:trim_zeros] if spec&.key?(:trim_zeros)
 
       @entry.trim_zeros
-    end
-
-    def apply_template(number, label, template)
-      return number if label.nil? || label.empty?
-
-      template.gsub(/%[nu]/, "%n" => number, "%u" => label)
     end
   end
 end

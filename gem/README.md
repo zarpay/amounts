@@ -258,33 +258,37 @@ Amount.of_searches(3).unit_label(locale: :de)  # => "Suchen" (with that key in d
 `unit_label(unit: nil, locale: nil)` returns the label alone, following the same
 rules as `ui`.
 
-Where the number and label go is a template: `%n` is the formatted number
-(sign included) and `%u` the label. Set it with `display_format:` on `register`
-or `format:` on a display unit. Without one, `display_position: :prefix` means
-`"%u%n"` and `:suffix` means `"%n %u"`, so existing types render as before.
-Passing both `display_format:` and `display_position:` raises `ArgumentError`.
+Where the number and label go is a template, like Rails'
+`number.currency.format.format`: `%n` is the formatted number (sign included)
+and `%u` the label. Set it with `display_format:` on `register` or `format:` on
+a display unit. `display_position` is shorthand for one: `:prefix` is `"%u%n"`
+and `:suffix` (the default) is `"%n %u"`. A type takes one or the other;
+passing both raises `ArgumentError`.
 
 ```ruby
 Amount.register :EUR, decimals: 2, display_symbol: "€", display_format: "%u%n"
 ```
 
+When localizing, `amounts.formats.<symbol downcased>` (and
+`amounts.display_unit_formats.<symbol downcased>.<unit>` for display units)
+overrides the configured template:
+
 ```yaml
 de:
   amounts:
     formats:
-      eur: "%n\u00A0%u"   # non-breaking space, so "12,50 €" never wraps apart
+      eur: "%n\u00A0%u"   # non-breaking space: "12,50 €" never wraps apart
 ```
 
 ```ruby
-Amount.of_eur("12.5").ui(locale: :en)   # => "€12.50"
-Amount.of_eur("12.5").ui(locale: :de)   # => "12,50\u00A0€"
+Amount.of_eur("12.5").ui(locale: :en)                    # => "€12.50"
+Amount.of_eur("12.5").ui(locale: :de)                    # => "12,50\u00A0€"
+Amount.of_eur("12.5").ui(locale: :de, decorated: false)  # => "12,50"
 ```
 
-When localizing, `amounts.formats.<symbol downcased>` (and
-`amounts.display_unit_formats.<symbol downcased>.<unit>` for display units)
-overrides the configured template. Templates are used exactly as given; nothing
-inserts non-breaking spaces for you. `decorated: false` still returns just the
-number.
+Templates are used exactly as given; nothing inserts non-breaking spaces for
+you, so put them in your locale files. Negative numbers keep their sign inside
+`%n` (`"$-5.00"`).
 
 ### Serialization
 

@@ -89,9 +89,8 @@ RSpec.describe "Auric Vault localized display", :integration, type: :model do
     I18n.with_locale(:en) { expect(bullion.appraisal_label).to eq("$25,000.00") }
   end
 
-  it "places the unit with the locale's template" do
+  it "places the unit with the locale's template, keeping its non-breaking space" do
     expect(bullion.appraisal_label(locale: :de)).to eq("25.000,00\u00A0$")
-    expect(bullion.appraisal_label(locale: :de)).to include("\u00A0")
     expect(bullion.appraisal_label(locale: :en)).to eq("$25,000.00")
     expect(bullion.appraisal.ui(locale: :de, decorated: false)).to eq("25.000,00")
   end

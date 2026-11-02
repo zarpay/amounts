@@ -214,10 +214,10 @@ Amount.register :GOLD,
 
 `display_position` still works and is shorthand for a template:
 
-| `display_position` | Template  | Output    |
-|--------------------|-----------|-----------|
-| `:prefix`          | `"%u%n"`  | `$1.50`   |
-| `:suffix` (default)| `"%n %u"` | `1.50 SOL`|
+| `display_position`   | Template  | Output     |
+|----------------------|-----------|------------|
+| `:prefix`            | `"%u%n"`  | `$1.50`    |
+| `:suffix` (default)  | `"%n %u"` | `1.50 SOL` |
 
 A type takes `display_format:` or `display_position:`, not both; passing both
 raises `ArgumentError`. A display unit likewise takes `:format` or `:position`.
@@ -241,10 +241,10 @@ de:
 ```ruby
 eur = Amount.of_eur("1234.5")
 
-eur.ui(locale: :en)                 # => "€1,234.50"
-eur.ui(locale: :de)                 # => "1.234,50\u00A0€"
-eur.ui(locale: :de, decorated: false) # => "1.234,50"
-eur.ui                              # => "€1234.50"  (not localizing)
+eur.ui(locale: :en)                    # => "€1,234.50"
+eur.ui(locale: :de)                    # => "1.234,50\u00A0€"
+eur.ui(locale: :de, decorated: false)  # => "1.234,50"
+eur.ui                                 # => "€1234.50"  (not localizing)
 ```
 
 Precedence:
@@ -252,7 +252,11 @@ Precedence:
 - **Types:** `amounts.formats.<symbol>`, then `display_format`, then
   `display_position`.
 - **Display units:** `amounts.display_unit_formats.<symbol>.<unit>`, then the
-  unit's `:format`, then its `:position`, then the type's template.
+  unit's `:format`, then its `:position`, then the type's template (which
+  includes the type's locale template).
+
+A locale template without `%n` is ignored, so a typo in a locale file falls
+back to the configured template instead of dropping the number.
 
 Symbols are downcased in keys. Templates are used exactly as given: nothing
 inserts non-breaking spaces automatically, so put them in your locale files
