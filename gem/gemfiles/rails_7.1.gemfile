@@ -19,3 +19,8 @@ gem "railties", "~> 7.1.0"
 # Rails 7.1 needs sqlite3 1.x, whose precompiled gems stop at Ruby 3.3; build
 # it from source so the same lockfile installs on Ruby 3.4 too.
 gem "sqlite3", "~> 1.4", force_ruby_platform: true
+
+# Railties pulls in nokogiri. The lockfile is made on Ruby 3.1, the oldest
+# Ruby in the matrix, which resolves nokogiri 1.18; its precompiled gems stop
+# before Ruby 4.0. Build it from source so the same lockfile installs on 4.0.
+gem "nokogiri", force_ruby_platform: true

@@ -30,12 +30,14 @@ bundle exec rake                      # all of the above
 bundle exec ruby -Ilib:test test/amount/concerns/arithmetic_test.rb   # one file
 ```
 
-CI runs the ActiveRecord suites, including PostgreSQL, once per Ruby (3.1 to 3.4) and Rails
+CI runs the ActiveRecord suites, including PostgreSQL, once per Ruby (3.1 to 4.0) and Rails
 version (7.1, 7.2, 8.0, 8.1; Rails 8 needs Ruby 3.2). Each Rails version has a gemfile and a
 committed lockfile in `gem/gemfiles/`. Run one locally with
 `BUNDLE_GEMFILE=gemfiles/rails_8.1.gemfile bundle exec rake test:active_record`. When you add
 a Rails version, generate its lockfile on the oldest Ruby it supports, so the same lock
-installs across the matrix.
+installs across the matrix. If that lock pins a native gem whose precompiled builds stop
+before the newest Ruby (nokogiri and sqlite3 in the Rails 7.x gemfiles), mark it
+`force_ruby_platform: true` so it builds from source.
 
 From `demo/`: `bin/rails db:migrate RAILS_ENV=test && bundle exec rspec`.
 From `site/`: `npm install && npm run build`.
@@ -52,7 +54,7 @@ Detailed rules live in `.claude/rules/` and load when you touch the files they c
 - **The core is Rails-agnostic.** Only `lib/amount/active_record.rb`, `lib/amount/active_record/`,
   `lib/generators/` and the guarded railtie hook in `lib/amounts.rb` may load Rails,
   ActiveRecord or ActiveSupport.
-- **Ruby 3.1 is the floor** for `gem/` (CI runs 3.1 to 3.4; RuboCop targets 3.1). Don't use
+- **Ruby 3.1 is the floor** for `gem/` (CI runs 3.1 to 4.0; RuboCop targets 3.1). Don't use
   newer syntax there, even though `demo/` runs on a newer Ruby.
 - **Values stay exact.** Store and compute on atomic integers. A `Float` input is converted
   through its string form on the way in; never compute with or store a `Float`.

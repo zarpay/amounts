@@ -70,15 +70,12 @@ GEM
     loofah (2.25.2)
       crass (~> 1.0.2)
       nokogiri (>= 1.12.0)
+    mini_portile2 (2.8.9)
     minitest (5.27.0)
-    nokogiri (1.18.10-aarch64-linux-gnu)
+    nokogiri (1.18.10)
+      mini_portile2 (~> 2.8.2)
       racc (~> 1.4)
-    nokogiri (1.18.10-arm64-darwin)
-      racc (~> 1.4)
-    nokogiri (1.18.10-x86_64-darwin)
-      racc (~> 1.4)
-    nokogiri (1.18.10-x86_64-linux-gnu)
-      racc (~> 1.4)
+    pg (1.7.0)
     pg (1.7.0-aarch64-linux)
     pg (1.7.0-arm64-darwin)
     pg (1.7.0-x86_64-darwin)
@@ -137,10 +134,8 @@ GEM
       rspec-support (~> 3.13.0)
     rspec-support (3.13.7)
     securerandom (0.4.1)
-    sqlite3 (2.8.1-aarch64-linux-gnu)
-    sqlite3 (2.8.1-arm64-darwin)
-    sqlite3 (2.8.1-x86_64-darwin)
-    sqlite3 (2.8.1-x86_64-linux-gnu)
+    sqlite3 (1.7.3)
+      mini_portile2 (~> 2.8.0)
     stringio (3.2.0)
     thor (1.5.0)
     timeout (0.6.1)
@@ -153,6 +148,8 @@ GEM
 PLATFORMS
   aarch64-linux
   arm64-darwin
+  ruby
+  x86-linux
   x86_64-darwin
   x86_64-linux
 
@@ -161,11 +158,12 @@ DEPENDENCIES
   amounts!
   i18n (>= 1.14)
   minitest (>= 5.0, < 6.0)
+  nokogiri
   pg (>= 1.5)
   railties (~> 7.2.0)
   rake (>= 13.0)
   rspec (>= 3.13)
-  sqlite3 (>= 1.4)
+  sqlite3 (~> 1.4)
 
 BUNDLED WITH
    2.5.18
