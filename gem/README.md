@@ -231,13 +231,28 @@ to `display_symbol`. Display units use their spec's `label_key:` (default
 `amounts.display_units.<symbol downcased>.<unit>`), then the unit's `:symbol`,
 then the type's label. Missing keys never yield "translation missing".
 
-```ruby
-Amount.register :SEARCHES, decimals: 0, label_key: "amounts.units.searches"
-# en: amounts.units.searches: "searches"   de: "Suchen"
+```yaml
+en:
+  amounts:
+    display_units:
+      gold: { oz_t: "oz t", gram: "g", kg: "kg" }
+de:
+  amounts:
+    display_units:
+      gold: { oz_t: "Feinunze", gram: "Gramm", kg: "Kilogramm" }
+```
 
-Amount.of_searches(3).ui(locale: :de)          # => "3 Suchen"
-Amount.of_searches(3).unit_label(locale: :de)  # => "Suchen"
-Amount.of_gold("1").unit_label(unit: :gram)    # => "g" (not localizing)
+```ruby
+gold = Amount.of_gold("12.5")   # :GOLD with oz_t / gram / kg display units
+
+gold.ui(unit: :gram, locale: :en)          # => "388.79 g"
+gold.ui(unit: :gram, locale: :de)          # => "388,79 Gramm"
+gold.ui(unit: :kg,   locale: :de)          # => "0,38879 Kilogramm"
+gold.unit_label(unit: :kg, locale: :de)    # => "Kilogramm"
+gold.unit_label(unit: :gram)               # => "g" (not localizing)
+
+Amount.register :SEARCHES, decimals: 0, label_key: "amounts.units.searches"
+Amount.of_searches(3).unit_label(locale: :de)  # => "Suchen" (with that key in de)
 ```
 
 `unit_label(unit: nil, locale: nil)` returns the label alone, following the same

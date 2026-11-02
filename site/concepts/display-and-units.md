@@ -135,23 +135,49 @@ and `direction` are unchanged, and `to_s`, `formatted`, `as_json`, serialization
 When localizing (`locale:` or `Amount.localize = true`), labels are looked up in
 I18n. Otherwise they come from `display_symbol` exactly as before.
 
-```ruby
-Amount.register :SEARCHES, decimals: 0, label_key: "amounts.units.searches"
-# without label_key the key is amounts.units.<symbol downcased>
-```
+The [Auric Vault](#auric-vault-example) bar is the best showcase: one `:GOLD`
+type with three display units, each translated per locale. The registration
+needs no labels at all, because the conventional keys are used:
 
 ```yaml
 en:
   amounts:
     units:
-      searches: "searches"
+      gold: "oz t"
     display_units:
       gold:
+        oz_t: "oz t"
         gram: "g"
+        kg: "kg"
 de:
   amounts:
     units:
-      searches: "Suchen"
+      gold: "Feinunze"
+    display_units:
+      gold:
+        oz_t: "Feinunze"
+        gram: "Gramm"
+        kg: "Kilogramm"
+```
+
+```ruby
+gold = Amount.of_gold("12.5")
+
+gold.ui(locale: :en)                   # => "12.5000 oz t"
+gold.ui(locale: :de)                   # => "12,5000 Feinunze"
+gold.ui(unit: :gram, locale: :de)      # => "388,79 Gramm"
+gold.ui(unit: :kg,   locale: :de)      # => "0,38879 Kilogramm"
+gold.ui(unit: :gram)                   # => "388.79 g"  (not localizing)
+```
+
+The amount, its atomic value and its `to_s` (`"GOLD|12.5"`) are identical in
+every locale; only the rendered label and number characters change.
+
+To override a key, pass `label_key:` on the type or on a single display unit:
+
+```ruby
+Amount.register :SEARCHES, decimals: 0, label_key: "amounts.units.searches"
+# without label_key the key is amounts.units.<symbol downcased>
 ```
 
 - **Types:** `label_key`, then `amounts.units.<symbol>`, then `display_symbol`.
@@ -163,9 +189,10 @@ A missing key never renders "translation missing". To get the label alone, for
 column headers or chips, use `unit_label`:
 
 ```ruby
-Amount.of_searches(3).ui(locale: :de)             # => "3 Suchen"
-Amount.of_searches(3).unit_label(locale: :de)     # => "Suchen"
-Amount.of_gold("1").unit_label(unit: :gram)       # => "g"
+gold.unit_label(unit: :gram, locale: :de)   # => "Gramm"
+gold.unit_label(unit: :kg,   locale: :de)   # => "Kilogramm"
+gold.unit_label(unit: :gram)                # => "g"
+Amount.of_searches(3).unit_label(locale: :de) # => "Suchen"
 ```
 
 ## What display units are not
