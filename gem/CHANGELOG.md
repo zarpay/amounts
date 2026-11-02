@@ -95,6 +95,13 @@
 
 - Anonymous ActiveRecord classes using `has_amount` get a fallback
   `model_name`, so validation messages can be generated for them.
+- On Rails 8.1, assigning an amount whose atomic value has more than 16 digits
+  (`Amount.new(10**30, :SOL, from: :atomic)`) silently truncated it before
+  saving (to `10**15`). Rails 8.1 cuts a string cast to an integer column to
+  16 bytes, and `has_amount` wrote the atomic value as a string. It now writes
+  the Integer, which every Rails version stores exactly. Reads were never
+  affected; rows already written under Rails 8.1 with more than 16 digits
+  hold the truncated value.
 
 ## 0.0.8 - 2026-05-05
 

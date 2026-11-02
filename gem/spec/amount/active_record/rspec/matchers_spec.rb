@@ -1,48 +1,16 @@
 # frozen_string_literal: true
 
-require "active_record"
-require "sqlite3"
-require_relative "../lib/amount/active_record"
-require_relative "../lib/amount/active_record/rspec"
-require_relative "../test/support/amount_test_support"
+require_relative "../../../support/active_record"
 
-ActiveRecord::Base.establish_connection(adapter: "sqlite3", database: ":memory:")
-
-ActiveRecord::Schema.define do
-  create_table :holdings, force: true do |t|
-    t.amount :amount, null: true
-    t.amount :fee, symbol: :SOL, null: true
-  end
-end
-
-class RSpecHolding < ActiveRecord::Base
-  self.table_name = "holdings"
-
-  has_amount :amount
-  has_amount :fee, symbol: :SOL
-end
-
-RSpec.configure do |config|
-  config.before(:context) do
-    AmountTestSupport.register_active_record_types!
-  end
-
-  config.before do
-    AmountTestSupport.register_active_record_types!
-    RSpecHolding.delete_all
-  end
-
-  config.after do
-    Amount.registry.clear!
-  end
-end
-
-RSpec.describe "ActiveRecord amount matchers" do
+RSpec.describe Amount::ActiveRecord::RSpec::Matchers do
   describe "have_amount_column" do
-    it "matches both virtual and physical columns" do
-      holding = RSpecHolding.create!(amount: "USDC|1.50", fee: 0.25)
+    let(:holding) { RSpecHolding.create!(amount: "USDC|1.50", fee: 0.25) }
 
+    it "matches a multi-symbol column" do
       expect(holding).to have_amount_column(:amount, "USDC|1.50")
+    end
+
+    it "matches a fixed-symbol column" do
       expect(holding).to have_amount_column(:fee, Amount.new("0.25", :SOL))
     end
 

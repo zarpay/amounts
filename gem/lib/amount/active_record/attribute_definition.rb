@@ -41,7 +41,9 @@ class Amount
           return nil
         end
 
-        record.write_attribute(atomic_column, value.atomic.to_s)
+        # The Integer itself, not its string: Rails 8.1 cuts a String cast to an
+        # integer column to 16 bytes, which silently truncates large values.
+        record.write_attribute(atomic_column, value.atomic)
         record.write_attribute(symbol_column, value.symbol.to_s) unless fixed_symbol?
         value
       end

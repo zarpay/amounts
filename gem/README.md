@@ -548,7 +548,7 @@ Run the PostgreSQL integration test explicitly:
 
 ```bash
 AMOUNTS_POSTGRES_URL=postgresql://localhost/amounts_test \
-  bundle exec ruby -Ilib:test test/postgresql_integration_test.rb
+  bundle exec rake test:integration
 ```
 
 If `AMOUNTS_POSTGRES_URL` is not set, the PostgreSQL test file skips cleanly.
