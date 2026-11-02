@@ -28,6 +28,20 @@ class AmountActiveRecordAttributeDefinitionTest < Minitest::Test
     assert_equal "USDC", amount_written_holding.amount_symbol
   end
 
+  # Rails 8.1 cuts a String cast to an integer column to 16 bytes, so the
+  # writer must hand Rails the Integer, never its string form.
+  def test_writer_keeps_atomic_values_longer_than_sixteen_digits
+    holding = Holding.new(amount: Amount.new(10**30, :SOL, from: :atomic))
+
+    assert_equal 10**30, holding.amount_atomic
+  end
+
+  def test_fixed_symbol_writer_keeps_atomic_values_longer_than_sixteen_digits
+    holding = Holding.new(fee: Amount.new(10**30, :SOL, from: :atomic))
+
+    assert_equal 10**30, holding.fee_atomic
+  end
+
   def test_fixed_symbol_writer_stores_amount_atomic
     holding = Holding.new
     holding.fee = Amount.new("2.5", :SOL)
