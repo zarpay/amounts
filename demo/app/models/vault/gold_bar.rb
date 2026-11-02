@@ -74,7 +74,7 @@ module Vault
     #   weight_label                               # => "12.5000 oz t"
     #   weight_label(unit: :gram)                  # => "388.79 g"
     #   weight_label(unit: :kg, direction: :ceil)  # => "0.38880 kg"
-    #   weight_label(unit: :gram, locale: :de)     # => "388,79 g"
+    #   weight_label(unit: :gram, locale: :de)     # => "388,79 Gramm"
     def weight_label(unit: nil, direction: :floor, locale: nil)
       return nil if weight.nil?
 

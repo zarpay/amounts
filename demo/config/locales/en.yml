@@ -33,3 +33,11 @@ en:
     format:
       delimiter: ","
       separator: "."
+  amounts:
+    units:
+      gold: "oz t"
+    display_units:
+      gold:
+        oz_t: "oz t"
+        gram: "g"
+        kg: "kg"

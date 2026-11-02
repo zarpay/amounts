@@ -30,6 +30,7 @@ class Amount
       :symbol,
       :decimals,
       :display_symbol,
+      :label_key,
       :display_position,
       :ui_decimals,
       :display_units,
@@ -58,6 +59,9 @@ class Amount
     # @param symbol [Symbol, String] registered type identifier
     # @param decimals [Integer] number of storage decimals
     # @param display_symbol [String] symbol used by UI helpers
+    # @param label_key [String, Symbol, nil] I18n key for the unit label, used
+    #   when localizing. Defaults to `amounts.units.<symbol downcased>`;
+    #   a missing translation falls back to `display_symbol`
     # @param display_position [Symbol] either `:prefix` or `:suffix`
     # @param ui_decimals [Integer] decimals displayed by default UI formatting
     # @param display_units [Hash, nil] optional display-only scaling definitions
@@ -74,7 +78,7 @@ class Amount
     #     display_symbol: "$",
     #     display_position: :prefix,
     #     ui_decimals: 2
-    def register(symbol, decimals:, display_symbol: symbol.to_s, display_position: :suffix,
+    def register(symbol, decimals:, display_symbol: symbol.to_s, label_key: nil, display_position: :suffix,
                  ui_decimals: decimals, display_units: nil, default_display: nil,
                  trim_zeros: false, class: nil)
       raise ArgumentError, "symbol must not be blank" if symbol.nil? || symbol.to_s.empty?
@@ -91,6 +95,7 @@ class Amount
           symbol:,
           decimals:,
           display_symbol:,
+          label_key: label_key&.to_s,
           display_position:,
           ui_decimals:,
           display_units:,

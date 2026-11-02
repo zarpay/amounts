@@ -55,10 +55,32 @@ RSpec.describe "Auric Vault localized display", :integration, type: :model do
   end
 
   it "formats labels for an explicit locale" do
-    expect(bullion.weight_label(unit: :gram, locale: :de)).to eq("388,79 g")
-    expect(bullion.weight_label(locale: :de)).to eq("12,5000 oz t")
+    expect(bullion.weight_label(unit: :gram, locale: :de)).to eq("388,79 Gramm")
+    expect(bullion.weight_label(locale: :de)).to eq("12,5000 Feinunze")
+    expect(bullion.weight_label(unit: :kg, locale: :de)).to eq("0,38879 Kilogramm")
     expect(bullion.appraisal_label(locale: :en)).to eq("$25,000.00")
     expect(bullion.appraisal_label(locale: :de)).to eq("$25.000,00")
+  end
+
+  it "translates unit labels from I18n" do
+    weight = bullion.weight
+    expect(weight.unit_label(unit: :gram, locale: :de)).to eq("Gramm")
+    expect(weight.unit_label(unit: :gram, locale: :en)).to eq("g")
+    expect(weight.unit_label(unit: :gram)).to eq("g")
+  end
+
+  it "translates every display unit of the same bar" do
+    weight = bullion.weight
+    labels = %i[oz_t gram kg].to_h { |u| [u, weight.unit_label(unit: u, locale: :de)] }
+    expect(labels).to eq(oz_t: "Feinunze", gram: "Gramm", kg: "Kilogramm")
+    expect(%i[oz_t gram kg].map { |u| weight.unit_label(unit: u, locale: :en) }).to eq(["oz t", "g", "kg"])
+  end
+
+  it "renders a column header and value separately per locale" do
+    weight = bullion.weight
+    expect(weight.unit_label(unit: :gram, locale: :de)).to eq("Gramm")
+    expect(weight.ui(unit: :gram, locale: :de)).to eq("388,79 Gramm")
+    expect(weight.ui(unit: :gram, locale: :en)).to eq("388.79 g")
   end
 
   it "follows I18n.locale when Amount.localize is on" do

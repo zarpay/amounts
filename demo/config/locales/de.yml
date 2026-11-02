@@ -3,3 +3,11 @@ de:
     format:
       delimiter: "."
       separator: ","
+  amounts:
+    units:
+      gold: "Feinunze"
+    display_units:
+      gold:
+        oz_t: "Feinunze"
+        gram: "Gramm"
+        kg: "Kilogramm"
