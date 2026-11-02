@@ -306,6 +306,66 @@ inserts non-breaking spaces automatically, so put them in your locale files
 (`"%n\u00A0%u"` in YAML double quotes, or the literal character) wherever the
 number and unit must not be split across lines.
 
+## Compact notation
+
+For dashboards and charts, `ui(compact: true)` shortens numbers of one thousand
+or more:
+
+```ruby
+Amount.register :TOKENS, decimals: 0
+
+Amount.of_tokens(50_000_000).ui(compact: true)                    # => "50M TOKENS"
+Amount.of_usd("1500000").ui(compact: true)                        # => "$1.5M"
+Amount.of_tokens(50_000_000).ui(compact: true, decorated: false)  # => "50M"
+Amount.of_tokens(999).ui(compact: true)                           # => "999 TOKENS"
+```
+
+- **Precision:** 3 significant digits; `compact: { precision: 2 }` changes it.
+  Trailing zeros are trimmed.
+- **Rounding** follows `direction:`. The default `:floor` means `1_999_999` is
+  `1.99M`, never `2M`; `direction: :ceil` gives `2M`. A number that rounds up
+  into the next scale uses it (`999_999` ceils to `1M`, not `1000K`). As
+  everywhere in `ui`, floor rounds negatives away from zero (`-1_999_999` is
+  `-2M`).
+- **Below one thousand** the number is formatted as usual, with `ui_decimals`
+  and `trim_zeros`.
+- **Display units:** with `unit:`, the scaled number is compacted:
+  `Amount.of_gold("1000").ui(unit: :gram, compact: true) # => "31.1K g"`.
+- **Labels and templates** wrap the compacted number (`$1.5M`, `50M tokens`).
+  Plural labels agree with the full value, so it's `1K searches`.
+
+### Scale words
+
+| | Words | Joined by |
+|---|---|---|
+| Not localizing | `K`, `M`, `B`, `T` | `"%n%u"` → `1.5M` |
+| Localizing | `number.human.decimal_units.units.{thousand,million,billion,trillion}` | `number.human.decimal_units.format`, default `"%n %u"` |
+
+These are the keys Rails' `number_to_human` reads, so an app with `rails-i18n`
+already has them. A word may be a plural hash (`{ one: "Million", other:
+"Millionen" }`), counted with the compacted number. A scale with no translation
+falls back to its short form. Numbers past trillions stay in trillions
+(`1,500T`).
+
+```yaml
+de:
+  number:
+    human:
+      decimal_units:
+        format: "%n %u"
+        units: { thousand: "Tsd.", million: "Mio.", billion: "Mrd." }
+  amounts:
+    units: { tokens: "Token" }
+```
+
+```ruby
+Amount.of_tokens(1_500_000).ui(compact: true, locale: :de)  # => "1,5 Mio. Token"
+Amount.of_tokens(1_500_000).ui(compact: true)               # => "1.5M TOKENS"
+```
+
+The delimiter and separator come from `number.format`, as for any localized
+`ui` output.
+
 ## What display units are not
 
 They are not:

@@ -216,6 +216,7 @@ amount.ui(direction: :ceil)
 amount.ui(unit: :gram)
 amount.in_unit(:gram)
 amount.ui(locale: :de)   # => "$122.500,00" (needs the i18n gem)
+amount.ui(compact: true) # => "$1.5M" for 1,500,000
 
 Amount.localize = true   # ui follows I18n.locale
 ```
@@ -331,6 +332,52 @@ for rendering the number and label yourself:
 ```ruby
 Amount.of_eur("12.5").display_format(locale: :de)  # => "%n\u00A0%u"
 ```
+
+### Compact notation
+
+`ui(compact: true)` shortens numbers of one thousand or more: `50M`, `$1.5M`.
+It keeps 3 significant digits (`compact: { precision: 2 }` changes that),
+rounds in `direction:` (floor by default, so `1_999_999` is `1.99M`, never
+`2M`) and trims trailing zeros. Below one thousand the number is formatted as
+usual. Not using `compact:` leaves output unchanged.
+
+```ruby
+Amount.register :TOKENS, decimals: 0
+
+Amount.of_tokens(50_000_000).ui(compact: true)                    # => "50M TOKENS"
+Amount.of_tokens(1_999_999).ui(compact: true)                     # => "1.99M TOKENS"
+Amount.of_tokens(1_999_999).ui(compact: true, direction: :ceil)   # => "2M TOKENS"
+Amount.of_tokens(1_299_999).ui(compact: { precision: 2 })         # => "1.2M TOKENS"
+Amount.of_tokens(50_000_000).ui(compact: true, decorated: false)  # => "50M"
+Amount.of_usd("1500000").ui(compact: true)                        # => "$1.5M"
+Amount.of_gold("1000").ui(unit: :gram, compact: true)             # => "31.1K g"
+```
+
+Not localizing, the scale words are `K`, `M`, `B` and `T`, joined as `"%n%u"`.
+When localizing, they come from `number.human.decimal_units.units`
+(`thousand`, `million`, `billion`, `trillion`, optionally plural hashes counted
+with the compacted number), joined by `number.human.decimal_units.format`
+(default `"%n %u"`), the same keys Rails' `number_to_human` reads. A scale with
+no translation falls back to its short form. Numbers past trillions stay in
+trillions (`1,500T`).
+
+```yaml
+de:
+  number:
+    human:
+      decimal_units:
+        format: "%n %u"
+        units: { thousand: "Tsd.", million: "Mio.", billion: "Mrd." }
+  amounts:
+    units: { tokens: "Token" }
+```
+
+```ruby
+Amount.of_tokens(1_500_000).ui(compact: true, locale: :de)  # => "1,5 Mio. Token"
+```
+
+The type's label and template wrap the compacted number, and a plural label
+agrees with the full value (`1K searches`), not the compacted digits.
 
 ### Serialization
 

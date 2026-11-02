@@ -3,6 +3,15 @@ de:
     format:
       delimiter: "."
       separator: ","
+    # Scale words for ui(compact: true), the keys Rails' number_to_human reads.
+    human:
+      decimal_units:
+        format: "%n %u"
+        units:
+          thousand: "Tsd."
+          million: "Mio."
+          billion: "Mrd."
+          trillion: "Bio."
   amounts:
     # German puts the currency after the number. The space is a non-breaking
     # space (\u00A0) so "25.000,00 $" never wraps apart.
