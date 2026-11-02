@@ -39,8 +39,8 @@ class Amount
       format = ::I18n.t("number.format", locale:, default: {})
       format = {} unless format.is_a?(Hash)
       {
-        delimiter: format.fetch(:delimiter, DEFAULT_DELIMITER) || DEFAULT_DELIMITER,
-        separator: format.fetch(:separator, DEFAULT_SEPARATOR) || DEFAULT_SEPARATOR
+        delimiter: format[:delimiter] || DEFAULT_DELIMITER,
+        separator: format[:separator] || DEFAULT_SEPARATOR
       }
     end
 
