@@ -9,9 +9,13 @@ de:
     formats:
       usdc: "%n\u00A0%u"
     units:
-      gold: "Feinunze"
+      gold:
+        one: "Feinunze"
+        other: "Feinunzen"
     display_units:
       gold:
-        oz_t: "Feinunze"
+        oz_t:
+          one: "Feinunze"
+          other: "Feinunzen"
         gram: "Gramm"
         kg: "Kilogramm"

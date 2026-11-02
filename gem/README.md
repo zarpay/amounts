@@ -255,8 +255,43 @@ Amount.register :SEARCHES, decimals: 0, label_key: "amounts.units.searches"
 Amount.of_searches(3).unit_label(locale: :de)  # => "Suchen" (with that key in de)
 ```
 
-`unit_label(unit: nil, locale: nil)` returns the label alone, following the same
-rules as `ui`.
+`unit_label(unit: nil, locale: nil, count: nil)` returns the label alone, following
+the same rules as `ui`.
+
+### Plural labels
+
+Labels can agree with the number: `1 search`, `2 searches`. `count` is the
+number as displayed, after unit scaling and rounding (`direction:`) and before
+formatting, so `1.00` is one and `1.50` is other.
+
+In code, without I18n, give `display_symbol:` (or a display unit's `symbol:`) a
+hash. It must have `:other`; `register` raises otherwise.
+
+```ruby
+Amount.register :SEARCHES, decimals: 0, display_symbol: { one: "search", other: "searches" }
+
+Amount.of_searches(1).ui   # => "1 search"
+Amount.of_searches(0).ui   # => "0 searches"
+Amount.of_searches(2).ui   # => "2 searches"
+```
+
+The hash uses `:one` when the displayed number equals 1, else `:other`. When
+localizing with I18n loaded, the locale's pluralization rules decide instead,
+so a hash can carry `few`, `many`, ... too. I18n translations can be plural
+hashes as well:
+
+```yaml
+en:
+  amounts:
+    units:
+      searches:
+        one: "search"
+        other: "searches"
+```
+
+`unit_label(count: nil)` takes the same behavior; without a number it uses
+`:other`: `Amount.of_searches(1).unit_label(count: 1) # => "search"`.
+String labels behave exactly as before.
 
 Where the number and label go is a template, like Rails'
 `number.currency.format.format`: `%n` is the formatted number (sign included)
