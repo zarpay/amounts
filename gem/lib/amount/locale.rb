@@ -71,30 +71,16 @@ class Amount
       translate(key, locale, spec[:symbol] || type_label(entry, locale, count), count)
     end
 
-    # Looks a key up so a miss never yields "translation missing". A plural
-    # hash (translation or default) is resolved with the locale's rules when a
-    # count is given, else to its `:other` form.
+    # Looks a key up, falling back to `default` so a miss never yields
+    # "translation missing". With a count, I18n pluralizes a hash translation
+    # or default using the locale's rules; without one, or when the form is
+    # missing, the `:other` form is used.
     def translate(key, locale, default, count = nil)
-      found = lookup(key.to_s, locale, count)
-      return found if found.is_a?(String)
-
-      default.is_a?(Hash) ? pick_plural(default, locale, count) : default
-    end
-
-    def lookup(key, locale, count)
       opts = count.nil? ? {} : { count: whole(count) }
-      found = ::I18n.t(key, locale:, default: nil, **opts)
-      found.is_a?(Hash) ? pick_plural(found, locale, count) : found
+      found = ::I18n.t(key.to_s, locale:, default:, **opts)
+      found.is_a?(Hash) ? found[:other] : found
     rescue ::I18n::InvalidPluralizationData => e
       e.entry[:other]
-    end
-
-    def pick_plural(forms, locale, count)
-      return forms[:other] if count.nil?
-
-      ::I18n.t("amounts.plural", locale:, default: forms, count: whole(count))
-    rescue ::I18n::InvalidPluralizationData
-      forms[:other]
     end
 
     # 1.0 -> 1, so custom pluralization rules can match integers.
