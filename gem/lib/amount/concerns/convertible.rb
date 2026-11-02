@@ -6,7 +6,7 @@ class Amount
   # default rate. The result class is taken from the target symbol's registry
   # entry, so a `class:`-registered subclass becomes the natural identity for
   # conversion outputs.
-  module Conversion
+  module Convertible
     # @param target_symbol [Symbol, String]
     # @param rate [String, Numeric, BigDecimal, nil]
     # @return [Amount]

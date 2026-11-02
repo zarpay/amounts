@@ -27,7 +27,7 @@ bundle exec rake spec:active_record   # ActiveRecord matchers
 bundle exec rake test:integration     # PostgreSQL; skips without AMOUNTS_POSTGRES_URL
 bundle exec rake lint                 # RuboCop; must be clean
 bundle exec rake                      # all of the above
-bundle exec ruby -Ilib:test test/amount/concerns/arithmetic_test.rb   # one file
+bundle exec ruby -Ilib:test test/amount/concerns/calculable_test.rb   # one file
 ```
 
 CI runs the ActiveRecord suites, including PostgreSQL, once per Ruby (3.1 to 4.0) and Rails

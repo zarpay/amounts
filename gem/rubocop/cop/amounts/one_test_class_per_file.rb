@@ -10,12 +10,12 @@ module RuboCop
       # inside the test class are fine.
       #
       # @example
-      #   # bad: test/amount/concerns/arithmetic_test.rb
+      #   # bad: test/amount/concerns/calculable_test.rb
       #   class GoldAmount < Amount; end
-      #   class AmountArithmeticTest < Minitest::Test; end
+      #   class AmountCalculableTest < Minitest::Test; end
       #
       #   # good
-      #   class AmountArithmeticTest < Minitest::Test
+      #   class AmountCalculableTest < Minitest::Test
       #     class GoldAmount < Amount; end
       #   end
       class OneTestClassPerFile < Base

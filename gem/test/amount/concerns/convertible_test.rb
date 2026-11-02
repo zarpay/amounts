@@ -3,7 +3,7 @@
 require "bigdecimal"
 require_relative "../../test_helper"
 
-class AmountConversionTest < Minitest::Test
+class AmountConvertibleTest < Minitest::Test
   def setup
     AmountTestSupport.register_default_types!
   end

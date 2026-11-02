@@ -12,13 +12,13 @@ class Amount
   #   Amount.localize = true
   #   I18n.locale = :de
   #   Amount.of_usd("1500.5").ui # formatted with de's number.format
-  module Localization
+  module Localizable
     def self.included(base)
       base.extend(ClassMethods)
     end
 
     # Class-level methods extended onto any class that does
-    # `include Localization`.
+    # `include Localizable`.
     module ClassMethods
       # Whether `ui` formats numbers for `I18n.locale` when no `locale:` is
       # given. Defaults to `false`.

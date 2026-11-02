@@ -2,6 +2,7 @@ require:
   - ./rubocop/cop/amounts/one_assertion_per_test
   - ./rubocop/cop/amounts/one_test_class_per_file
   - ./rubocop/cop/amounts/mirrored_test_path
+  - ./rubocop/cop/amounts/concern_naming
 
 AllCops:
   NewCops: enable
@@ -117,3 +118,9 @@ Amounts/MirroredTestPath:
     - "test/dummy/**/*"
     - "test/integration/**/*"
     - "spec/support/**/*"
+
+# See .claude/rules/concerns.md.
+Amounts/ConcernNaming:
+  Enabled: true
+  Include:
+    - "lib/amount/concerns/**/*.rb"

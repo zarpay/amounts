@@ -81,6 +81,16 @@
 
 ### Changed
 
+- `Amount`'s internal concern modules are renamed as -able adjectives and live
+  in `lib/amount/concerns/`: `Arithmetic` → `Calculable`, `Allocation` →
+  `Allocatable`, `Comparison` → `Orderable`, `Conversion` → `Convertible`,
+  `Serialization` → `Serializable` (`Formattable` is unchanged). Five new
+  concerns hold logic that used to sit in `Amount` itself: `Registrable`,
+  `Localizable`, `Parsable`, `Constructible` and `Coercible`. None of these
+  modules are documented API, and every `Amount` method is unchanged. Code
+  that referenced a module by name, or required a file under `amount/`
+  other than the documented entry points, should `require "amount"` and call
+  `Amount`'s methods.
 - `AmountValidator` now adds errors by I18n key instead of hard-coded English
   strings, so apps can translate or reword them: `:amount_type`,
   `:amount_symbol`, `:amount_invalid_constraint`, `:amount_incomparable`, plus

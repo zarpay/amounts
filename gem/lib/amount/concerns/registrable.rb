@@ -8,13 +8,13 @@ class Amount
   # `GoldAmount.registry` and `Amount.registry` are the same object. Swapping
   # it removes the outgoing registry's generated constructors (`of_usdc`) and
   # installs the incoming one's.
-  module Registration
+  module Registrable
     def self.included(base)
       base.extend(ClassMethods)
     end
 
     # Class-level methods extended onto any class that does
-    # `include Registration`.
+    # `include Registrable`.
     module ClassMethods
       # @return [Amount::Registry]
       # @example Accessing the shared registry

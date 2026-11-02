@@ -11,12 +11,12 @@ class Amount
   #   type. They only cross types through a registered directional default
   #   rate; without one they raise {TypeMismatch} (or return `nil` for
   #   comparisons). There is no implicit conversion.
-  module Coercion
+  module Coercible
     def self.included(base)
       base.extend(ClassMethods)
     end
 
-    # Class-level methods extended onto any class that does `include Coercion`.
+    # Class-level methods extended onto any class that does `include Coercible`.
     module ClassMethods
       # Coerces a numeric input to BigDecimal in a way that preserves Rational
       # values. `BigDecimal(value.to_s)` raises `ArgumentError` for Rational

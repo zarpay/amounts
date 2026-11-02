@@ -2,7 +2,7 @@
 
 require_relative "../../test_helper"
 
-class AmountAllocationTest < Minitest::Test
+class AmountAllocatableTest < Minitest::Test
   class GoldAmount < Amount
     def purity_estimate
       "24k"

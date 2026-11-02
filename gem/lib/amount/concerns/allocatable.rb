@@ -5,7 +5,7 @@ class Amount
   # `[parts, remainder]`, preserving the invariant that the parts plus
   # remainder always sum back to the receiver's atomic value (including
   # the sign).
-  module Allocation
+  module Allocatable
     # Splits into equal parts and returns the leftover explicitly.
     #
     # @param n [Integer]

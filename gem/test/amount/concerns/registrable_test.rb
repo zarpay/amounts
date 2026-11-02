@@ -2,7 +2,7 @@
 
 require_relative "../../test_helper"
 
-class AmountRegistrationTest < Minitest::Test
+class AmountRegistrableTest < Minitest::Test
   def setup
     AmountTestSupport.register_default_types!
   end

@@ -14,18 +14,34 @@ behavior goes in a concern, an existing one or a new one.
 
 | Kind | Location | Constant | Example |
 |---|---|---|---|
-| Concern: a module mixed into `Amount` | `gem/lib/amount/concerns/<name>.rb` | `Amount::<Name>` | `Amount::Arithmetic` |
+| Concern: a module mixed into `Amount` | `gem/lib/amount/concerns/<name>.rb` | `Amount::<Name>` | `Amount::Calculable` |
 | Collaborator: a class or module `Amount` *uses* | `gem/lib/amount/<name>.rb` | `Amount::<Name>` | `Amount::Display`, `Amount::UiParser` |
 | ActiveRecord adapter | `gem/lib/amount/active_record/` | `Amount::ActiveRecord::<Name>` | `Amount::ActiveRecord::Type` |
 
 `concerns/` is a folder, not a namespace (like Rails' `app/models/concerns`). A concern
-in `concerns/arithmetic.rb` is `Amount::Arithmetic`, never `Amount::Concerns::Arithmetic`.
-Concern constants are public API (the CHANGELOG names `Amount::Formattable` and
-`Amount::Serialization`), so renaming one is a breaking change.
+in `concerns/calculable.rb` is `Amount::Calculable`, never `Amount::Concerns::Calculable`.
+Concern constants aren't documented as public API, so the documented surface is
+`Amount`'s methods, not which concern holds them. Still give a rename a CHANGELOG entry.
 
-Name a concern for its capability: a noun (`Arithmetic`, `Conversion`, `Parsing`) or
-an *-able* adjective (`Formattable`). One capability per concern. If its doc comment
-needs "and" to say what it does, it is probably two concerns.
+Name every concern as an *-able* / *-ible* adjective for what it makes an amount:
+`Calculable`, `Convertible`, `Formattable`, `Parsable`, `Serializable`. The
+`Amounts/ConcernNaming` cop enforces this. Don't reuse the name of a Ruby core module
+(`Comparable`, `Enumerable`, `Kernel`, ...): inside `Amount` and its subclasses, a bare
+`Comparable` would then mean `Amount::Comparable`. That's why the comparison concern is
+`Orderable`.
+
+One capability per concern. If its doc comment needs "and" to say what it does, it is
+probably two concerns.
+
+## Loading
+
+All core loading happens in `gem/lib/amount.rb`, in dependency order. Core files under
+`gem/lib/amount/` never `require_relative` each other. The only other entry points are
+the documented optional adapters: `amount/active_record`, `amount/rspec` and
+`amount/active_record/rspec`. Each of these loads its own files.
+
+When a file moves, update its line in `gem/lib/amount.rb`. Don't leave a pointer file
+at the old path (a file whose only job is to `require_relative` the new location).
 
 ## Shape of a concern
 
@@ -70,8 +86,8 @@ end
   comment there.
 - A concern relies on `Amount`'s public surface (`atomic`, `symbol`, `registry_entry`,
   `decimal`, ...) and on private helpers documented as shared: `build` (in
-  `Construction`) and `ensure_same_type!` / `coerce_other_to_self_type(!)` (in
-  `Coercion`). Don't reach into another concern's other private methods.
+  `Constructible`) and `ensure_same_type!` / `coerce_other_to_self_type(!)` (in
+  `Coercible`). Don't reach into another concern's other private methods.
 - Class-level state lives on `Amount` itself (`Amount.instance_variable_get(:@registry)`),
   not on `self`, so subclasses registered with `class:` share it.
 - A concern gets its own test file: `gem/test/amount/concerns/<name>_test.rb` (see

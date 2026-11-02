@@ -3,7 +3,7 @@
 require_relative "../../test_helper"
 require_relative "../../support/locale_test_setup"
 
-class AmountLocalizationTest < Minitest::Test
+class AmountLocalizableTest < Minitest::Test
   include LocaleTestSetup
 
   def test_localize_defaults_to_false
