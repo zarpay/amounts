@@ -253,6 +253,15 @@ RSpec.describe Amount, :aggregate_failures do
       expect(Amount.of_usdc("1.561").ui(direction: :ceil)).to eq("$1.57")
     end
 
+    it "formats numbers for a locale and leaves the default alone" do
+      I18n.backend.store_translations(:de, number: { format: { delimiter: ".", separator: "," } })
+      I18n.backend.store_translations(:en, number: { format: { delimiter: ",", separator: "." } })
+
+      expect(Amount.of_usdc("122500").ui).to eq("$122500.00")
+      expect(Amount.of_usdc("122500").ui(locale: :en)).to eq("$122,500.00")
+      expect(Amount.of_usdc("122500").ui(locale: :de)).to eq("$122.500,00")
+    end
+
     it "renders display units" do
       expect(Amount.of_gold("1.0").ui(unit: :gram)).to eq("31.10 g")
       expect(Amount.of_gold("1.0").ui(unit: :kg)).to eq("0.03110 kg")

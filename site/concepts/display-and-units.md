@@ -106,6 +106,30 @@ Amount.register :GOLD,
 
 Call-site (`ui(trim_zeros:)`) > display unit spec > registry default.
 
+## Locale-aware numbers
+
+By default `ui` always uses plain digits and `.` for decimals. Pass `locale:` to
+format the number with that locale's `number.format` delimiter and separator
+(requires the `i18n` gem to be loaded):
+
+```ruby
+Amount.of_usd("122500").ui(locale: :en)   # => "$122,500.00"
+Amount.of_usd("122500").ui(locale: :de)   # => "$122.500,00"
+Amount.of_usd("122500").ui                # => "$122500.00"
+```
+
+Or opt in globally and follow `I18n.locale`:
+
+```ruby
+Amount.localize = true
+Amount.of_searches(1500).ui   # => "1,500 SEARCHES" in :en
+```
+
+Missing `number.format` keys fall back to `,` and `.`. Using `locale:` or
+`Amount.localize = true` without I18n raises `ArgumentError`. Rounding, `trim_zeros`
+and `direction` are unchanged, and `to_s`, `formatted`, `as_json`, serialization and
+`Amount.parse` never depend on the locale.
+
 ## What display units are not
 
 They are not:

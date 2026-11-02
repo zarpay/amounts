@@ -2,6 +2,18 @@
 
 ## Unreleased
 
+### Added
+
+- `ui` can format numbers for a locale: `ui(locale: :de)` uses the locale's
+  `number.format` delimiter and separator (`"$122.500,00"`), falling back to
+  `,` and `.` for missing keys. Works with `unit:`, `decorated: false`,
+  `trim_zeros` and `direction`.
+- `Amount.localize = true` makes `ui` use `I18n.locale` when no `locale:` is
+  given. It defaults to `false`, so output is unchanged unless you opt in.
+  Passing `locale:` or setting `Amount.localize = true` without the `i18n` gem
+  loaded raises `ArgumentError`. `to_s`, `formatted`, `as_json`, serialization
+  and `Amount.parse` never change with the locale.
+
 ### Changed
 
 - `AmountValidator` now adds errors by I18n key instead of hard-coded English

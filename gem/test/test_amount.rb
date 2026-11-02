@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require "json"
+require "i18n"
 require_relative "test_helper"
 
 class AmountTest < Minitest::Test
@@ -671,5 +672,119 @@ class AmountCustomClassTest < Minitest::Test
     instance = Amount.new("1", :USDC)
 
     assert_instance_of Amount, instance
+  end
+end
+
+class AmountLocaleTest < Minitest::Test
+  def setup
+    AmountTestSupport.register_default_types!
+    @previous_locale = I18n.locale
+    @previous_backend = I18n.backend
+    I18n.backend = I18n::Backend::Simple.new
+    I18n.available_locales = %i[en de fr xx]
+    I18n.backend.store_translations(:en, number: { format: { delimiter: ",", separator: "." } })
+    I18n.backend.store_translations(:de, number: { format: { delimiter: ".", separator: "," } })
+    I18n.backend.store_translations(:fr, number: { format: { delimiter: " ", separator: "," } })
+    Amount.localize = false
+  end
+
+  def teardown
+    Amount.localize = false
+    I18n.backend = @previous_backend
+    I18n.locale = @previous_locale
+    Amount.registry.clear!
+  end
+
+  def test_not_localizing_is_unchanged
+    assert_equal "$122500.00", Amount.of_usd("122500").ui
+    assert_equal "-$1234.50".sub("$", ""), Amount.of_usd("-1234.50").ui.sub("$", "")
+    assert_equal "1500 logs", Amount.of_logs(1500).ui
+    refute_predicate Amount, :localize?
+  end
+
+  def test_locale_option_formats_en_and_de
+    assert_equal "$122,500.00", Amount.of_usd("122500").ui(locale: :en)
+    assert_equal "$122.500,00", Amount.of_usd("122500").ui(locale: :de)
+    assert_equal "$122 500,00", Amount.of_usd("122500").ui(locale: :fr)
+  end
+
+  def test_locale_under_one_thousand_and_negative
+    assert_equal "$999,99", Amount.of_usd("999.99").ui(locale: :de)
+    assert_equal "$-1.234.567,50", Amount.of_usd("-1234567.50").ui(locale: :de)
+    assert_equal "$-1,234.50", Amount.of_usd("-1234.50").ui(locale: :en)
+    assert_equal "$-123.00", Amount.of_usd("-123").ui(locale: :en)
+  end
+
+  def test_locale_with_decimals_zero_type
+    assert_equal "1,500 logs", Amount.of_logs(1500).ui(locale: :en)
+    assert_equal "1.500.000 logs", Amount.of_logs(1_500_000).ui(locale: :de)
+  end
+
+  def test_locale_with_trim_zeros
+    assert_equal "1.234,5 SOL", Amount.of_sol("1234.5").ui(locale: :de, trim_zeros: true)
+    assert_equal "1.000 SOL", Amount.of_sol("1000").ui(locale: :de, trim_zeros: true)
+  end
+
+  def test_locale_with_direction
+    assert_equal "$1.234,56", Amount.of_usdc("1234.5678").ui(locale: :de)
+    assert_equal "$1.234,57", Amount.of_usdc("1234.5678").ui(locale: :de, direction: :ceil)
+  end
+
+  def test_locale_with_display_unit_and_undecorated
+    gold = Amount.of_gold("1000")
+
+    assert_equal "31.103,50 g", gold.ui(unit: :gram, locale: :de)
+    assert_equal "31,103.50", gold.ui(unit: :gram, decorated: false, locale: :en)
+    assert_equal "1.000,0000", gold.ui(decorated: false, locale: :de)
+  end
+
+  def test_localize_uses_i18n_locale
+    Amount.localize = true
+    I18n.locale = :de
+
+    assert_equal "$1.500,00", Amount.of_usd("1500").ui
+    assert_equal "$1,500.00", Amount.of_usd("1500").ui(locale: :en)
+  end
+
+  def test_missing_keys_fall_back
+    assert_equal "$1,500.00", Amount.of_usd("1500").ui(locale: :xx)
+    I18n.backend.store_translations(:xx, number: { format: { separator: "," } })
+
+    assert_equal "$1,500,00", Amount.of_usd("1500").ui(locale: :xx)
+  end
+
+  def test_wire_formats_do_not_change
+    Amount.localize = true
+    I18n.locale = :de
+    amount = Amount.of_usd("122500.5")
+
+    assert_equal "USD|122500.50", amount.to_s
+    assert_equal "122500.50", amount.formatted
+    assert_equal Amount.of_usd("122500.5"), Amount.parse(amount.to_s)
+  end
+
+  def test_locale_without_i18n_raises
+    without_i18n do
+      error = assert_raises(ArgumentError) { Amount.of_usd("1").ui(locale: :de) }
+      assert_match(/i18n/, error.message)
+    end
+  end
+
+  def test_localize_true_without_i18n_raises_when_set
+    without_i18n do
+      error = assert_raises(ArgumentError) { Amount.localize = true }
+      assert_match(/i18n/, error.message)
+      refute_predicate Amount, :localize?
+      assert_equal "$1500.00", Amount.of_usd("1500").ui
+    end
+  end
+
+  private
+
+  def without_i18n
+    i18n = Object.send(:remove_const, :I18n)
+    yield
+  ensure
+    Object.const_set(:I18n, i18n)
   end
 end

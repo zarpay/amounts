@@ -12,6 +12,10 @@ group :development do
   gem "irb", ">= 1.13"
 end
 
+group :test do
+  gem "i18n", ">= 1.14"
+end
+
 group :quality do
   gem "rubocop", "~> 1.63.0"
 end
