@@ -30,6 +30,13 @@ bundle exec rake                      # all of the above
 bundle exec ruby -Ilib:test test/amount/concerns/arithmetic_test.rb   # one file
 ```
 
+CI runs the ActiveRecord suites, including PostgreSQL, once per Ruby (3.1 to 3.4) and Rails
+version (7.1, 7.2, 8.0, 8.1; Rails 8 needs Ruby 3.2). Each Rails version has a gemfile and a
+committed lockfile in `gem/gemfiles/`. Run one locally with
+`BUNDLE_GEMFILE=gemfiles/rails_8.1.gemfile bundle exec rake test:active_record`. When you add
+a Rails version, generate its lockfile on the oldest Ruby it supports, so the same lock
+installs across the matrix.
+
 From `demo/`: `bin/rails db:migrate RAILS_ENV=test && bundle exec rspec`.
 From `site/`: `npm install && npm run build`.
 

@@ -23,9 +23,9 @@ class PostgreSQLIntegrationTest < Minitest::Test
     AmountTestSupport.register_active_record_types!
     configure_database_tasks
     recreate_schema!
+    # With a URL set, an unreachable database is an error, not a skip, so a
+    # broken CI service can't pass silently.
     Holding.delete_all
-  rescue PG::Error, ActiveRecord::ConnectionNotEstablished => error
-    skip "PostgreSQL is unavailable: #{error.message}"
   end
 
   def teardown
@@ -43,8 +43,10 @@ class PostgreSQLIntegrationTest < Minitest::Test
     assert_equal 78, Holding.columns_hash.fetch("amount_atomic").precision
   end
 
+  # Rails reports `scale` as nil for any zero-scale decimal, so check the
+  # column type PostgreSQL actually created.
   def test_postgresql_uses_zero_scale_for_amount_columns
-    assert_equal 0, Holding.columns_hash.fetch("amount_atomic").scale
+    assert_equal "numeric(78,0)", Holding.columns_hash.fetch("amount_atomic").sql_type
   end
 
   def test_postgresql_uses_given_numeric_precision_for_amount_columns
@@ -52,7 +54,7 @@ class PostgreSQLIntegrationTest < Minitest::Test
   end
 
   def test_postgresql_uses_zero_scale_for_amount_columns_with_given_precision
-    assert_equal 0, Holding.columns_hash.fetch("reserve_atomic").scale
+    assert_equal "numeric(40,0)", Holding.columns_hash.fetch("reserve_atomic").sql_type
   end
 
   def test_postgresql_where_query_works_with_amount_columns
@@ -85,6 +87,7 @@ class PostgreSQLIntegrationTest < Minitest::Test
 
   def recreate_schema!
     ActiveRecord::Base.establish_connection(:test)
+    ActiveRecord::Migration.verbose = false
     load File.join(DUMMY_ROOT, "db/schema.rb")
     Holding.reset_column_information
   end

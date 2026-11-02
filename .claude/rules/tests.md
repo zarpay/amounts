@@ -105,9 +105,11 @@ From `gem/`:
 bundle exec rake test                  # all three groups below, each in its own process
 bundle exec rake test:core             # test/amount_test.rb + test/amount/** except active_record (no Rails)
 bundle exec rake test:active_record    # test/amount/active_record{_test.rb,/**} + test/generators/**
-bundle exec rake test:integration      # test/integration/** (needs AMOUNTS_POSTGRES_URL)
+bundle exec rake test:integration      # test/integration/** (skips without AMOUNTS_POSTGRES_URL;
+                                       # with it set, an unreachable database fails)
 bundle exec rake spec                  # spec:core then spec:active_record, separate processes
 bundle exec ruby -Ilib:test test/amount/concerns/arithmetic_test.rb   # one file
+BUNDLE_GEMFILE=gemfiles/rails_7.1.gemfile bundle exec rake test:active_record   # one Rails version
 ```
 
 The groups run in separate processes on purpose. ActiveSupport patches core classes,

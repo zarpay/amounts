@@ -46,14 +46,46 @@ jobs:
           BUNDLE_WITHOUT: active_record:development:quality
 
   active_record:
+    name: active_record (Ruby ${{ matrix.ruby-version }}, Rails ${{ matrix.rails }})
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
         ruby-version:
+          - "3.1"
           - "3.2"
           - "3.3"
           - "3.4"
+        rails:
+          - "7.1"
+          - "7.2"
+          - "8.0"
+          - "8.1"
+        exclude:
+          # Rails 8 requires Ruby 3.2.
+          - ruby-version: "3.1"
+            rails: "8.0"
+          - ruby-version: "3.1"
+            rails: "8.1"
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: amounts_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      # One gemfile and committed lockfile per Rails version (gem/gemfiles/).
+      BUNDLE_GEMFILE: ${{ github.workspace }}/gem/gemfiles/rails_${{ matrix.rails }}.gemfile
+      AMOUNTS_POSTGRES_URL: postgresql://postgres:postgres@localhost:5432/amounts_test
 
     steps:
       - name: Checkout
@@ -65,21 +97,15 @@ jobs:
           ruby-version: ${{ matrix.ruby-version }}
           working-directory: gem
           bundler-cache: true
-        env:
-          BUNDLE_WITH: active_record
-          BUNDLE_WITHOUT: development:quality
 
       - name: ActiveRecord and generator Minitest
         run: bundle exec rake test:active_record
-        env:
-          BUNDLE_WITH: active_record
-          BUNDLE_WITHOUT: development:quality
 
       - name: ActiveRecord RSpec
         run: bundle exec rake spec:active_record
-        env:
-          BUNDLE_WITH: active_record
-          BUNDLE_WITHOUT: development:quality
+
+      - name: PostgreSQL integration
+        run: bundle exec rake test:integration
 
   quality:
     runs-on: ubuntu-latest
