@@ -17,6 +17,19 @@
   number is compacted), labels and templates (which wrap the compacted
   number; plural labels agree with the full value) and `decorated: false`.
   Output without `compact:` is unchanged.
+- `Amount.parse_ui(input, symbol, locale: nil)` parses what a person types in a
+  locale's number format: `parse_ui("1.500,50", :USD, locale: :de)` and
+  `parse_ui("1,500.50", :USD, locale: :en)` both give `USD|1500.50`. The
+  effective locale is `locale:`, then `I18n.locale` when `Amount.localize` is
+  true, else plain parsing (`.` decimal, no delimiters). Accepts surrounding
+  whitespace (including NBSP), a leading `-` or `+`, delimiters in correct
+  groups of three, and the type's label or display symbol at either end in any
+  plural form (`"$1,500.50"`, `"1.500,50 €"`). Raises `InvalidInput` for more
+  decimals than the type has (never rounds), misplaced delimiters, a repeated
+  separator, another type's label, or empty input. Returns the type's
+  registered class; an unregistered symbol raises as `Amount.new` does.
+  `Amount.parse` and the constructors are unchanged. Wiring it into the
+  ActiveRecord type is not part of this change.
 - Templates for where the number and unit go. `register` takes
   `display_format:` and display unit specs take `format:`, where `%n` is the
   formatted number (sign included) and `%u` the label: `"%u%n"`,

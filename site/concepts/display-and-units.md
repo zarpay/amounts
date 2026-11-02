@@ -229,6 +229,28 @@ en:
 `unit_label(count: 1)` follows the same rules; without a count it uses
 `:other`. String labels behave exactly as before.
 
+## Parsing typed input
+
+`Amount.parse_ui` is the reverse of `ui(locale:)`: it reads a number the way a
+person types it. The locale is `locale:`, then `I18n.locale` when
+`Amount.localize` is true, else plain parsing (`.` decimal, no delimiters).
+
+```ruby
+Amount.parse_ui("1.500,50", :USD, locale: :de)   # => USD|1500.50
+Amount.parse_ui("1,500.50", :USD, locale: :en)   # => USD|1500.50
+Amount.parse_ui("1500.50", :USD)                 # => USD|1500.50
+Amount.parse_ui("1.500,50 €", :EUR, locale: :de) # the type's label, either end
+```
+
+Accepted: surrounding whitespace (including NBSP), a leading `-` or `+`,
+delimiters in correct groups of three, and the type's label or display symbol
+at either end, in any plural form.
+
+Rejected with `Amount::InvalidInput`: more decimal places than the type's
+`decimals` (never rounded), misplaced delimiters (`"1,50,0"`), a separator used
+twice, a label belonging to another type, and empty input. An unregistered
+symbol raises as `Amount.new` does. `Amount.parse` and the compact wire format
+are unchanged.
 ## Number and unit templates
 
 Where the number and the label go is a template. `%n` is the formatted number,

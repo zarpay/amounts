@@ -10,6 +10,7 @@ require_relative "amount/formattable"
 require_relative "amount/compact"
 require_relative "amount/display"
 require_relative "amount/parser"
+require_relative "amount/ui_parser"
 require_relative "amount/arithmetic"
 require_relative "amount/allocation"
 require_relative "amount/comparison"
@@ -127,6 +128,27 @@ class Amount
     #   Amount.parse("v1:USDC|1.50")
     def parse(str)
       Parser.new(str).parse
+    end
+
+    # Parses text typed by a person, in a locale's number format.
+    #
+    # The effective locale is `locale:`, then `I18n.locale` when
+    # `Amount.localize` is true, else plain parsing (`.` decimal, no
+    # delimiters). Accepts surrounding whitespace, a leading `-` or `+`,
+    # delimiters in groups of three, and the type's label (any plural form) at
+    # either end. Never rounds.
+    #
+    # @param input [String]
+    # @param symbol [Symbol, String]
+    # @param locale [Symbol, String, nil]
+    # @return [Amount] an instance of the type's registered class
+    # @raise [InvalidInput] for too many decimals, misplaced delimiters, a
+    #   repeated separator, another type's label, or empty input
+    # @raise [Registry::UnknownType] for an unregistered symbol
+    # @example
+    #   Amount.parse_ui("1.500,50", :USD, locale: :de) # => USD|1500.50
+    def parse_ui(input, symbol, locale: nil)
+      UiParser.new(input, symbol, locale).parse
     end
 
     # When called as `Amount.new` for a symbol whose registry entry binds a
