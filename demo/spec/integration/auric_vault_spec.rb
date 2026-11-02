@@ -40,3 +40,42 @@ RSpec.describe "Auric Vault cookbook scenario", :integration, type: :model do
     expect(parts.map(&:atomic).sum + rem.atomic).to eq(bullion.weight.atomic)
   end
 end
+
+# Locale-aware display: the vault shows the same bar to a US and a German
+# desk. Only the number characters change; the stored value and wire format
+# do not.
+RSpec.describe "Auric Vault localized display", :integration, type: :model do
+  let!(:bullion) { create(:vault_gold_bar, weight: Amount.of_gold("12.5"), appraisal: "USDC|25000") }
+
+  after { Amount.localize = false }
+
+  it "leaves labels unchanged without a locale" do
+    expect(bullion.weight_label(unit: :gram)).to eq("388.79 g")
+    expect(bullion.appraisal_label).to eq("$25000.00")
+  end
+
+  it "formats labels for an explicit locale" do
+    expect(bullion.weight_label(unit: :gram, locale: :de)).to eq("388,79 g")
+    expect(bullion.weight_label(locale: :de)).to eq("12,5000 oz t")
+    expect(bullion.appraisal_label(locale: :en)).to eq("$25,000.00")
+    expect(bullion.appraisal_label(locale: :de)).to eq("$25.000,00")
+  end
+
+  it "follows I18n.locale when Amount.localize is on" do
+    Amount.localize = true
+    I18n.with_locale(:de) { expect(bullion.appraisal_label).to eq("$25.000,00") }
+    I18n.with_locale(:en) { expect(bullion.appraisal_label).to eq("$25,000.00") }
+  end
+
+  it "keeps the wire format locale-free" do
+    Amount.localize = true
+    I18n.with_locale(:de) do
+      expect(bullion.appraisal.to_s).to eq("USDC|25000.00")
+      expect(bullion).to have_amount_column(:appraisal, "USDC|25000.0")
+    end
+  end
+
+  it "formats large and negative values with grouping" do
+    expect(Amount.of_usdc("-1234567.5").ui(locale: :de)).to eq("$-1.234.567,50")
+  end
+end
