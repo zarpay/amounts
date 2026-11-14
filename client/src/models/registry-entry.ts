@@ -14,20 +14,54 @@ import {
 } from "@/helpers/manifest-helper.js";
 
 /**
- * One registered type: the gem's `Registry::Entry`, read from the
- * manifest. Fields are the entry's, camelCased.
+ * One registered type — the gem's `Registry::Entry`, read from the
+ * manifest. Each field is the `Amount.register` option of the same name,
+ * camelCased, as the server registered it.
+ *
+ * Read it through {@link Registry.lookup} or {@link Amount.registryEntry}
+ * when you need a type's configuration directly: the decimals a form
+ * input should allow, the label for a column header, the display units to
+ * offer in a toggle.
+ *
+ * @example An input that allows exactly the type's decimals
+ *   const { decimals, uiDecimals } = amounts.registry.lookup("USDC");
+ *   <input inputMode="decimal" step={`1e-${decimals}`} />
+ *
+ * @example A unit toggle
+ *   const units = Object.keys(amounts.registry.lookup("GOLD").displayUnits ?? {});
+ *   // ["oz_t", "gram", "kg", "grain"]
  */
 export class RegistryEntry {
+  /** The symbol the type was registered under (`"USDC"`). */
   readonly symbol: string;
-  /** Storage decimals: atomic units per whole unit are `10 ** decimals`. */
+  /** Storage decimals: one whole unit is `10 ** decimals` atomic units. */
   readonly decimals: number;
+  /**
+   * The unit label `ui` places: a string (`"$"`), or plural forms
+   * (`{ one: "search", other: "searches" }`) that always include `other`.
+   */
   readonly displaySymbol: Label;
-  /** The template decorated `ui` output uses (`%n` number, `%u` label). */
+  /**
+   * The template decorated `ui` output uses: `%n` is the number and `%u`
+   * the label. The gem resolved `display_position` into it (`:prefix` is
+   * `"%u%n"`, `:suffix` is `"%n %u"`).
+   */
   readonly displayFormat: string;
+  /** Decimals `ui` shows by default. */
   readonly uiDecimals: number;
+  /** Whether `ui` strips trailing zeros by default (`"2.5 SOL"`, not `"2.5000 SOL"`). */
   readonly trimZeros: boolean;
+  /**
+   * The type's display units by key, or `null` when it has none. A display
+   * unit changes how an amount is shown (troy ounces as grams), never its
+   * type.
+   */
   readonly displayUnits: Readonly<Record<string, DisplayUnit>> | null;
-  /** Stored as the gem stores it; nothing in the core reads it. */
+  /**
+   * The registered `default_display` unit key. Stored as the gem stores
+   * it; nothing in the gem's core or the client reads it, so `ui` never
+   * picks a unit unless you pass one.
+   */
   readonly defaultDisplay: string | null;
 
   private constructor(fields: Omit<RegistryEntry, "displayUnit">) {
@@ -43,9 +77,13 @@ export class RegistryEntry {
   }
 
   /**
-   * Builds an entry from its manifest type.
+   * Builds an entry from its type in the manifest, validating every field.
+   * {@link Registry.fromManifest} calls this for each type.
    *
-   * @throws AmountError INVALID_MANIFEST naming the first malformed path
+   * @param symbol - the key the type was found under
+   * @param value - the type's manifest object
+   * @param path - where it was found, for error messages (`types.USDC`)
+   * @throws {@link AmountError} `INVALID_MANIFEST` naming the first malformed path
    */
   static fromManifest(symbol: string, value: unknown, path: string): RegistryEntry {
     const type = readRecord(value, path);
@@ -63,9 +101,15 @@ export class RegistryEntry {
   }
 
   /**
-   * A display unit's spec.
+   * A display unit's spec — the gem's `Entry#display_unit`.
    *
-   * @throws AmountError INVALID_DISPLAY_UNIT when the type has no such unit
+   * @param unit - the unit's key
+   * @returns its scale, symbol, decimals, template and trim setting
+   * @throws {@link AmountError} `INVALID_DISPLAY_UNIT` when the type has no
+   *   display units, or not this one
+   *
+   * @example
+   *   amounts.registry.lookup("GOLD").displayUnit("gram").scale;  // "31.1034768"
    */
   displayUnit(unit: string): DisplayUnit {
     if (this.displayUnits === null) throw errors.noDisplayUnits(this.symbol);

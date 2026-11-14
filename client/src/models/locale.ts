@@ -20,16 +20,28 @@ interface LocaleTypeTable {
  * One locale's table from the manifest, and the number and plural rules
  * the gem's `Amount::Locale` applies with it.
  *
- * The gem resolved every I18n lookup before writing the table, so each
- * reader here returns the translation or `null`; the fallbacks (to
- * `display_symbol`, to the registered template) stay with the caller,
- * which applies them in the gem's order.
+ * The client never reads I18n files. When the server exports the manifest
+ * with `Amount.manifest(locales: [...])`, the gem performs, for each
+ * locale, every lookup the core would make — `number.format`, the type and
+ * display-unit labels (`label_key` or `amounts.units.<sym>`), the
+ * templates (`amounts.formats.<sym>`), the compact words
+ * (`number.human.decimal_units`) — and writes the results here.
+ *
+ * Each reader returns the translation or `null`. The fallbacks — a missing
+ * label to `display_symbol`, a missing template to the registered one —
+ * stay with {@link Display} and {@link UiParser}, which apply them in the
+ * gem's order, so they aren't written twice.
+ *
+ * Internal: {@link Amounts.localeFor} hands these to display and parsing.
  */
 export class Locale {
+  /** The locale's name, as exported (`"de"`). */
   readonly name: string;
+  /** The thousands delimiter (`number.format.delimiter`, default `","`). */
   readonly delimiter: string;
+  /** The decimal separator (`number.format.separator`, default `"."`). */
   readonly separator: string;
-  /** The template joining a compacted number and its scale word. */
+  /** The template joining a compacted number and its scale word (`"%n %u"`). */
   readonly compactFormat: string;
 
   private readonly compactUnits: Map<string, Label | null>;
@@ -52,9 +64,13 @@ export class Locale {
   }
 
   /**
-   * Builds a locale from its manifest table.
+   * Builds a locale from its manifest table, validating every field.
+   * {@link Registry.fromManifest} calls this for each exported locale.
    *
-   * @throws AmountError INVALID_MANIFEST naming the first malformed path
+   * @param name - the locale's name
+   * @param value - its manifest table
+   * @param path - where it was found, for error messages (`locales.de`)
+   * @throws {@link AmountError} `INVALID_MANIFEST` naming the first malformed path
    */
   static fromManifest(name: string, value: unknown, path: string): Locale {
     const table = readRecord(value, path);
@@ -70,9 +86,18 @@ export class Locale {
   }
 
   /**
-   * Picks a label's form without a locale, as the gem does without I18n:
-   * `one` when the count is exactly 1 and the form exists, else `other`.
-   * A string passes through.
+   * Picks a label's form without a locale, as the gem's `Locale.plain`
+   * does when it isn't localizing: `one` when the count is exactly 1 and
+   * the form exists, else `other`. There is no `zero` form here — the gem
+   * only uses it through I18n. A string passes through.
+   *
+   * @param label - a string, or plural forms
+   * @param count - the number the label agrees with, or `null` for none
+   * @returns the form, or `null` when there is no form to pick
+   *
+   * @example
+   *   Locale.plain({ one: "search", other: "searches" }, Ratio.of(1n));  // "search"
+   *   Locale.plain({ zero: "none", other: "searches" }, Ratio.of(0n));   // "searches"
    */
   static plain(label: Label, count: Ratio | null): string | null {
     if (typeof label === "string") return label;
@@ -86,10 +111,24 @@ export class Locale {
   }
 
   /**
-   * Picks a label's form in a locale, by I18n's default plural rule:
-   * `zero` when the count is 0 and the form exists, `one` when it is 1,
-   * else `other` — and `other` whenever the chosen form is missing, or
-   * there is no count at all.
+   * Picks a label's form in a locale, by the I18n gem's default plural
+   * rule: `zero` when the count is 0 and the form exists, `one` when it is
+   * 1, else `other` — and `other` whenever the chosen form is missing (I18n
+   * raises there, and the gem rescues to `other`) or there is no count.
+   *
+   * This is the rule an app gets without `rails-i18n`'s per-language
+   * pluralization. Languages with more forms (`few`, `many`) fall back to
+   * `other` for them, as they would on the server without those rules.
+   *
+   * @param label - a string, or plural forms
+   * @param count - the number the label agrees with, or `null` for none
+   * @returns the form, or `null` when there is no form to pick
+   *
+   * @example
+   *   const forms = { zero: "keine Suchen", one: "Suche", other: "Suchen" };
+   *   Locale.pluralize(forms, Ratio.of(0n));  // "keine Suchen"
+   *   Locale.pluralize(forms, Ratio.of(1n));  // "Suche"
+   *   Locale.pluralize(forms, null);          // "Suchen"
    */
   static pluralize(label: Label, count: Ratio | null): string | null {
     if (typeof label === "string") return label;
@@ -101,34 +140,59 @@ export class Locale {
     return label[key] ?? label["other"] ?? null;
   }
 
-  /** The translation of a scale word (`thousand`, `million`, ...), or `null`. */
+  /**
+   * The locale's word for a compact scale (`number.human.decimal_units.units.<scale>`),
+   * raw — a string or plural forms — or `null` when it has none, in which
+   * case compact notation falls back to the short form (`K`, `M`, ...).
+   *
+   * @param scale - `"thousand"`, `"million"`, ... `"decillion"`
+   */
   compactUnit(scale: string): Label | null {
     return this.compactUnits.get(scale) ?? null;
   }
 
-  /** The translation of a type's label, or `null`. */
+  /**
+   * The locale's label for a type (its `label_key`, else
+   * `amounts.units.<symbol downcased>`), raw, or `null` when untranslated.
+   */
   typeLabel(symbol: string): Label | null {
     return this.types.get(symbol)?.label ?? null;
   }
 
-  /** The locale's template for a type, or `null`. */
+  /**
+   * The locale's template for a type (`amounts.formats.<symbol downcased>`),
+   * or `null`. The gem drops a translation that doesn't place `%n`.
+   */
   typeFormat(symbol: string): string | null {
     return this.types.get(symbol)?.format ?? null;
   }
 
-  /** The translation of a display unit's label, or `null`. */
+  /**
+   * The locale's label for a display unit (the unit's `label_key`, else
+   * `amounts.display_units.<symbol downcased>.<unit>`), raw, or `null`.
+   */
   unitLabel(symbol: string, unit: string): Label | null {
     return this.types.get(symbol)?.units.get(unit)?.label ?? null;
   }
 
-  /** The locale's template for a display unit, or `null`. */
+  /**
+   * The locale's template for a display unit
+   * (`amounts.display_unit_formats.<symbol downcased>.<unit>`), or `null`.
+   */
   unitFormat(symbol: string, unit: string): string | null {
     return this.types.get(symbol)?.units.get(unit)?.format ?? null;
   }
 
   /**
-   * Rewrites a plain number (`"-1234.50"`) with the locale's delimiter and
-   * separator (`"-1.234,50"`). The gem's `Locale.apply`.
+   * Rewrites a plain number with the locale's delimiter and separator,
+   * grouping the whole part in threes — the gem's `Locale.apply`.
+   *
+   * @param plain - a number as `toFixed` writes it: an optional `-`,
+   *   digits, and an optional `.` and fraction
+   * @returns the number in the locale's format
+   *
+   * @example In German
+   *   de.applyNumber("-1234567.50");  // "-1.234.567,50"
    */
   applyNumber(plain: string): string {
     const negative = plain.startsWith("-");
@@ -144,6 +208,7 @@ export class Locale {
 
 const ONE = Ratio.of(1n);
 
+/** I18n's default plural key for a count: `zero` (only when the form exists), `one` or `other`. */
 function pluralKey(label: Readonly<Record<string, string>>, count: Ratio): string {
   if (count.isZero() && label["zero"] !== undefined) return "zero";
 

@@ -7,7 +7,22 @@
  * `throw errors.<name>(...)` and never build error strings themselves.
  */
 
-/** Machine-readable code, one per gem exception the client mirrors. */
+/**
+ * Machine-readable code, one per gem exception the client mirrors:
+ *
+ * | Code | Gem | Raised when |
+ * | --- | --- | --- |
+ * | `TYPE_MISMATCH` | `Amount::TypeMismatch` | cross-type math without a default rate; a non-scalar operand |
+ * | `INVALID_INPUT` | `Amount::InvalidInput` | a value, compact string, typed input or payload can't be read |
+ * | `UNKNOWN_TYPE` | `Registry::UnknownType` | a symbol the manifest doesn't register |
+ * | `NO_DEFAULT_RATE` | `Registry::NoDefaultRate` | `to` without a rate, and none registered |
+ * | `INVALID_DISPLAY_UNIT` | `Registry::InvalidDisplayUnit` | a display unit the type doesn't have |
+ * | `ZERO_DIVISION` | `ZeroDivisionError` | dividing by zero |
+ * | `INVALID_ARGUMENT` | `ArgumentError` | bad `split`, `allocate` or `compact` arguments |
+ * | `NOT_COMPARABLE` | `ArgumentError` from `Comparable` | `lessThan` and friends across unrelated types |
+ * | `UNKNOWN_LOCALE` | `I18n::InvalidLocale` | a locale the manifest wasn't exported with |
+ * | `INVALID_MANIFEST` | — | `fromManifest` on a malformed manifest |
+ */
 export type AmountErrorCode =
   | "TYPE_MISMATCH"
   | "INVALID_INPUT"
@@ -22,11 +37,26 @@ export type AmountErrorCode =
 
 /**
  * The one error class the client throws. Branch on `code`, never on the
- * message.
+ * message: messages follow the gem's wording and can change; codes don't.
+ *
+ * @example Validating a form field
+ *   try {
+ *     return { amount: amounts.parseUi(input, "USD", { locale }) };
+ *   } catch (error) {
+ *     if (error instanceof AmountError && error.code === "INVALID_INPUT") {
+ *       return { error: "Enter an amount like 12.50" };
+ *     }
+ *     throw error;
+ *   }
  */
 export class AmountError extends Error {
+  /** Which failure this is; see {@link AmountErrorCode}. */
   readonly code: AmountErrorCode;
 
+  /**
+   * @param code - the failure mode
+   * @param message - a human-readable message, worded as the gem words it
+   */
   constructor(code: AmountErrorCode, message: string) {
     super(message);
     this.name = "AmountError";

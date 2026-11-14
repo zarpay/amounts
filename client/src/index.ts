@@ -1,6 +1,25 @@
 /**
- * `@zarpay/amounts` — exact amounts of money, tokens and commodities, a
- * mirror of the `amounts` gem built from its exported registry.
+ * `@zarpay/amounts` — exact amounts of money, tokens and commodities for
+ * the web and React Native: the `amounts` gem's core, mirrored, and built
+ * from the registry the gem exports with `Amount.manifest`.
+ *
+ * - {@link Amounts} — the client: build one from a manifest, then
+ *   construct amounts with `of`, `parse`, `parseUi` and `load`
+ * - {@link Amount} — one exact quantity: math, comparison, conversion,
+ *   splitting, serialization and display
+ * - {@link Ratio} — an exact fraction, the result of dividing two amounts
+ * - {@link Registry} / {@link RegistryEntry} — what the server registered
+ * - {@link AmountError} — every error, with a `code`
+ *
+ * @example
+ *   import { Amounts } from "@zarpay/amounts";
+ *
+ *   const amounts = Amounts.fromManifest(manifest);
+ *   const total = amounts.of("USDC", "19.99").multiply(3);
+ *   total.ui();      // "$59.97"
+ *   total.toJSON();  // "USDC|59.970000"
+ *
+ * @packageDocumentation
  */
 
 export type * from "@/types/amount.js";

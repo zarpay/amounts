@@ -21,7 +21,15 @@ const MAX_EXPONENT = 10_000;
 /**
  * Reads a decimal string exactly.
  *
- * @returns the decimal, or `null` when the text is not one
+ * @param text - the text to read
+ * @returns the decimal as `coefficient / 10 ** scale`, or `null` when the
+ *   text is not one (or its exponent passes the limit)
+ *
+ * @example
+ *   parseDecimal("1.5");    // { coefficient: 15n, scale: 1 }
+ *   parseDecimal("1_000");  // { coefficient: 1000n, scale: 0 }
+ *   parseDecimal("1.5e2");  // { coefficient: 15n, scale: -1 }
+ *   parseDecimal("1,5");    // null
  */
 export function parseDecimal(text: string): ScaledDecimal | null {
   const match = DECIMAL.exec(text);
@@ -50,6 +58,11 @@ export function parseDecimal(text: string): ScaledDecimal | null {
  * form (as the gem reads a `Float`), a `bigint` as its digits.
  *
  * @returns the text, or `null` for a non-finite number or another type
+ *
+ * @example
+ *   decimalText(0.1);   // "0.1" — the shortest string that round-trips, as Ruby's Float#to_s
+ *   decimalText(15n);   // "15"
+ *   decimalText(NaN);   // null
  */
 export function decimalText(value: unknown): string | null {
   if (typeof value === "string") return value;
@@ -68,7 +81,15 @@ export function isDecimalInput(value: unknown): value is DecimalInput {
 
 /**
  * Writes `coefficient / 10 ** places` with exactly `places` digits after
- * the point: `formatScaled(-150n, 2)` is `"-1.50"`.
+ * the point, padding with leading zeros as needed.
+ *
+ * @param coefficient - the value times `10 ** places`
+ * @param places - digits after the point; `0` writes no point
+ *
+ * @example
+ *   formatScaled(-150n, 2);  // "-1.50"
+ *   formatScaled(5n, 3);     // "0.005"
+ *   formatScaled(42n, 0);    // "42"
  */
 export function formatScaled(coefficient: bigint, places: number): string {
   const negative = coefficient < 0n;
