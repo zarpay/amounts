@@ -4,9 +4,16 @@ class Amount
   module ActiveRecord
     # Provides `has_amount` for ActiveRecord models.
     module Model
+      # The definitions are a class attribute, so a subclass (STI included)
+      # sees its parent's amounts. `has_amount` assigns a new Hash rather than
+      # changing the inherited one, so a subclass's amounts stay its own.
+      def self.extended(base)
+        base.class_attribute :amount_attribute_definitions, instance_accessor: false, default: {}.freeze
+      end
+
       def has_amount(name, symbol: nil)
         definition = AttributeDefinition.new(name, symbol:)
-        amount_attribute_definitions[definition.name] = definition
+        self.amount_attribute_definitions = amount_attribute_definitions.merge(definition.name => definition).freeze
 
         define_amount_reader(definition)
         define_amount_writer(definition)
@@ -22,10 +29,6 @@ class Amount
         return super if name
 
         @model_name ||= ::ActiveModel::Name.new(self, nil, "AnonymousModel")
-      end
-
-      def amount_attribute_definitions
-        @amount_attribute_definitions ||= {}
       end
 
       def amount_component_columns(name)

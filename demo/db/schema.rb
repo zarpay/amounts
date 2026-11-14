@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_01_01_000005) do
+ActiveRecord::Schema[8.1].define(version: 2026_01_01_000006) do
   create_table "bullion_holdings", force: :cascade do |t|
     t.decimal "appraisal_atomic", precision: 78
     t.string "appraisal_symbol", limit: 10
@@ -52,7 +52,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_01_000005) do
     t.string "gross_symbol", limit: 10, null: false
     t.integer "holding_id", null: false
     t.string "memo"
+    t.string "type"
     t.datetime "updated_at", null: false
+    t.decimal "wire_fee_atomic", precision: 78
     t.index ["holding_id"], name: "index_treasury_transfers_on_holding_id"
   end
 

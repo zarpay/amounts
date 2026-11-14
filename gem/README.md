@@ -491,6 +491,9 @@ Writers accept:
 - `Hash` payloads
 - raw numeric values for fixed-symbol attributes only
 
+A subclass (STI included) inherits its parent's amounts. Amounts it declares
+itself stay off the parent and its other subclasses.
+
 Scopes:
 
 ```ruby

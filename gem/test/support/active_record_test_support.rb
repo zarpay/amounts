@@ -17,6 +17,7 @@ AmountTestSupport.register_active_record_types!
     t.amount :amount, null: true
     t.amount :fee, symbol: :SOL, null: true
     t.amount :reserve, precision: 40, default: "USDC|1.25", null: false
+    t.amount :bonus, symbol: :SOL, null: true
   end
 end
 
@@ -24,6 +25,15 @@ class Holding < ::ActiveRecord::Base
   has_amount :amount
   has_amount :fee, symbol: :SOL
   has_amount :reserve
+end
+
+# Inherits Holding's amounts unchanged.
+class SubHolding < Holding
+end
+
+# Adds an amount of its own on top of Holding's.
+class BonusHolding < Holding
+  has_amount :bonus, symbol: :SOL
 end
 
 class ValidatedHolding < ::ActiveRecord::Base
@@ -47,6 +57,10 @@ class ValidatedHolding < ::ActiveRecord::Base
   validates :reserve, amount: {
     greater_than_or_equal_to: "USDC|1.25"
   }
+end
+
+# Inherits ValidatedHolding's amounts and validations unchanged.
+class SubValidatedHolding < ValidatedHolding
 end
 
 # Empty tables and the ActiveRecord test types before each test; an empty

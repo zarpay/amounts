@@ -64,4 +64,8 @@ FactoryBot.define do
       gross { Amount.of_sol("1.0") }
     end
   end
+
+  factory :treasury_wire_transfer, parent: :treasury_transfer, class: "Treasury::WireTransfer" do
+    wire_fee { 15 }
+  end
 end

@@ -15,6 +15,16 @@
   fixtures) or shown to people, expect the longer form, or use `to_s` or `ui`
   for display.
 
+### Fixed
+
+- A subclass of a model with `has_amount` (STI included) inherits its
+  parent's amount definitions. It previously started with none, so
+  `amount_attribute_definitions`, `amount_atomic_column` and friends raised
+  `KeyError` on the subclass, and so did the `amount:` validator and the
+  `have_amount_column` matcher for inherited amounts. Amounts a subclass
+  declares stay off its parent and siblings. `amount_attribute_definitions`
+  is now a `class_attribute` holding a frozen Hash.
+
 ## 0.1.0 - 2026-11-02
 
 ### Added
