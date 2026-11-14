@@ -127,5 +127,26 @@ RSpec.describe Treasury::Transfer, type: :model do
     it "totals gross in one currency" do
       expect(described_class.where(gross_symbol: "USDC").sum_amount(:gross)).to eq_amount("USDC|250")
     end
+
+    it "totals gross and commission per currency side by side" do
+      expect(described_class.statement_by_currency).to eq(
+        "USDC" => { gross: Amount.of_usdc("250"), commission: Amount.of_usdc("0.35") },
+        "SOL" => { gross: Amount.of_sol("1"), commission: Amount.of_usdc("0.40") }
+      )
+    end
+
+    it "totals gross and commission per currency in one query" do
+      queries = []
+      counter = ->(*, payload) { queries << payload[:sql] unless payload[:name] == "SCHEMA" }
+      ActiveSupport::Notifications.subscribed(counter, "sql.active_record") { described_class.statement_by_currency }
+
+      expect(queries.size).to eq(1)
+    end
+
+    it "totals one holding's gross and commission together" do
+      expect(holding.transfers.sum_amount(:gross, :commission)).to eq(
+        gross: Amount.of_usdc("250"), commission: Amount.of_usdc("0.35")
+      )
+    end
   end
 end

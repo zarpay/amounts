@@ -1,5 +1,20 @@
 # Changelog
 
+## Unreleased
+
+### Added
+
+- `sum_amount`, `minimum_amount`, `maximum_amount` and `average_amount` take
+  several `has_amount` attributes and aggregate them all in one query, returning
+  a Hash by attribute name (per group when grouped) in place of each Amount, as
+  Rails' `pluck` returns rows for several columns. A model with several amounts
+  on one table no longer pays one round trip per amount over the same rows.
+  Each attribute folds exactly as it would alone, with the same symbol rule. With
+  several attributes, a group appears when it has any row, and an attribute with
+  no amount in it gets the empty-set result (zero for a fixed-symbol sum, else
+  `nil`). A name given twice raises `ArgumentError`. With one attribute, nothing
+  changes.
+
 ## 0.3.0 - 2026-11-15
 
 ### Added

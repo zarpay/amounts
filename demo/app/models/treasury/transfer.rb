@@ -17,7 +17,8 @@ module Treasury
   #   - `where_*_between` and a derivative custom scope that takes a range
   #
   #   - SQL aggregates that return Amounts (`sum_amount`, `average_amount`,
-  #     `maximum_amount`), for a fixed-symbol and a multi-symbol attribute
+  #     `maximum_amount`), for a fixed-symbol and a multi-symbol attribute,
+  #     and for both at once in a single query
   # ===========================================================================
   class Transfer < ApplicationRecord
     self.table_name = "treasury_transfers"
@@ -85,6 +86,16 @@ module Treasury
 
     def self.largest_gross_by_symbol
       group(:gross_symbol).maximum_amount(:gross)
+    end
+
+    # Several attributes in ONE query: given more than one name, each
+    # aggregate returns a Hash by name, per group. Gross is totalled in each
+    # currency and commission in USDC, side by side:
+    #
+    #   { "USDC" => { gross: USDC|250, commission: USDC|0.35 },
+    #     "SOL"  => { gross: SOL|1,    commission: USDC|0.40 } }
+    def self.statement_by_currency
+      group(:gross_symbol).sum_amount(:gross, :commission)
     end
 
     # -------------------------------------------------------------------------

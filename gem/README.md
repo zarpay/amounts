@@ -568,6 +568,14 @@ Holding.average_amount(:fee)                        # truncated toward zero, lik
 Holding.group(:amount_symbol).sum_amount(:amount)   # => { "USDC" => #<Amount USDC ...>, "SOL" => ... }
 ```
 
+Given several attributes, like `pluck`, each aggregate still runs one query and
+returns a Hash by name:
+
+```ruby
+Holding.sum_amount(:amount, :fee)                    # => { amount: #<Amount USDC ...>, fee: #<Amount SOL ...> }
+Holding.group(:account_id).sum_amount(:amount, :fee) # => { 1 => { amount: ..., fee: ... }, ... }
+```
+
 Symbols never mix: a multi-symbol attribute with more than one symbol in scope
 (or in one group) raises `Amount::TypeMismatch`, so group by its symbol column for
 one Amount per symbol. A fixed-symbol sum over no rows is zero; otherwise an
