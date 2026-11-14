@@ -500,13 +500,12 @@ itself stay off the parent and its other subclasses.
 
 `as_json`, `to_json` and `serializable_hash` write each amount by its name, as
 its exact compact string, in place of its columns. `only:` and `except:` take the
-amount's name, and `amounts: false` writes the columns for one call.
+amount's name, and the raw columns stay readable through `attributes`.
 `amount_changes` and `saved_amount_changes` are `changes` and `saved_changes`
 with amounts by name. Rails' own change hashes stay keyed by column:
 
 ```ruby
 holding.as_json                 # => { "id" => 1, "amount" => "USDC|1.500000", "fee" => "SOL|0.250000000" }
-holding.as_json(amounts: false) # => { "id" => 1, "amount_atomic" => 1500000, "amount_symbol" => "USDC", ... }
 
 holding.update!(amount: "USDC|2")
 holding.saved_amount_changes    # => { "amount" => [#<Amount USDC $1.50>, #<Amount USDC $2.00>] }

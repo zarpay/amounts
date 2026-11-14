@@ -269,8 +269,8 @@ RSpec.describe Treasury::Holding, type: :model do
       expect(persisted.saved_changes.keys).to include("balance_atomic")
     end
 
-    it "still gives the columns with amounts: false" do
-      expect(persisted.as_json(amounts: false)["balance_atomic"]).to eq(11_250_000)
+    it "keeps the raw columns readable through attributes" do
+      expect(persisted.attributes["balance_atomic"]).to eq(11_250_000)
     end
   end
 

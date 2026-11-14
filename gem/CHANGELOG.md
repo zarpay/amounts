@@ -31,15 +31,15 @@
 
 - **Breaking:** a model with `has_amount` serializes each amount by its name,
   as its exact compact string, in place of its component columns:
-  `as_json` gives `"owed" => "USD|10.06"`, not `"owed_atomic" => 1006`
+  `as_json` gives `"owed" => "USD|10.06"`, not `"owed_atomic" => "1006.0"`
   (`serializable_hash` holds the Amount). `only:` and `except:` take the
   amount's name. `has_amount` includes this into the declaring model;
   `ActiveRecord::Base` and models without amounts are unchanged.
 
   Migration: JSON readers that read `<name>_atomic` / `<name>_symbol` read
-  `<name>` instead (parse it with `Amount.parse`), or pass
-  `amounts: false` to `as_json` / `serializable_hash` to keep the columns
-  for that call.
+  `<name>` instead and parse it with `Amount.parse`. Code that needs the raw
+  columns reads them from `attributes`
+  (`record.attributes.slice("owed_atomic")`).
 - **Breaking:** `Amount#as_json` (and so `to_json`) writes the exact compact
   string: whole units with exactly the symbol's `decimals` places
   (`"USDC|1.500000"`, `"SOL|1.123456789"`). It previously returned `to_s`,

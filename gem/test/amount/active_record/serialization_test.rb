@@ -47,11 +47,6 @@ class AmountActiveRecordSerializationTest < Minitest::Test
     assert_equal '{"fee":"SOL|1.123456789"}', @holding.to_json(only: :fee)
   end
 
-  def test_amounts_false_serializes_component_columns
-    assert_equal({ "amount_atomic" => 10_060_000, "amount_symbol" => "USDC" },
-                 @holding.as_json(amounts: false, only: %i[amount_atomic amount_symbol]))
-  end
-
   def test_keeps_columns_of_partly_selected_amount
     assert_equal %w[id amount_atomic], Holding.select(:id, :amount_atomic).first.as_json.keys
   end
@@ -60,13 +55,6 @@ class AmountActiveRecordSerializationTest < Minitest::Test
     child = ChildHolding.create!(parent: @holding)
 
     assert_equal({ "fee" => "SOL|1.123456789" }, child.as_json(only: :id, include: { parent: { only: :fee } })["parent"])
-  end
-
-  def test_amounts_false_applies_to_included_association
-    child = ChildHolding.create!(parent: @holding)
-
-    assert_equal({ "fee_atomic" => 1_123_456_789 },
-                 child.as_json(only: :id, include: { parent: { only: :fee_atomic, amounts: false } })["parent"])
   end
 
   def test_serializes_inherited_amount

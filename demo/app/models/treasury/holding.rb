@@ -159,8 +159,8 @@ module Treasury
     # `balance_atomic` or which unit it's in.
     #
     # Rails' own `saved_changes` stays keyed by column, for code and gems
-    # (audit trails, change logs) that read it that way, and
-    # `as_json(amounts: false)` still gives the columns for one call.
+    # (audit trails, change logs) that read it that way, and the raw columns
+    # stay readable through `attributes`.
 
     def audit_payload
       { "holding" => as_json, "changes" => saved_amount_changes.except("updated_at").as_json }

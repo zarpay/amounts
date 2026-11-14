@@ -7,23 +7,21 @@ class Amount
     # rather than `"owed_atomic" => 1006`. `has_amount` includes it into the
     # model that declares an amount.
     #
-    # `only:` and `except:` take the amount's name. `amounts: false` writes
-    # the component columns instead, for one call. An amount whose columns
-    # weren't all selected keeps the columns that were.
+    # `only:` and `except:` take the amount's name. An amount whose columns
+    # weren't all selected keeps the columns that were. The raw columns stay
+    # readable through Rails' `attributes`.
     #
     # @example
-    #   subscription.as_json                  # => { "id" => 1, "owed" => "USD|10.06" }
-    #   subscription.as_json(only: :owed)     # => { "owed" => "USD|10.06" }
-    #   subscription.as_json(amounts: false)  # => { "id" => 1, "owed_atomic" => 1006 }
+    #   subscription.as_json               # => { "id" => 1, "owed" => "USD|10.06" }
+    #   subscription.as_json(only: :owed)  # => { "owed" => "USD|10.06" }
     module Serialization
-      # @param options [Hash, nil] Rails' options, plus `amounts: false`
+      # @param options [Hash, nil] Rails' options
       # @return [Hash]
       def serializable_hash(options = nil)
-        options = options ? options.dup : {}
-        return super(options) if options.delete(:amounts) == false
-
         definitions = self.class.amount_attribute_definitions.values
-        amounts_in_place_of_columns(super(amount_names_as_columns(options, definitions)), definitions)
+        options = amount_names_as_columns(options ? options.dup : {}, definitions)
+
+        amounts_in_place_of_columns(super(options), definitions)
       end
 
       private
