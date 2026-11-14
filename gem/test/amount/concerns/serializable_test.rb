@@ -61,17 +61,29 @@ class AmountSerializableTest < Minitest::Test
     assert_equal '"USDC|1.500000"', Amount.new("1.5", :USDC).to_json
   end
 
-  {
-    "1.123456789" => "SOL|1.123456789",
-    "42" => "SOL|42.000000000",
-    "0" => "SOL|0.000000000",
-    "-1.5" => "SOL|-1.500000000",
-    "-0.000000001" => "SOL|-0.000000001",
-    "123456789012345678901234567890.123456789" => "SOL|123456789012345678901234567890.123456789"
-  }.each do |input, json|
-    define_method("test_as_json_writes_#{input.tr('^0-9', '_')}_exactly") do
-      assert_equal json, Amount.new(input, :SOL).as_json
-    end
+  def test_as_json_keeps_digits_past_ui_decimals
+    assert_equal "SOL|1.123456789", Amount.new("1.123456789", :SOL).as_json
+  end
+
+  def test_as_json_pads_whole_amount_to_all_decimals
+    assert_equal "SOL|42.000000000", Amount.new("42", :SOL).as_json
+  end
+
+  def test_as_json_writes_zero_without_sign
+    assert_equal "SOL|0.000000000", Amount.new("-0", :SOL).as_json
+  end
+
+  def test_as_json_writes_negative_amount
+    assert_equal "SOL|-1.500000000", Amount.new("-1.5", :SOL).as_json
+  end
+
+  def test_as_json_writes_negative_smallest_unit
+    assert_equal "SOL|-0.000000001", Amount.new(-1, :SOL, from: :atomic).as_json
+  end
+
+  def test_as_json_writes_large_amount_exactly
+    assert_equal "SOL|123456789012345678901234567890.123456789",
+                 Amount.new("123456789012345678901234567890.123456789", :SOL).as_json
   end
 
   def test_as_json_of_whole_symbol_has_no_decimal_point
