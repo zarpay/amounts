@@ -14,7 +14,8 @@
   other empty results are `nil`. `average_amount` truncates toward zero to a
   whole atomic unit, as `Amount#/` does. Grouping by an association name
   raises `ArgumentError` (group by its foreign key). On SQLite, aggregates
-  past 64 bits are inexact; PostgreSQL is exact.
+  past 64 bits raise `integer overflow` or come back inexact; PostgreSQL is
+  exact.
 
 ### Changed
 

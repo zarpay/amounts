@@ -65,6 +65,18 @@ class AmountActiveRecordCalculationsTest < Minitest::Test
                  Holding.group("UPPER(amount_symbol)").sum_amount(:amount))
   end
 
+  # `pluck` refuses a raw SQL string like this one unless it's wrapped in
+  # `Arel.sql`; Rails' `group(...).sum` accepts it.
+  def test_sum_amount_grouped_by_raw_sql_expression
+    assert_equal({ "none" => Amount.new(0, :SOL), "USD" => Amount.new(0, :SOL), "USDC" => Amount.new("0.3", :SOL) },
+                 Holding.group("COALESCE(amount_symbol, 'none')").sum_amount(:fee))
+  end
+
+  def test_sum_amount_grouped_by_arel_node
+    assert_equal({ "USD" => Amount.new("3", :USD), "USDC" => Amount.new("3.5", :USDC) },
+                 Holding.group(Holding.arel_table[:amount_symbol]).sum_amount(:amount))
+  end
+
   def test_sum_amount_grouped_on_none_is_empty
     assert_empty Holding.none.group(:amount_symbol).sum_amount(:fee)
   end

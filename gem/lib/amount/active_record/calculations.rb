@@ -81,13 +81,17 @@ class Amount
         groups.empty? ? results[[]] : results
       end
 
+      # The caller passed these to `group`, which takes raw SQL; `pluck` takes
+      # a SQL string only wrapped in `Arel.sql`.
       def amount_group_values
-        all.group_values.each do |group|
+        all.group_values.map do |group|
           reflection = group.respond_to?(:to_sym) && _reflect_on_association(group)
-          next unless reflection
+          if reflection
+            raise ArgumentError,
+                  "group by #{reflection.foreign_key}, not the #{group} association, to aggregate amounts"
+          end
 
-          raise ArgumentError,
-                "group by #{reflection.foreign_key}, not the #{group} association, to aggregate amounts"
+          group.is_a?(String) ? ::Arel.sql(group) : group
         end
       end
 

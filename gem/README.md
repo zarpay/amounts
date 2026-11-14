@@ -561,7 +561,7 @@ for free.
 
 ### SQLite Note
 
-The adapter supports SQLite for general integration tests and development, but SQLite does not preserve `DECIMAL(78,0)` values above 64-bit range exactly under ActiveRecord's default numeric handling, and its sums and averages past that range are inexact too. For exact wei-scale persistence, use PostgreSQL or another database with true arbitrary-precision numeric behavior.
+The adapter supports SQLite for general integration tests and development, but SQLite does not preserve `DECIMAL(78,0)` values above 64-bit range exactly under ActiveRecord's default numeric handling, and its sums and averages past that range either raise `integer overflow` or come back inexact (Rails' own `sum` too). For exact wei-scale persistence, use PostgreSQL or another database with true arbitrary-precision numeric behavior.
 
 ### PostgreSQL Dummy App
 

@@ -70,7 +70,8 @@ truncates toward zero to a whole atomic unit, as `Amount#/` does. Rows without a
 are not counted.
 
 ::: warning SQLite
-SQLite returns sums past 64 bits inexactly. Use PostgreSQL for exact aggregates of large
+SQLite can't aggregate past 64 bits: totals of large values either raise
+`integer overflow` or come back inexact. Use PostgreSQL for exact aggregates of large
 values. See [Database Notes](/rails/database-notes).
 :::
 
