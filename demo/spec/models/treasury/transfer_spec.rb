@@ -19,6 +19,11 @@ require "rails_helper"
 #
 #   - between-style scope (`within_range`) layered on the generated
 #     `where_gross_between(low, high)`
+#
+#   - SQL aggregates returning Amounts: a fixed-symbol total that is zero
+#     over no rows, totals scoped through an association, a truncated
+#     average, and multi-symbol totals grouped by symbol (ungrouped, they
+#     raise across currencies)
 
 RSpec.describe Treasury::Transfer, type: :model do
   let(:holding) { create(:treasury_holding) }
@@ -79,6 +84,48 @@ RSpec.describe Treasury::Transfer, type: :model do
       _high = create(:treasury_transfer, holding: holding, gross: "USDC|500")
       _low = create(:treasury_transfer, holding: holding, gross: "USDC|5")
       expect(described_class.within_range("USDC|10", "USDC|100")).to contain_exactly(mid)
+    end
+  end
+
+  describe "aggregates" do
+    let(:other_holding) { create(:treasury_holding) }
+
+    before do
+      create(:treasury_transfer, holding: holding, gross: "USDC|50", commission: 0.10)
+      create(:treasury_transfer, holding: holding, gross: "USDC|200", commission: 0.25)
+      create(:treasury_transfer, :sol, holding: other_holding, commission: 0.40)
+    end
+
+    it "totals commission as a USDC amount" do
+      expect(described_class.commission_collected).to eq_amount("USDC|0.75")
+    end
+
+    it "totals commission over no transfers as zero" do
+      expect(described_class.none.commission_collected).to eq_amount("USDC|0")
+    end
+
+    it "totals one holding's commission through the association" do
+      expect(holding.transfers.commission_collected).to eq_amount("USDC|0.35")
+    end
+
+    it "averages commission as a USDC amount" do
+      expect(described_class.average_commission).to eq_amount("USDC|0.25")
+    end
+
+    it "totals gross per currency" do
+      expect(described_class.gross_by_symbol).to eq("USDC" => Amount.of_usdc("250"), "SOL" => Amount.of_sol("1"))
+    end
+
+    it "finds the largest gross per currency" do
+      expect(described_class.largest_gross_by_symbol).to eq("USDC" => Amount.of_usdc("200"), "SOL" => Amount.of_sol("1"))
+    end
+
+    it "refuses to total gross across currencies" do
+      expect { described_class.sum_amount(:gross) }.to raise_error(Amount::TypeMismatch)
+    end
+
+    it "totals gross in one currency" do
+      expect(described_class.where(gross_symbol: "USDC").sum_amount(:gross)).to eq_amount("USDC|250")
     end
   end
 end

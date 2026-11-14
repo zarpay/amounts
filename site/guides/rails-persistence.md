@@ -41,8 +41,11 @@ Holding.where_amount("USDC|1250.00")
 Holding.where_amount_gt("USDC|1000.00")
 Holding.where_amount_between("USDC|1000.00", "USDC|5000.00")
 Holding.amount_in(:USDC)
-Holding.group(:amount_symbol).sum(:amount_atomic)
+Holding.group(:amount_symbol).sum_amount(:amount)   # => { "USDC" => #<Amount USDC ...>, ... }
 ```
+
+See [Querying](/rails/querying) for `sum_amount`, `minimum_amount`, `maximum_amount`
+and `average_amount`.
 
 ## Important note
 

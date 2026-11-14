@@ -2,6 +2,21 @@
 
 ## Unreleased
 
+### Added
+
+- SQL aggregates for `has_amount` attributes that return Amounts:
+  `sum_amount`, `minimum_amount`, `maximum_amount` and `average_amount`. Each
+  runs one query in the scope of the relation it's called on, so `where`,
+  `group` and associations apply. Grouped, the result is keyed like Rails'
+  `group(...).sum`. A multi-symbol attribute with more than one symbol in
+  scope, or in one group, raises `Amount::TypeMismatch`; group by its symbol
+  column for one Amount per symbol. A fixed-symbol sum over no rows is zero;
+  other empty results are `nil`. `average_amount` truncates toward zero to a
+  whole atomic unit, as `Amount#/` does. Grouping by an association name
+  raises `ArgumentError` (group by its foreign key). On SQLite, aggregates
+  past 64 bits raise `integer overflow` or come back inexact; PostgreSQL is
+  exact.
+
 ### Changed
 
 - **Breaking:** `Amount#as_json` (and so `to_json`) writes the exact compact
@@ -17,6 +32,12 @@
 
 ### Fixed
 
+- `Amount#/` by a scalar computes the quotient exactly (in `Rational`) before
+  truncating it toward zero. It divided in `BigDecimal`, which rounds the
+  quotient to a limited precision, so large amounts divided by small decimals
+  came out wrong: 10^40 atomic units divided by `BigDecimal("7e-21")` was off
+  by 1429 atomic units. Results that were already exact are unchanged.
+  `average_amount` divides this way.
 - A subclass of a model with `has_amount` (STI included) inherits its
   parent's amount definitions. It previously started with none, so
   `amount_attribute_definitions`, `amount_atomic_column` and friends raised

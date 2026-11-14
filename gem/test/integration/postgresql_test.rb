@@ -69,7 +69,37 @@ class PostgreSQLIntegrationTest < Minitest::Test
     assert_equal({ "USDC" => 1_500_000, "USD" => 300 }, Holding.group(:amount_symbol).sum(:amount_atomic))
   end
 
+  def test_postgresql_sum_amount_is_exact_past_64_bits
+    holdings_with_atomic_amounts(10**30, (10**30) + 1)
+
+    assert_equal (2 * (10**30)) + 1, Holding.sum_amount(:amount).atomic
+  end
+
+  def test_postgresql_average_amount_is_exact_past_64_bits
+    holdings_with_atomic_amounts(10**30, (10**30) + 3)
+
+    assert_equal (10**30) + 1, Holding.average_amount(:amount).atomic
+  end
+
+  def test_postgresql_sum_amount_of_fixed_symbol
+    Holding.create!(fee: "SOL|0.1")
+    Holding.create!(fee: "SOL|0.2")
+
+    assert_equal Amount.new("0.3", :SOL), Holding.sum_amount(:fee)
+  end
+
+  def test_postgresql_sum_amount_grouped_by_symbol_column
+    create_usdc_and_usd_holdings
+
+    assert_equal({ "USDC" => Amount.new("1.5", :USDC), "USD" => Amount.new("3", :USD) },
+                 Holding.group(:amount_symbol).sum_amount(:amount))
+  end
+
   private
+
+  def holdings_with_atomic_amounts(*atomics)
+    atomics.each { |atomic| Holding.create!(amount: Amount.new(atomic, :SOL, from: :atomic)) }
+  end
 
   # The USDC holding; a USD holding is created alongside.
   def create_usdc_and_usd_holdings
