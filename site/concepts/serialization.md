@@ -49,17 +49,22 @@ amount.to_h
 
 ## JSON serialization
 
-`as_json` returns the compact string, so amounts serialize cleanly in any JSON context:
+`as_json` returns the exact compact string: whole units with exactly the symbol's
+`decimals` places. It ignores display settings such as `ui_decimals` and never rounds:
 
 ```ruby
 Amount.of_usdc("1.50").as_json
-# => "USDC|1.50"
+# => "USDC|1.500000"
+
+Amount.of_usdc("1.234567").as_json
+# => "USDC|1.234567"   (to_s gives "USDC|1.23")
 
 { amount: Amount.of_usdc("1.50") }.to_json
-# => '{"amount":"USDC|1.50"}'
+# => '{"amount":"USDC|1.500000"}'
 ```
 
-The client can parse the value back with `Amount.parse`.
+The client can parse the value back exactly with `Amount.parse`. For display, use
+`to_s` or `ui`, which round to `ui_decimals`.
 
 ## What to use where
 
@@ -67,14 +72,14 @@ The client can parse the value back with `Amount.parse`.
 | --- | --- |
 | Browser form field | `USDC|1.50` |
 | CLI or admin tooling | `USDC|1.50` |
-| JSON API response | `"USDC|1.50"` (via `as_json`) |
+| JSON API response | `"USDC|1.500000"` (via `as_json`) |
 | Internal structured payload | `{ v: 1, atomic: "1500000", symbol: "USDC" }` |
 | Database persistence | atomic + symbol columns |
 
 ## Common mistake
 
 ::: warning
-Do not treat `to_s` as the long-term structured API contract. It is the compact parseable string. The structured hash payload is the canonical serialized form.
+Do not treat `to_s` as the long-term structured API contract. It rounds down to `ui_decimals` for display, so it can drop digits. `as_json` is the exact compact string, and the structured hash payload is the canonical serialized form.
 :::
 
 ## See also

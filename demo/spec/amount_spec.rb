@@ -357,13 +357,17 @@ RSpec.describe Amount, :aggregate_failures do
       expect { Amount.parse("|1.50") }.to raise_error(Amount::InvalidInput)
     end
 
-    it "as_json returns compact string" do
-      expect(Amount.of_usdc("1.50").as_json).to eq("USDC|1.50")
+    it "as_json returns the exact compact string" do
+      expect(Amount.of_usdc("1.50").as_json).to eq("USDC|1.500000")
+    end
+
+    it "as_json keeps digits past ui_decimals" do
+      expect(Amount.of_usdc("1.234567").as_json).to eq("USDC|1.234567")
     end
 
     it "serializes correctly when nested in a hash" do
       hash = { amount: Amount.of_usdc("1.50") }
-      expect(JSON.parse(hash.to_json)).to eq("amount" => "USDC|1.50")
+      expect(JSON.parse(hash.to_json)).to eq("amount" => "USDC|1.500000")
     end
   end
 

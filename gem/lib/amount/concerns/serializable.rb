@@ -51,9 +51,26 @@ class Amount
       }
     end
 
+    # The exact compact string: whole units with exactly `decimals` places.
+    # Unlike `to_s`, it ignores the display settings and never rounds, so
+    # `Amount.parse` reads it back exactly.
+    #
     # @return [String]
+    # @example
+    #   Amount.of_usdc("1.5").as_json # => "USDC|1.500000"
     def as_json(*)
-      to_s
+      whole, fraction = atomic.abs.divmod(10**decimals)
+      number = decimals.zero? ? whole.to_s : "#{whole}.#{fraction.to_s.rjust(decimals, '0')}"
+
+      "#{symbol}|#{'-' if atomic.negative?}#{number}"
+    end
+
+    # Without ActiveSupport, the `json` library writes an object through
+    # `to_s`, so `to_json` goes through {#as_json} explicitly.
+    #
+    # @return [String]
+    def to_json(*args)
+      as_json.to_json(*args)
     end
   end
 end

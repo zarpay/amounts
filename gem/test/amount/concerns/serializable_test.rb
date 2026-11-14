@@ -53,18 +53,56 @@ class AmountSerializableTest < Minitest::Test
     assert_match(/missing key/, error_from(Amount::InvalidInput) { Amount.load({}) }.message)
   end
 
-  def test_as_json_returns_compact_string
-    assert_equal "USDC|1.50", Amount.new("1.5", :USDC).as_json
+  def test_as_json_returns_compact_string_with_all_decimals
+    assert_equal "USDC|1.500000", Amount.new("1.5", :USDC).as_json
   end
 
   def test_to_json_returns_quoted_compact_string
-    assert_equal '"USDC|1.50"', Amount.new("1.5", :USDC).to_json
+    assert_equal '"USDC|1.500000"', Amount.new("1.5", :USDC).to_json
+  end
+
+  def test_as_json_keeps_digits_past_ui_decimals
+    assert_equal "SOL|1.123456789", Amount.new("1.123456789", :SOL).as_json
+  end
+
+  def test_as_json_pads_whole_amount_to_all_decimals
+    assert_equal "SOL|42.000000000", Amount.new("42", :SOL).as_json
+  end
+
+  def test_as_json_writes_zero_without_sign
+    assert_equal "SOL|0.000000000", Amount.new("-0", :SOL).as_json
+  end
+
+  def test_as_json_writes_negative_amount
+    assert_equal "SOL|-1.500000000", Amount.new("-1.5", :SOL).as_json
+  end
+
+  def test_as_json_writes_negative_smallest_unit
+    assert_equal "SOL|-0.000000001", Amount.new(-1, :SOL, from: :atomic).as_json
+  end
+
+  def test_as_json_writes_large_amount_exactly
+    assert_equal "SOL|123456789012345678901234567890.123456789",
+                 Amount.new("123456789012345678901234567890.123456789", :SOL).as_json
+  end
+
+  def test_as_json_of_whole_symbol_has_no_decimal_point
+    Amount.register :TOKENS, decimals: 0
+
+    assert_equal "TOKENS|42", Amount.new(42, :TOKENS).as_json
+  end
+
+  def test_as_json_round_trips_through_parse
+    amounts = ["1.123456789", "-1.5", "0", "0.000000001", "98765432109876543210.987654321"]
+              .map { |value| Amount.new(value, :SOL) }
+
+    assert_equal amounts, amounts.map { |amount| Amount.parse(amount.as_json) }
   end
 
   def test_as_json_works_when_nested_in_hash
     hash = { amount: Amount.new("1.5", :USDC) }
 
-    assert_equal({ "amount" => "USDC|1.50" }, JSON.parse(hash.to_json))
+    assert_equal({ "amount" => "USDC|1.500000" }, JSON.parse(hash.to_json))
   end
 
   def test_load_rejects_unknown_serialization_version
