@@ -33,6 +33,46 @@ holding.saved_change_to_amount?
 holding.amount_before_last_save
 ```
 
+`amount_changes` and `saved_amount_changes` are Rails' `changes` and `saved_changes`
+with each amount by name, as `[before, after]` Amounts, in place of its columns:
+
+```ruby
+holding.update!(amount: "USDC|11.25")
+
+holding.saved_amount_changes
+# => { "amount" => [#<Amount USDC $10.00>, #<Amount USDC $11.25>], "updated_at" => [...] }
+
+holding.saved_changes
+# => { "amount_atomic" => [10000000, 11250000], "updated_at" => [...] }
+```
+
+Rails' own `changes`, `saved_changes` and `previous_changes` stay keyed by column,
+so code and gems that read them by column (audit trails, change logs) keep working.
+
+## JSON
+
+`as_json`, `to_json` and `serializable_hash` write each amount by its name, as its exact
+compact string, in place of its columns:
+
+```ruby
+holding.as_json
+# => { "id" => 1, "amount" => "USDC|10.000000", "fee" => "SOL|0.250000000", ... }
+
+holding.as_json(only: :amount)        # => { "amount" => "USDC|10.000000" }
+holding.as_json(except: :fee)         # every key but fee
+holding.as_json(amounts: false)       # => { "id" => 1, "amount_atomic" => 10000000, "amount_symbol" => "USDC", ... }
+```
+
+- `only:` and `except:` take the amount's name.
+- `amounts: false` writes the columns instead, for that one call. Inside `include:`, it
+  applies to the included records.
+- An amount whose columns weren't all selected (`select(:id, :amount_atomic)`) keeps
+  the columns that were.
+- `serializable_hash` holds the Amount itself, and `as_json` turns it into the string.
+
+Only models that declare `has_amount` get this behaviour. `has_amount` includes it into
+the model, and `ActiveRecord::Base` is left alone.
+
 ## Bulk writes
 
 `insert_all`, `upsert_all` and their variants skip attribute writers and take column

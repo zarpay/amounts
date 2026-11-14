@@ -21,6 +21,9 @@ module Treasury
   #   - an instance method (`total_in`) that demonstrates cross-type
   #     conversion via `.to(:SYMBOL)`
   #
+  #   - an audit payload (`audit_payload`) built from `as_json`, which writes
+  #     amounts by name, and `saved_amount_changes`
+  #
   # The base table comes from the `CreateTreasuryHoldings` migration. Every
   # column shape and default this model relies on is documented there.
   # ===========================================================================
@@ -142,6 +145,25 @@ module Treasury
       converted_reserve = reserve.to(target_symbol)
 
       converted_balance ? converted_balance + converted_reserve : converted_reserve
+    end
+
+    # -------------------------------------------------------------------------
+    # Audit payload
+    # -------------------------------------------------------------------------
+    #
+    # What an event bus or audit log receives after a save. `as_json` writes
+    # each amount by name as its exact compact string
+    # ("balance" => "USDC|10.000000") in place of its columns, and
+    # `saved_amount_changes` reports what the save changed, with each amount
+    # as a [before, after] pair. Readers never need to know about
+    # `balance_atomic` or which unit it's in.
+    #
+    # Rails' own `saved_changes` stays keyed by column, for code and gems
+    # (audit trails, change logs) that read it that way, and
+    # `as_json(amounts: false)` still gives the columns for one call.
+
+    def audit_payload
+      { "holding" => as_json, "changes" => saved_amount_changes.except("updated_at").as_json }
     end
 
     private

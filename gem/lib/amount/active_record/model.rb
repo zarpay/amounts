@@ -12,6 +12,10 @@ class Amount
       end
 
       def has_amount(name, symbol: nil)
+        # Into this model only, once; subclasses inherit them.
+        include Serialization unless include?(Serialization)
+        include Dirty unless include?(Dirty)
+
         definition = AttributeDefinition.new(name, symbol:)
         self.amount_attribute_definitions = amount_attribute_definitions.merge(definition.name => definition).freeze
 

@@ -66,6 +66,10 @@ Amount.of_usdc("1.234567").as_json
 The client can parse the value back exactly with `Amount.parse`. For display, use
 `to_s` or `ui`, which round to `ui_decimals`.
 
+A record with `has_amount` attributes writes them the same way, by name, in place of
+their columns: `holding.as_json` gives `"amount" => "USDC|1.500000"`, not
+`"amount_atomic" => 1500000`. See [has_amount](/rails/has-amount#json).
+
 ## What to use where
 
 | Use case | Recommended format |

@@ -4,6 +4,10 @@
 
 ### Added
 
+- `amount_changes` and `saved_amount_changes` on models with `has_amount`:
+  Rails' `changes` and `saved_changes` with each amount by name, as
+  `[before, after]` Amounts, in place of its component columns. Rails' own
+  change hashes are unchanged.
 - `Model.amount_column_values(attributes)` turns attributes, with amounts by
   name, into column values for `insert_all`, `upsert_all` and their variants,
   which skip attribute writers. Each amount is cast as its writer would cast
@@ -25,6 +29,17 @@
 
 ### Changed
 
+- **Breaking:** a model with `has_amount` serializes each amount by its name,
+  as its exact compact string, in place of its component columns:
+  `as_json` gives `"owed" => "USD|10.06"`, not `"owed_atomic" => 1006`
+  (`serializable_hash` holds the Amount). `only:` and `except:` take the
+  amount's name. `has_amount` includes this into the declaring model;
+  `ActiveRecord::Base` and models without amounts are unchanged.
+
+  Migration: JSON readers that read `<name>_atomic` / `<name>_symbol` read
+  `<name>` instead (parse it with `Amount.parse`), or pass
+  `amounts: false` to `as_json` / `serializable_hash` to keep the columns
+  for that call.
 - **Breaking:** `Amount#as_json` (and so `to_json`) writes the exact compact
   string: whole units with exactly the symbol's `decimals` places
   (`"USDC|1.500000"`, `"SOL|1.123456789"`). It previously returned `to_s`,
