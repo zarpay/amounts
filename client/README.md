@@ -15,9 +15,11 @@ npm install @zarpay/amounts
 ESM and CommonJS builds ship with TypeScript declarations. It needs `bigint`
 (every current browser, Node 18+, React Native 0.70+ on Hermes).
 
-**Versions match the gem.** Each `@zarpay/amounts` version mirrors the
-`amounts` gem of the same version, and both are released together. Use the same version on both sides: the
-manifest a newer gem writes may not be one an older client reads.
+**Compatibility.** The client has its own version, bumped only when it
+changes. What it must agree with is the manifest: this client reads manifest
+version 1, which `amounts` 0.3.0 and later write. A gem that changes the
+manifest's shape bumps that version, and an older client refuses the new
+manifest with `INVALID_MANIFEST` rather than misreading it.
 
 ## Export the registry from Rails
 

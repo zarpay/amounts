@@ -23,10 +23,12 @@ when the committed fixture differs from the gem's export.
 
 ## Versions and releases
 
-The client is versioned in lockstep with the gem: `package.json`'s version always equals
-`Amount::VERSION` (CI checks it), and one GitHub Release publishes both. Add entries to
-`CHANGELOG.md` under `## Unreleased`; don't bump the version, tag or publish — a maintainer
-does, and `.github/workflows/publish-npm.yml` publishes to npm by trusted publishing.
+The client has its own version, bumped only when the client changes; it isn't tied to the
+gem's. What ties them is the manifest version: the client reads manifest version 1, and a gem
+that changes the manifest's shape bumps it. Add entries to `CHANGELOG.md` under
+`## Unreleased`; don't bump the version, tag or publish — a maintainer does, and
+`.github/workflows/publish-npm.yml` publishes a new version to npm by trusted publishing, on a
+GitHub Release or when run by hand.
 
 ## Rules that shape the code
 

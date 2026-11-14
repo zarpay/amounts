@@ -703,17 +703,18 @@ try {
 
 ## Keeping the two in step
 
-The client mirrors the gem release for release, under the same version
-number: `@zarpay/amounts` X.Y.Z is the client for `amounts` X.Y.Z, and one
-GitHub Release publishes both. Its test suite runs against
+The client has its own version, bumped only when the client changes, so a
+gem release that doesn't touch the frontend doesn't make you update it. Its
+test suite runs against
 a manifest the gem exported, and every expected value in it is the gem's
 own output for that registry. CI exports that manifest again on every
 commit and fails if it changed without the client following.
 
 The manifest is versioned (`"v": 1`). A gem that changes its shape bumps
 the version, and an older client refuses the new manifest with
-`INVALID_MANIFEST` rather than misreading it. Upgrade the gem and the
-client together.
+`INVALID_MANIFEST` rather than misreading it. That version, not the package
+versions, is what the two have to agree on: when a gem release changes the
+manifest, upgrade the client with it.
 
 The design notes are in the client's
 [`specs/`](https://github.com/zarpay/amounts/tree/main/client/specs): what's
