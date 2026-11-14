@@ -409,6 +409,15 @@ payload = amount.to_h
 Amount.load(payload)
 ```
 
+`as_json` (and so `to_json`) writes the exact compact string: whole units with
+exactly the symbol's `decimals` places. It ignores display settings and never
+rounds, so `Amount.parse` reads it back exactly. Use `to_s` or `ui` for display.
+
+```ruby
+Amount.of_usdc("1.5").as_json           # => "USDC|1.500000"
+{ amount: Amount.of_usdc("1.5") }.to_json # => '{"amount":"USDC|1.500000"}'
+```
+
 ## Registry API
 
 ```ruby

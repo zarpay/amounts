@@ -96,11 +96,11 @@ Amount.parse("USDC|1.50")
 Amount.parse("v1:USDC|1.50")
 ```
 
-Amounts serialize as compact strings in JSON:
+Amounts serialize as exact compact strings in JSON, with all of the symbol's decimals:
 
 ```ruby
 { amount: Amount.of_usdc("1.50") }.to_json
-# => '{"amount":"USDC|1.50"}'
+# => '{"amount":"USDC|1.500000"}'
 ```
 
 For structured persistence or wire payloads:

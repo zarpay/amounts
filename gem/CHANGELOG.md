@@ -1,5 +1,20 @@
 # Changelog
 
+## Unreleased
+
+### Changed
+
+- **Breaking:** `Amount#as_json` (and so `to_json`) writes the exact compact
+  string: whole units with exactly the symbol's `decimals` places
+  (`"USDC|1.500000"`, `"SOL|1.123456789"`). It previously returned `to_s`,
+  which rounds down to `ui_decimals`, so JSON silently dropped digits past it
+  (`"SOL|1.1234"` for 1.123456789 SOL).
+
+  Migration: clients that read the value with `Amount.parse` or as a number
+  need no change. Where JSON output was compared as a string (tests,
+  fixtures) or shown to people, expect the longer form, or use `to_s` or `ui`
+  for display.
+
 ## 0.1.0 - 2026-11-02
 
 ### Added
