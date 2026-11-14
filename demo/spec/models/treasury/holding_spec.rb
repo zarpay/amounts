@@ -244,6 +244,36 @@ RSpec.describe Treasury::Holding, type: :model do
     end
   end
 
+  describe "#audit_payload" do
+    let!(:persisted) { create(:treasury_holding, balance: "USDC|10.00", fee: Amount.of_sol("0.5")) }
+
+    before { persisted.update!(balance: "USDC|11.25") }
+
+    it "writes the balance by name as its exact compact string" do
+      expect(persisted.audit_payload["holding"]["balance"]).to eq("USDC|11.250000")
+    end
+
+    it "leaves the balance's columns out" do
+      expect(persisted.audit_payload["holding"]).not_to include("balance_atomic", "balance_symbol")
+    end
+
+    it "writes a fixed-symbol fee by name" do
+      expect(persisted.audit_payload["holding"]["fee"]).to eq("SOL|0.500000000")
+    end
+
+    it "reports the balance change as before and after amounts" do
+      expect(persisted.audit_payload["changes"]).to eq("balance" => ["USDC|10.000000", "USDC|11.250000"])
+    end
+
+    it "keeps Rails' saved_changes keyed by column" do
+      expect(persisted.saved_changes.keys).to include("balance_atomic")
+    end
+
+    it "keeps the raw columns readable through attributes" do
+      expect(persisted.attributes["balance_atomic"]).to eq(11_250_000)
+    end
+  end
+
   describe "scopes provided by has_amount" do
     let!(:tiny)  { create(:treasury_holding, balance: "USDC|1.00") }
     let!(:small) { create(:treasury_holding, balance: "USDC|10.00") }

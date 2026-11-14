@@ -12,6 +12,10 @@ class Amount
       end
 
       def has_amount(name, symbol: nil)
+        # Into this model only; a repeat `include` does nothing, and
+        # subclasses inherit them.
+        include Serialization, Dirty
+
         definition = AttributeDefinition.new(name, symbol:)
         self.amount_attribute_definitions = amount_attribute_definitions.merge(definition.name => definition).freeze
 

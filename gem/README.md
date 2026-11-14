@@ -498,6 +498,19 @@ Writers accept:
 A subclass (STI included) inherits its parent's amounts. Amounts it declares
 itself stay off the parent and its other subclasses.
 
+`as_json`, `to_json` and `serializable_hash` write each amount by its name, as
+its exact compact string, in place of its columns. `only:` and `except:` take the
+amount's name, and the raw columns stay readable through `attributes`.
+`amount_changes` and `saved_amount_changes` are `changes` and `saved_changes`
+with amounts by name. Rails' own change hashes stay keyed by column:
+
+```ruby
+holding.as_json                 # => { "id" => 1, "amount" => "USDC|1.500000", "fee" => "SOL|0.250000000" }
+
+holding.update!(amount: "USDC|2")
+holding.saved_amount_changes    # => { "amount" => [#<Amount USDC $1.50>, #<Amount USDC $2.00>] }
+```
+
 `insert_all` and `upsert_all` skip writers, so `amount_column_values` turns
 amounts by name into their columns first. It casts like the writer, raises
 `Amount::TypeMismatch` for a fixed-symbol amount in another symbol, and gives
