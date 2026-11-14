@@ -33,6 +33,26 @@ holding.saved_change_to_amount?
 holding.amount_before_last_save
 ```
 
+## Subclasses and STI
+
+A subclass inherits its parent's amounts, with their readers, writers, scopes,
+validations and introspection. Amounts a subclass declares are its own: the
+parent and its other subclasses don't see them.
+
+```ruby
+class Transfer < ApplicationRecord
+  has_amount :gross
+  has_amount :commission, symbol: :USDC
+end
+
+class WireTransfer < Transfer
+  has_amount :wire_fee, symbol: :USDC
+end
+
+WireTransfer.amount_attribute_definitions.keys  # => [:gross, :commission, :wire_fee]
+Transfer.amount_attribute_definitions.keys      # => [:gross, :commission]
+```
+
 ## Validation messages
 
 `validates :amount, amount: { symbol: :USDC, greater_than: 0 }` adds errors by

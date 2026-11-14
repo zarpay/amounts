@@ -151,6 +151,14 @@ class AmountActiveRecordAmountValidatorTest < Minitest::Test
     refute greater_than_one_model.new(amount: "SOL|0.5").valid?
   end
 
+  def test_subclass_accepts_valid_inherited_amount
+    assert SubValidatedHolding.new(reserve: "USDC|1.25", amount: "USDC|100.00").valid?
+  end
+
+  def test_subclass_rejects_inherited_amount_with_wrong_symbol
+    refute SubValidatedHolding.new(reserve: "USDC|1.25", amount: "USD|100.00").valid?
+  end
+
   private
 
   def validated(**attributes)

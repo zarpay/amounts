@@ -14,6 +14,10 @@ RSpec.describe Amount::ActiveRecord::RSpec::Matchers do
       expect(holding).to have_amount_column(:fee, Amount.new("0.25", :SOL))
     end
 
+    it "matches a column inherited by a subclass" do
+      expect(RSpecSubHolding.create!(fee: 0.25)).to have_amount_column(:fee, Amount.new("0.25", :SOL))
+    end
+
     it "fails with a helpful message" do
       holding = RSpecHolding.create!(amount: "USDC|1.50")
 

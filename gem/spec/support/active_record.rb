@@ -24,6 +24,10 @@ class RSpecHolding < ActiveRecord::Base
   has_amount :fee, symbol: :SOL
 end
 
+# Inherits RSpecHolding's amounts unchanged.
+class RSpecSubHolding < RSpecHolding
+end
+
 RSpec.configure do |config|
   config.before(:context) do
     AmountTestSupport.register_active_record_types!
