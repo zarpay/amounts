@@ -17,6 +17,9 @@ That is chosen to safely cover EVM-scale integer values.
 
 - good for local integration wiring and most adapter tests
 - not reliable for exact round-tripping of very large `DECIMAL(78,0)` values under ActiveRecord
+- not exact for aggregates (`sum_amount`, `average_amount`) past 64 bits: two amounts
+  of 10^30 and 10^30 + 1 atomic units sum to `2000000000000000039769249677312`, not
+  `2000000000000000000000000000001`
 
 ## Recommended stance
 

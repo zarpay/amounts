@@ -8,6 +8,7 @@ require_relative "active_record/amount_validator"
 require_relative "active_record/type"
 require_relative "active_record/migration_methods"
 require_relative "active_record/model"
+require_relative "active_record/calculations"
 
 class Amount
   # Optional Rails integration for ActiveRecord models and migrations.
@@ -47,6 +48,7 @@ class Amount
       end
 
       ::ActiveRecord::Base.extend(Model)
+      ::ActiveRecord::Base.extend(Calculations)
       ::ActiveRecord::Base.include(InstanceMethods)
     end
   end

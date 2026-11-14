@@ -18,6 +18,7 @@ AmountTestSupport.register_active_record_types!
     t.amount :fee, symbol: :SOL, null: true
     t.amount :reserve, precision: 40, default: "USDC|1.25", null: false
     t.amount :bonus, symbol: :SOL, null: true
+    t.integer :parent_id
   end
 end
 
@@ -34,6 +35,11 @@ end
 # Adds an amount of its own on top of Holding's.
 class BonusHolding < Holding
   has_amount :bonus, symbol: :SOL
+end
+
+# Belongs to another holding, for grouping by an association.
+class ChildHolding < Holding
+  belongs_to :parent, class_name: "Holding", optional: true
 end
 
 class ValidatedHolding < ::ActiveRecord::Base

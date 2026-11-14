@@ -15,6 +15,9 @@ module Treasury
   #     including the fail-soft `same_type?` guard for cross-currency rows
   #
   #   - `where_*_between` and a derivative custom scope that takes a range
+  #
+  #   - SQL aggregates that return Amounts (`sum_amount`, `average_amount`,
+  #     `maximum_amount`), for a fixed-symbol and a multi-symbol attribute
   # ===========================================================================
   class Transfer < ApplicationRecord
     self.table_name = "treasury_transfers"
@@ -54,6 +57,35 @@ module Treasury
 
     scope :large,        -> { where_gross_gt("USDC|100") }
     scope :within_range, ->(low, high) { where_gross_between(low, high) }
+
+    # -------------------------------------------------------------------------
+    # Aggregates
+    # -------------------------------------------------------------------------
+    #
+    # Each is one SQL query that returns Amounts, run in the caller's scope:
+    # `holding.transfers.commission_collected` totals one holding's transfers.
+    #
+    # `commission` is fixed to USDC, so its total is always a USDC amount,
+    # zero when there are no transfers. `gross` is multi-symbol: summing it
+    # across currencies raises Amount::TypeMismatch, as `+` would, so its
+    # totals are grouped by `gross_symbol`, one Amount per currency.
+
+    def self.commission_collected
+      sum_amount(:commission)
+    end
+
+    # Truncated toward zero to a whole atomic unit, as `Amount#/` is.
+    def self.average_commission
+      average_amount(:commission)
+    end
+
+    def self.gross_by_symbol
+      group(:gross_symbol).sum_amount(:gross)
+    end
+
+    def self.largest_gross_by_symbol
+      group(:gross_symbol).maximum_amount(:gross)
+    end
 
     # -------------------------------------------------------------------------
     # Domain methods

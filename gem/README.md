@@ -506,6 +506,23 @@ Holding.where_amount_between("USDC|1.00", "USDC|5.00")
 Holding.amount_in(:USDC)
 ```
 
+Aggregates run in SQL and return Amounts, one query each, in the scope they're
+called on (`where`, `group` and associations apply):
+
+```ruby
+Holding.sum_amount(:fee)                            # => #<Amount SOL ...>
+Holding.minimum_amount(:fee)
+Holding.maximum_amount(:fee)
+Holding.average_amount(:fee)                        # truncated toward zero, like Amount#/
+Holding.group(:amount_symbol).sum_amount(:amount)   # => { "USDC" => #<Amount USDC ...>, "SOL" => ... }
+```
+
+Symbols never mix: a multi-symbol attribute with more than one symbol in scope
+(or in one group) raises `Amount::TypeMismatch`, so group by its symbol column for
+one Amount per symbol. A fixed-symbol sum over no rows is zero; otherwise an
+empty set gives `nil`. Group by a column or SQL expression, not an association
+name.
+
 Suggested check constraint for multi-symbol amounts:
 
 ```sql
@@ -544,7 +561,7 @@ for free.
 
 ### SQLite Note
 
-The adapter supports SQLite for general integration tests and development, but SQLite does not preserve `DECIMAL(78,0)` values above 64-bit range exactly under ActiveRecord's default numeric handling. For exact wei-scale persistence, use PostgreSQL or another database with true arbitrary-precision numeric behavior.
+The adapter supports SQLite for general integration tests and development, but SQLite does not preserve `DECIMAL(78,0)` values above 64-bit range exactly under ActiveRecord's default numeric handling, and its sums and averages past that range are inexact too. For exact wei-scale persistence, use PostgreSQL or another database with true arbitrary-precision numeric behavior.
 
 ### PostgreSQL Dummy App
 

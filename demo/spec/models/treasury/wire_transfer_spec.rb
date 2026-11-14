@@ -73,4 +73,25 @@ RSpec.describe Treasury::WireTransfer, type: :model do
       expect(Treasury::Transfer.find(wire_transfer.id)).to be_a(described_class)
     end
   end
+
+  describe "aggregates" do
+    before do
+      create(:treasury_wire_transfer, holding: holding, commission: 0.10, wire_fee: 15)
+      create(:treasury_wire_transfer, holding: holding, commission: 0.20, wire_fee: 20)
+      create(:treasury_transfer, holding: holding, commission: 0.40)
+    end
+
+    it "totals only wire transfers' commission" do
+      expect(described_class.commission_collected).to eq_amount("USDC|0.30")
+    end
+
+    it "totals its own wire fee" do
+      expect(described_class.sum_amount(:wire_fee)).to eq_amount("USDC|35")
+    end
+
+    it "averages its own wire fee, truncated to a whole atomic unit" do
+      create(:treasury_wire_transfer, holding: holding, wire_fee: Amount.new(2, :USDC, from: :atomic))
+      expect(described_class.average_amount(:wire_fee)).to eq_amount(Amount.new(11_666_667, :USDC, from: :atomic))
+    end
+  end
 end
