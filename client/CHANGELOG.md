@@ -4,6 +4,11 @@ The client is versioned in lockstep with the gem: `@zarpay/amounts` X.Y.Z
 mirrors the `amounts` gem X.Y.Z, and both ship from the same GitHub Release.
 Upgrade them together.
 
+## 0.3.1 - 2026-11-15
+
+No changes to the client: released in lockstep with the gem's 0.3.1, which
+adds aggregating several `has_amount` attributes in one query on the server.
+
 ## 0.3.0 - 2026-11-15
 
 ### Added

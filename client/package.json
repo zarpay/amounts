@@ -1,6 +1,6 @@
 {
   "name": "@zarpay/amounts",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Exact amounts of money, tokens and commodities in JavaScript — a mirror of the amounts gem, built from its exported registry",
   "type": "module",
   "main": "./dist/index.cjs",

@@ -95,6 +95,27 @@ class PostgreSQLIntegrationTest < Minitest::Test
                  Holding.group(:amount_symbol).sum_amount(:amount))
   end
 
+  def test_postgresql_sum_amount_of_several_attributes_is_exact_past_64_bits
+    holdings_with_atomic_amounts(10**30, (10**30) + 1)
+
+    assert_equal({ amount: Amount.new((2 * (10**30)) + 1, :SOL, from: :atomic), fee: Amount.new(0, :SOL) },
+                 Holding.sum_amount(:amount, :fee))
+  end
+
+  def test_postgresql_average_amount_of_several_attributes_is_exact_past_64_bits
+    holdings_with_atomic_amounts(10**30, (10**30) + 3)
+
+    assert_equal Amount.new((10**30) + 1, :SOL, from: :atomic),
+                 Holding.average_amount(:amount, :reserve).fetch(:amount)
+  end
+
+  def test_postgresql_sum_amount_of_several_attributes_grouped
+    create_usdc_and_usd_holdings
+
+    assert_equal({ amount: Amount.new("1.5", :USDC), reserve: Amount.new("1.25", :USDC) },
+                 Holding.group(:amount_symbol).sum_amount(:amount, :reserve).fetch("USDC"))
+  end
+
   private
 
   def holdings_with_atomic_amounts(*atomics)
