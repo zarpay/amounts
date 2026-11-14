@@ -132,6 +132,61 @@ jobs:
           BUNDLE_WITH: active_record:quality
           BUNDLE_WITHOUT: development
 
+  client:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: client
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: client/package-lock.json
+
+      - name: Install
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Format
+        run: npm run format:check
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Test
+        run: npm test
+
+      - name: Build
+        run: npm run build
+
+      # The client's tests run against a manifest the gem exported. Export it
+      # again from this commit's gem and fail if it differs, so the fixture can
+      # never drift from what the gem writes.
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.4"
+          working-directory: gem
+          bundler-cache: true
+        env:
+          BUNDLE_WITHOUT: active_record:development:quality
+
+      - name: Fixture matches the gem's export
+        working-directory: gem
+        env:
+          BUNDLE_WITHOUT: active_record:development:quality
+        run: |
+          bundle exec ruby -Ilib ../client/tests/fixtures/export-manifest.rb
+          git diff --exit-code ../client/tests/fixtures/manifest.json
+
   demo:
     runs-on: ubuntu-latest
     defaults:

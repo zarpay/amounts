@@ -336,6 +336,16 @@ class AmountCompactTest < Minitest::Test
     assert_equal "1,5 Tsd. TOKENS", tokens(1_500).ui(compact: true, locale: :de)
   end
 
+  def test_locale_format_reads_the_locale_template
+    store_decimal_units(:de, format: "%n%u", units: {})
+
+    assert_equal "%n%u", Amount::Compact.locale_format(:de)
+  end
+
+  def test_locale_format_defaults_without_a_template
+    assert_equal "%n %u", Amount::Compact.locale_format(:de)
+  end
+
   def test_compact_works_without_i18n
     without_i18n { assert_equal "50M TOKENS", tokens(50_000_000).ui(compact: true) }
   end

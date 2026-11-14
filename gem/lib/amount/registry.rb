@@ -223,6 +223,15 @@ class Amount
       @lock.synchronize { @default_rates.key?([from.to_sym, to.to_sym]) }
     end
 
+    # @return [Hash{Array(Symbol, Symbol)=>BigDecimal}] every registered
+    #   default rate, keyed by `[from, to]`. A frozen copy.
+    # @example
+    #   Amount.registry.default_rates
+    #   # => { [:USD, :USDC] => 0.1e1 }
+    def default_rates
+      @lock.synchronize { @default_rates.dup.freeze }
+    end
+
     # @return [void]
     # @example Locking the global registry after initialization
     #   Amount.registry.lock!

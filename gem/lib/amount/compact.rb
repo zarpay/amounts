@@ -117,6 +117,10 @@ class Amount
       Formattable.fill(locale_format(locale), number:, label: word)
     end
 
+    # The template joining a compacted number and its scale word in `locale`:
+    # `number.human.decimal_units.format` when it places `%n`, else `"%n %u"`.
+    # @param locale [Symbol, String]
+    # @return [String]
     def locale_format(locale)
       found = Locale.translate(LOCALE_FORMAT_KEY, locale, LOCALE_FORMAT)
       Formattable.valid_template?(found) ? found : LOCALE_FORMAT
@@ -132,6 +136,6 @@ class Amount
       raise ArgumentError, "compact: precision must be a positive Integer, got #{digits.inspect}"
     end
 
-    private_class_method :round, :number, :join, :locale_format, :precision_from_hash
+    private_class_method :round, :number, :join, :precision_from_hash
   end
 end

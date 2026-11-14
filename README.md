@@ -15,11 +15,12 @@ ActiveRecord adapter without making Rails part of the core runtime.
 
 ## Repository layout
 
-This repo is organized as three top-level packages:
+This repo is organized as four top-level packages:
 
 | Directory | Purpose | README |
 |---|---|---|
 | [`gem/`](./gem) | The published gem source — `lib/`, `test/`, `spec/`, gemspec, `CHANGELOG.md`. Everything that ends up on RubyGems lives here. | [`gem/README.md`](./gem/README.md) |
+| [`client/`](./client) | `@zarpay/amounts`, the npm package that mirrors the gem's core in JavaScript and TypeScript for the web and React Native, built from the gem's `Amount.manifest` export. | [`client/README.md`](./client/README.md) |
 | [`site/`](./site) | The VitePress documentation site published to <https://zarpay.github.io/amounts/>. | [`site/`](./site) |
 | [`demo/`](./demo) | A Rails 8.1 case-study app that exercises every public feature of the gem. Annotated as a textbook so each file teaches something. | [`demo/README.md`](./demo/README.md) |
 

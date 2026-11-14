@@ -14,6 +14,7 @@ require_relative "amount/compact"
 require_relative "amount/display"
 require_relative "amount/parser"
 require_relative "amount/ui_parser"
+require_relative "amount/manifest"
 
 # Concerns: modules mixed into Amount. Files live in amount/concerns/, but the
 # constants are Amount::<Name> (the folder is not a namespace).
@@ -28,6 +29,7 @@ require_relative "amount/concerns/orderable"
 require_relative "amount/concerns/convertible"
 require_relative "amount/concerns/serializable"
 require_relative "amount/concerns/formattable"
+require_relative "amount/concerns/exportable"
 
 # Represents a precise quantity of a registered fungible type.
 #
@@ -53,6 +55,8 @@ require_relative "amount/concerns/formattable"
 # - {Serializable} — `to_h`, `as_json`, `Amount.load`
 # - {Formattable}   — `display_format(unit:, locale:)`, where the number and
 #   unit go
+# - {Exportable}     — `Amount.manifest(locales:)`, the registry for a client
+#   in another language
 #
 # New behavior belongs in a concern, not in this class. See
 # `.claude/rules/concerns.md` for the shape a concern takes.
@@ -78,6 +82,7 @@ class Amount
   include Convertible
   include Serializable
   include Formattable
+  include Exportable
 
   extend Forwardable
 

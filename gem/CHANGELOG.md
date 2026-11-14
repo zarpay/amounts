@@ -1,5 +1,19 @@
 # Changelog
 
+## Unreleased
+
+### Added
+
+- `Amount.manifest(locales: [])` exports the registry as a JSON-ready Hash for
+  a client in another language to mirror: every type (with the
+  `Amount.register` option names), every default rate as an exact decimal
+  string, and for each requested locale every translation the core looks up,
+  already resolved. The new `@zarpay/amounts` JavaScript client is built from
+  it. Locales need I18n.
+- `Amount::Registry#default_rates` returns every registered default rate,
+  keyed by `[from, to]`.
+- `Amount::Compact.locale_format(locale)` is public.
+
 ## 0.2.0 - 2026-11-14
 
 ### Added

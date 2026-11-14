@@ -7,11 +7,12 @@ Published to RubyGems as `amounts`.
 
 ## Layout
 
-Three independent packages, each with its own Gemfile and dependencies:
+Four independent packages, each with its own dependencies:
 
 | Path | What it is |
 |---|---|
 | `gem/` | The published gem: `lib/` (concerns in `lib/amount/concerns/`), `test/` (Minitest, mirrors `lib/`), `spec/` (RSpec matchers), gemspec, `CHANGELOG.md` |
+| `client/` | `@zarpay/amounts`, the TypeScript mirror of the gem's core, built from `Amount.manifest`. Has its own `CLAUDE.md` and `specs/`; read them before working there. A change to the core or the manifest needs its client counterpart |
 | `demo/` | A Rails 8.1 app that exercises every public feature against `../gem` (path-pinned). Its specs are the integration suite |
 | `site/` | The VitePress docs at https://zarpay.github.io/amounts/, deployed from `main` by `docs.yml` |
 

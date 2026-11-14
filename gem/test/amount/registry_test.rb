@@ -79,6 +79,20 @@ class AmountRegistryTest < Minitest::Test
     assert_equal BigDecimal("0.5"), Amount.new("1", :USDC).to(:USD).decimal
   end
 
+  def test_default_rates_lists_each_rate_by_direction
+    Amount.register_default_rate :USD, :USDC, "1"
+
+    assert_equal({ %i[USD USDC] => BigDecimal("1") }, Amount.registry.default_rates)
+  end
+
+  def test_default_rates_is_empty_without_rates
+    assert_empty Amount.registry.default_rates
+  end
+
+  def test_default_rates_is_frozen
+    assert_predicate Amount.registry.default_rates, :frozen?
+  end
+
   def test_prefix_display_position_is_stored_as_its_template
     assert_equal "%u%n", Amount.registry.lookup(:USD).display_format
   end

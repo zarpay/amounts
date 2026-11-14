@@ -54,6 +54,7 @@ export default defineConfig({
           { text: 'Parse Client Input', link: '/guides/parse-client-input' },
           { text: 'Cross-Type Arithmetic', link: '/guides/cross-type-arithmetic' },
           { text: 'Rails Persistence', link: '/guides/rails-persistence' },
+          { text: 'JavaScript Client', link: '/guides/javascript-client' },
         ],
       },
       {
