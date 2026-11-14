@@ -9,6 +9,7 @@ require_relative "active_record/type"
 require_relative "active_record/migration_methods"
 require_relative "active_record/model"
 require_relative "active_record/calculations"
+require_relative "active_record/persistence"
 
 class Amount
   # Optional Rails integration for ActiveRecord models and migrations.
@@ -49,6 +50,7 @@ class Amount
 
       ::ActiveRecord::Base.extend(Model)
       ::ActiveRecord::Base.extend(Calculations)
+      ::ActiveRecord::Base.extend(Persistence)
       ::ActiveRecord::Base.include(InstanceMethods)
     end
   end

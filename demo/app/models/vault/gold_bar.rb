@@ -24,6 +24,9 @@ module Vault
   #     multiple buyers without losing atomic precision
   #
   #   - shoulda-matchers presence + uniqueness on the serial
+  #
+  #   - bulk intake through `upsert_all`, with `amount_column_values`
+  #     turning each manifest row's amounts into their columns
   # ===========================================================================
   class GoldBar < ApplicationRecord
     self.table_name = "vault_gold_bars"
@@ -49,6 +52,27 @@ module Vault
     validates :serial,    presence: true, uniqueness: true
     validates :weight,    amount: { symbol: :GOLD, greater_than: 0 }
     validates :appraisal, amount: { greater_than: "USDC|0", allow_nil: true }
+
+    # -------------------------------------------------------------------------
+    # Bulk intake
+    # -------------------------------------------------------------------------
+    #
+    # The vault receives bars by manifest, one row per bar keyed by serial.
+    # `upsert_all` writes the whole manifest in one statement: new serials
+    # are inserted, and bars already held get their weight and appraisal
+    # re-recorded.
+    #
+    # `upsert_all` skips attribute writers and takes column values only, so
+    # `amount_column_values` turns each row's amounts into their columns
+    # first: `weight` into `weight_atomic`, `appraisal` into
+    # `appraisal_atomic` and `appraisal_symbol`. Like any bulk write it skips
+    # validations; a weight in a symbol other than GOLD raises instead.
+    # Every row needs the same keys, so pass `appraisal: nil` for a bar with
+    # no appraisal.
+
+    def self.receive_manifest(rows)
+      upsert_all(rows.map { |row| amount_column_values(row) }, unique_by: :serial)
+    end
 
     # -------------------------------------------------------------------------
     # Display helpers

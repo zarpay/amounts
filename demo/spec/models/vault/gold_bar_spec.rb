@@ -25,6 +25,10 @@ require "rails_helper"
 #
 #   - shoulda-matchers cover serial presence + uniqueness, matching the
 #     migration's NOT NULL + unique index
+#
+#   - `receive_manifest` upserts bars through `amount_column_values`:
+#     new serials insert, existing ones are re-recorded, and a weight in
+#     the wrong symbol raises (bulk writes skip validations)
 
 RSpec.describe Vault::GoldBar, type: :model do
   subject(:bar) { build(:vault_gold_bar) }
@@ -132,6 +136,55 @@ RSpec.describe Vault::GoldBar, type: :model do
     it "aggregates appraisal by symbol" do
       sums = described_class.group(:appraisal_symbol).sum(:appraisal_atomic)
       expect(sums).to match_amounts(USDC: "4500", USD: "2100")
+    end
+  end
+
+  describe ".receive_manifest" do
+    let(:manifest) do
+      [
+        { serial: "AU-900001", weight: "GOLD|2.5", appraisal: "USDC|5000" },
+        { serial: "AU-900002", weight: 1, appraisal: nil }
+      ]
+    end
+
+    it "inserts a bar per manifest row" do
+      expect { described_class.receive_manifest(manifest) }.to change(described_class, :count).by(2)
+    end
+
+    it "stores a fixed-symbol weight" do
+      described_class.receive_manifest(manifest)
+      expect(described_class.find_by!(serial: "AU-900001").weight).to eq_amount("GOLD|2.5")
+    end
+
+    it "reads a stored weight back as a GoldAmount" do
+      described_class.receive_manifest(manifest)
+      expect(described_class.find_by!(serial: "AU-900001").weight).to be_a(GoldAmount)
+    end
+
+    it "stores a multi-symbol appraisal" do
+      described_class.receive_manifest(manifest)
+      expect(described_class.find_by!(serial: "AU-900001").appraisal).to eq_amount("USDC|5000")
+    end
+
+    it "stores a bar with no appraisal" do
+      described_class.receive_manifest(manifest)
+      expect(described_class.find_by!(serial: "AU-900002").appraisal).to be_nil
+    end
+
+    it "re-records the weight of a bar already held" do
+      create(:vault_gold_bar, serial: "AU-900001", weight: "GOLD|2.4")
+      described_class.receive_manifest(manifest)
+      expect(described_class.find_by!(serial: "AU-900001").weight).to eq_amount("GOLD|2.5")
+    end
+
+    it "doesn't duplicate a bar already held" do
+      create(:vault_gold_bar, serial: "AU-900001")
+      expect { described_class.receive_manifest(manifest) }.to change(described_class, :count).by(1)
+    end
+
+    it "raises for a weight in another symbol" do
+      expect { described_class.receive_manifest([{ serial: "AU-900003", weight: "USDC|1", appraisal: nil }]) }
+        .to raise_error(Amount::TypeMismatch)
     end
   end
 end

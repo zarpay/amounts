@@ -35,17 +35,21 @@ class Amount
       end
 
       def write(record, value)
-        if value.nil?
-          record.write_attribute(atomic_column, nil)
-          record.write_attribute(symbol_column, nil) unless fixed_symbol?
-          return nil
-        end
+        column_values(value).each { |column, column_value| record.write_attribute(column, column_value) }
+        value
+      end
 
+      # The component column values that store `value`, an Amount or `nil`.
+      # Every component column is present, so rows built from it share keys.
+      #
+      # @param value [Amount, nil]
+      # @return [Hash{String => Integer, String, nil}]
+      def column_values(value)
         # The Integer itself, not its string: Rails 8.1 cuts a String cast to an
         # integer column to 16 bytes, which silently truncates large values.
-        record.write_attribute(atomic_column, value.atomic)
-        record.write_attribute(symbol_column, value.symbol.to_s) unless fixed_symbol?
-        value
+        values = { atomic_column => value&.atomic }
+        values[symbol_column] = value&.symbol&.to_s unless fixed_symbol?
+        values
       end
 
       def build_from_values(values)

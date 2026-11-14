@@ -4,6 +4,12 @@
 
 ### Added
 
+- `Model.amount_column_values(attributes)` turns attributes, with amounts by
+  name, into column values for `insert_all`, `upsert_all` and their variants,
+  which skip attribute writers. Each amount is cast as its writer would cast
+  it and replaced by its component columns (all of them even for `nil`, so
+  rows share keys); other keys pass through. A fixed-symbol amount in another
+  symbol raises `Amount::TypeMismatch`, since bulk writes skip validations.
 - SQL aggregates for `has_amount` attributes that return Amounts:
   `sum_amount`, `minimum_amount`, `maximum_amount` and `average_amount`. Each
   runs one query in the scope of the relation it's called on, so `where`,

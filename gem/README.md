@@ -498,6 +498,18 @@ Writers accept:
 A subclass (STI included) inherits its parent's amounts. Amounts it declares
 itself stay off the parent and its other subclasses.
 
+`insert_all` and `upsert_all` skip writers, so `amount_column_values` turns
+amounts by name into their columns first. It casts like the writer, raises
+`Amount::TypeMismatch` for a fixed-symbol amount in another symbol, and gives
+every column of a `nil` amount so rows share keys:
+
+```ruby
+Holding.amount_column_values(amount: "USDC|1.50", fee: 0.25)
+# => { "amount_atomic" => 1500000, "amount_symbol" => "USDC", "fee_atomic" => 250000000 }
+
+Holding.insert_all(rows.map { |row| Holding.amount_column_values(row) })
+```
+
 Scopes:
 
 ```ruby
