@@ -75,7 +75,10 @@ class Amount
         ensure_scalar!(other)
         raise ZeroDivisionError if other.zero?
 
-        build((BigDecimal(@atomic) / Amount.coerce_decimal(other)).to_i)
+        # In Rational, so the quotient is exact before it's truncated toward
+        # zero. BigDecimal division rounds the quotient to a limited
+        # precision, which for a large amount can be off by many atomic units.
+        build((Rational(@atomic) / Amount.coerce_decimal(other).to_r).truncate)
       end
     end
 

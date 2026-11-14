@@ -32,6 +32,12 @@
 
 ### Fixed
 
+- `Amount#/` by a scalar computes the quotient exactly (in `Rational`) before
+  truncating it toward zero. It divided in `BigDecimal`, which rounds the
+  quotient to a limited precision, so large amounts divided by small decimals
+  came out wrong: 10^40 atomic units divided by `BigDecimal("7e-21")` was off
+  by 1429 atomic units. Results that were already exact are unchanged.
+  `average_amount` divides this way.
 - A subclass of a model with `has_amount` (STI included) inherits its
   parent's amount definitions. It previously started with none, so
   `amount_attribute_definitions`, `amount_atomic_column` and friends raised

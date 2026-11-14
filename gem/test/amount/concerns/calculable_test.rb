@@ -121,6 +121,39 @@ class AmountCalculableTest < Minitest::Test
     assert_raises(ZeroDivisionError) { Amount.new(1, :USDC) / 0 }
   end
 
+  def test_division_by_integer
+    assert_equal Amount.new("5", :USDC), Amount.new("10", :USDC) / 2
+  end
+
+  def test_division_by_integer_truncates_toward_zero
+    assert_equal Amount.new(1, :USDC, from: :atomic), Amount.new(3, :USDC, from: :atomic) / 2
+  end
+
+  def test_division_of_negative_amount_truncates_toward_zero
+    assert_equal Amount.new(-1, :USDC, from: :atomic), Amount.new(-3, :USDC, from: :atomic) / 2
+  end
+
+  def test_division_by_decimal
+    assert_equal Amount.new("4", :USDC), Amount.new("10", :USDC) / BigDecimal("2.5")
+  end
+
+  def test_division_of_large_amount_by_integer_is_exact
+    assert_equal Amount.new((10**38) - 1, :SOL, from: :atomic),
+                 Amount.new((3 * (10**38)) - 1, :SOL, from: :atomic) / 3
+  end
+
+  # BigDecimal division rounded this quotient, which came out 1429 atomic
+  # units off.
+  def test_division_of_large_amount_by_small_decimal_is_exact
+    assert_equal Amount.new(1_428_571_428_571_428_571_428_571_428_571_428_571_428_571_428_571_428_571_428_571, :SOL, from: :atomic),
+                 Amount.new(10**40, :SOL, from: :atomic) / BigDecimal("0.000000000000000000007")
+  end
+
+  def test_division_of_large_negative_amount_by_small_decimal_is_exact
+    assert_equal Amount.new(-1_428_571_428_571_428_571_428_571_428_571_428_571_428_571_428_571_428_571_428_571, :SOL, from: :atomic),
+                 Amount.new(-(10**40), :SOL, from: :atomic) / BigDecimal("0.000000000000000000007")
+  end
+
   def test_cross_type_addition_via_explicit_conversion
     gold = Amount.new("0.0001", :GOLD)
     usdc = Amount.new("100", :USDC)

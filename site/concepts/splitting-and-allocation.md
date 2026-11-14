@@ -11,6 +11,14 @@ Amount.of_usdc("10.00") / 2
 # => #<Amount USDC $5.00>
 ```
 
+The quotient is computed exactly, then truncated toward zero to a whole atomic unit,
+so whatever doesn't divide evenly is dropped:
+
+```ruby
+Amount.of_usdc(3, from: :atomic) / 2    # => 1 atomic unit
+Amount.of_usdc(-3, from: :atomic) / 2   # => -1 atomic unit
+```
+
 That is not the same thing as “split this amount into two parts.”
 
 ## Timber Yard example

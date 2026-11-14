@@ -137,6 +137,16 @@ RSpec.describe Amount, :aggregate_failures do
       expect(Amount.of_usdc("3") / Rational(3, 2)).to eq_amount("USDC|2.0")
     end
 
+    it "truncates a scalar quotient toward zero to a whole atomic unit" do
+      expect(Amount.of_usdc("-0.000003") / 2).to eq_amount(Amount.of_usdc(-1, from: :atomic))
+    end
+
+    it "divides a large amount by a small decimal exactly" do
+      huge = Amount.of_usdc(10**40, from: :atomic)
+      expect(huge / BigDecimal("0.000000000000000000007"))
+        .to eq_amount(Amount.of_usdc(1_428_571_428_571_428_571_428_571_428_571_428_571_428_571_428_571_428_571_428_571, from: :atomic))
+    end
+
     it "rejects non-numeric scalar" do
       expect { Amount.of_usdc("1") * "two" }.to raise_error(Amount::TypeMismatch)
     end

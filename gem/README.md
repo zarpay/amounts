@@ -150,6 +150,10 @@ Amount.new("10", :USDC) / 2
 # => #<Amount USDC|5.0>
 ```
 
+The quotient is computed exactly and truncated toward zero to a whole atomic
+unit: `Amount.new(3, :USDC, from: :atomic) / 2` is 1 atomic unit, and `-3 / 2`
+is -1.
+
 `split` and `allocate` return explicit remainders:
 
 ```ruby
