@@ -65,7 +65,10 @@ holding.as_json(amounts: false)       # => { "id" => 1, "amount_atomic" => 10000
 
 - `only:` and `except:` take the amount's name.
 - `amounts: false` writes the columns instead, for that one call. Inside `include:`, it
-  applies to the included records.
+  applies to the included records. This is exactly Rails' own output: the stored columns,
+  as your database returns them. PostgreSQL decimals are written as strings
+  (`"10000000.0"`). A fixed-symbol amount stores no symbol column, since its symbol is in
+  the declaration, so none is written. Use the default form when readers need the unit.
 - An amount whose columns weren't all selected (`select(:id, :amount_atomic)`) keeps
   the columns that were.
 - `serializable_hash` holds the Amount itself, and `as_json` turns it into the string.
