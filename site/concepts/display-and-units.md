@@ -47,6 +47,20 @@ Amount.of_usdc("1.561").ui(direction: :ceil)
 # => "$1.57"
 ```
 
+The direction is by magnitude: `:floor` (the default) rounds toward zero and
+`:ceil` away from it. A negative amount rounds like its positive, so the
+display never shows more than the amount is, and a value that rounds to zero
+has no sign:
+
+```ruby
+Amount.of_usdc("-1.567").ui                    # => "$-1.56"
+Amount.of_usdc("-1.561").ui(direction: :ceil)  # => "$-1.57"
+Amount.of_usdc("-0.001").ui                    # => "$0.00"
+```
+
+This matches the rest of the gem: `*`, `/`, `to`, `split` and `allocate` all
+truncate toward zero.
+
 ## Without the symbol
 
 Pass `decorated: false` to get the rounded number on its own — useful when the currency label is rendered separately (e.g. a column header, an input adornment, a chip):
@@ -347,8 +361,8 @@ Amount.of_tokens(999).ui(compact: true)                           # => "999 TOKE
 - **Rounding** follows `direction:`. The default `:floor` means `1_999_999` is
   `1.99M`, never `2M`; `direction: :ceil` gives `2M`. A number that rounds up
   into the next scale uses it (`999_999` ceils to `1M`, not `1000K`). As
-  everywhere in `ui`, floor rounds negatives away from zero (`-1_999_999` is
-  `-2M`).
+  everywhere in `ui`, a negative rounds like its positive (`-1_999_999` is
+  `-1.99M`).
 - **Below one thousand** the number is formatted as usual, with `ui_decimals`
   and `trim_zeros`.
 - **Display units:** with `unit:`, the scaled number is compacted:

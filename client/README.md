@@ -82,7 +82,7 @@ value ever goes through floating point.
 ```ts
 amount.ui();                                  // "$1.50"
 amount.ui({ locale: "de" });                  // "$1.500,50", or the locale's template if it has one
-amount.ui({ direction: "ceil" });             // round up instead of down
+amount.ui({ direction: "ceil" });             // round away from zero instead of toward it
 amount.ui({ decorated: false });              // the number alone
 amount.ui({ trimZeros: true });
 amount.ui({ unit: "gram" });                  // a display unit: "31.10 g"

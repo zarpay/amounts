@@ -211,30 +211,35 @@ export class Ratio {
   /**
    * Rounded to `places` decimals in `direction` — the gem's
    * `Display.round`, which every display string goes through. A negative
-   * `places` rounds to tens, hundreds, and so on. Anything but `"ceil"`
-   * rounds down, toward negative infinity.
+   * `places` rounds to tens, hundreds, and so on.
+   *
+   * The direction is by magnitude: `"floor"` rounds toward zero and
+   * `"ceil"` away from it, so a negative value rounds like its positive
+   * and never displays as more than it is. This is not {@link floor} and
+   * {@link ceil}, which round toward negative and positive infinity.
    *
    * @param places - decimal places to keep; negative for tens, hundreds, ...
    * @param direction - `"floor"` (the default) or `"ceil"`
    * @returns the rounded value, still exact
    *
    * @example
-   *   Ratio.parse("1.239")!.round(2).toString();          // "123/100"
-   *   Ratio.parse("1.231")!.round(2, "ceil").toString();  // "31/25", 1.24
-   *   Ratio.of(123n).round(-1).toString();                // "120/1"
+   *   Ratio.parse("1.239")!.round(2).toString();           // "123/100", 1.23
+   *   Ratio.parse("1.231")!.round(2, "ceil").toString();   // "31/25", 1.24
+   *   Ratio.parse("-1.239")!.round(2).toString();          // "-123/100", -1.23
+   *   Ratio.of(123n).round(-1).toString();                 // "120/1"
    */
   round(places: number, direction: RoundingDirection = "floor"): Ratio {
     const factor = Ratio.powerOfTen(places);
-    const scaled = this.multiply(factor);
-    const rounded = direction === "ceil" ? scaled.ceil() : scaled.floor();
-    const integer = Ratio.of(rounded);
+    const scaled = this.roundScaled(places, direction);
+    const integer = Ratio.of(scaled);
 
     return integer.divide(factor);
   }
 
   /**
-   * Rounded to `places` decimals in `direction`, as {@link round} rounds,
-   * and written with exactly `places` digits after the point.
+   * Rounded to `places` decimals in `direction`, by magnitude as
+   * {@link round} rounds, and written with exactly `places` digits after
+   * the point. A value that rounds to zero has no sign.
    *
    * @param places - a non-negative integer
    * @param direction - `"floor"` (the default) or `"ceil"`
@@ -246,17 +251,17 @@ export class Ratio {
    *   Ratio.of(10n, 3n).toFixed(4);          // "3.3333"
    *   Ratio.of(10n, 3n).toFixed(4, "ceil");  // "3.3334"
    *   Ratio.of(1n, 8n).toFixed(0);           // "0"
+   *   Ratio.of(-10n, 3n).toFixed(4);         // "-3.3333"
+   *   Ratio.of(-1n, 1000n).toFixed(2);       // "0.00"
    */
   toFixed(places: number, direction: RoundingDirection = "floor"): string {
     if (!Number.isInteger(places) || places < 0) {
       throw errors.invalidArgument("places must be a non-negative integer");
     }
 
-    const factor = Ratio.powerOfTen(places);
-    const scaled = this.multiply(factor);
-    const rounded = direction === "ceil" ? scaled.ceil() : scaled.floor();
+    const scaled = this.roundScaled(places, direction);
 
-    return formatScaled(rounded, places);
+    return formatScaled(scaled, places);
   }
 
   /**
@@ -292,6 +297,16 @@ export class Ratio {
    */
   toString(): string {
     return `${this.numerator}/${this.denominator}`;
+  }
+
+  /** The value times `10 ** places`, rounded by magnitude to an integer. */
+  private roundScaled(places: number, direction: RoundingDirection): bigint {
+    const factor = Ratio.powerOfTen(places);
+    const magnitude = this.abs();
+    const scaled = magnitude.multiply(factor);
+    const rounded = direction === "ceil" ? scaled.ceil() : scaled.floor();
+
+    return this.numerator < 0n ? -rounded : rounded;
   }
 }
 

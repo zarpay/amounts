@@ -26,7 +26,9 @@ import { Ratio } from "@/models/ratio.js";
  * 1. **Value.** The exact whole-unit value, times the display unit's scale
  *    when a `unit` is given.
  * 2. **Round.** To the unit's `ui_decimals`, else the type's, in
- *    `direction` (`"floor"` by default, `"ceil"` to round up).
+ *    `direction`, by magnitude: `"floor"` (the default) toward zero,
+ *    `"ceil"` away from it. A negative rounds like its positive, and a
+ *    value that rounds to zero has no sign.
  * 3. **Write.** With exactly that many places; trailing zeros trimmed when
  *    `trimZeros` (the call's, else the unit's, else the type's) says so;
  *    then the locale's delimiter and separator. With `compact`, a number of
@@ -143,8 +145,8 @@ export class Display {
   }
 
   /**
-   * The gem's `to_s`: the symbol and the value rounded down to the type's
-   * `ui_decimals`. Never localized, never trimmed, no label.
+   * The gem's `to_s`: the symbol and the value rounded toward zero to the
+   * type's `ui_decimals`. Never localized, never trimmed, no label.
    *
    * @example
    *   amounts.of("USDC", "1.239").toString();  // "USDC|1.23"

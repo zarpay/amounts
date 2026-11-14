@@ -6,16 +6,19 @@ class Amount
   # Formats amounts for UI output without changing their type.
   class Display
     # Rounds to `decimals` places (negative rounds to tens, hundreds, ...),
-    # down with `:floor` and up with `:ceil`, like `ui`'s `direction:`.
+    # like `ui`'s `direction:`. The direction is by magnitude: `:floor` rounds
+    # toward zero and `:ceil` away from it, so a negative amount rounds like
+    # its positive and never displays more than it is. The rounded value is
+    # never negative zero.
     # @param value [BigDecimal]
     # @param decimals [Integer]
     # @param direction [Symbol]
     # @return [BigDecimal]
     def self.round(value, decimals, direction)
       factor = BigDecimal(10)**decimals
-      scaled = value * factor
-      truncated = direction == :ceil ? scaled.ceil : scaled.floor
-      truncated / factor
+      scaled = value.abs * factor
+      magnitude = direction == :ceil ? scaled.ceil : scaled.floor
+      (value.negative? ? -magnitude : magnitude) / factor
     end
 
     # @param amount [Amount]

@@ -250,11 +250,25 @@ describe("Ratio", () => {
       expect(rounded.toString()).toBe("31/25");
     });
 
-    it("rounds a negative value down, away from zero", () => {
+    it("rounds a negative value toward zero by default", () => {
       const negative = Ratio.parse("-1.234")!;
       const rounded = negative.round(2);
 
+      expect(rounded.toString()).toBe("-123/100");
+    });
+
+    it("rounds a negative value away from zero with ceil", () => {
+      const negative = Ratio.parse("-1.231")!;
+      const rounded = negative.round(2, "ceil");
+
       expect(rounded.toString()).toBe("-31/25");
+    });
+
+    it("rounds a negative value to tens toward zero", () => {
+      const negative = Ratio.of(-129n);
+      const rounded = negative.round(-1);
+
+      expect(rounded.toString()).toBe("-120/1");
     });
 
     it("rounds to tens with negative places", () => {
@@ -267,6 +281,26 @@ describe("Ratio", () => {
 
   describe("toFixed", () => {
     const tenThirds = Ratio.of(10n, 3n);
+    const minusTenThirds = Ratio.of(-10n, 3n);
+    const minusTiny = Ratio.of(-1n, 1000n);
+
+    it("rounds a negative value toward zero", () => {
+      const fixed = minusTenThirds.toFixed(4);
+
+      expect(fixed).toBe("-3.3333");
+    });
+
+    it("rounds a negative value away from zero with ceil", () => {
+      const fixed = minusTenThirds.toFixed(4, "ceil");
+
+      expect(fixed).toBe("-3.3334");
+    });
+
+    it("writes a negative value that rounds to zero without a sign", () => {
+      const fixed = minusTiny.toFixed(2);
+
+      expect(fixed).toBe("0.00");
+    });
 
     it("writes exactly the places asked for, rounded down", () => {
       const fixed = tenThirds.toFixed(4);

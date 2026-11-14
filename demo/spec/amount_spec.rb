@@ -263,6 +263,24 @@ RSpec.describe Amount, :aggregate_failures do
       expect(Amount.of_usdc("1.561").ui(direction: :ceil)).to eq("$1.57")
     end
 
+    # Rounding is by magnitude: a negative displays like its positive, so a
+    # debit never shows more than it is.
+    it "rounds a negative amount toward zero by default" do
+      expect(Amount.of_usdc("-1.567").ui).to eq("$-1.56")
+    end
+
+    it "rounds a negative amount away from zero with :ceil" do
+      expect(Amount.of_usdc("-1.561").ui(direction: :ceil)).to eq("$-1.57")
+    end
+
+    it "shows a negative amount that rounds to zero without a sign" do
+      expect(Amount.of_usdc("-0.001").ui).to eq("$0.00")
+    end
+
+    it "compacts a negative amount like its positive" do
+      expect(Amount.of_logs(-1_999_999).ui(compact: true)).to eq("-1.99M logs")
+    end
+
     it "formats numbers for a locale and leaves the default alone" do
       I18n.backend.store_translations(:de, number: { format: { delimiter: ".", separator: "," } })
       I18n.backend.store_translations(:en, number: { format: { delimiter: ",", separator: "." } })

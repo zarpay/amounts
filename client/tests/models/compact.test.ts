@@ -101,6 +101,8 @@ describe("Compact", () => {
     const severalDigits = value("1234567");
     const sixDigits = value("123456");
     const negative = value("-1500000");
+    const minusJustUnderTwoMillion = value("-1999999");
+    const minusJustUnderAMillion = value("-999999");
     const pastDecillions = value("1.5e36");
     const twoAndAHalfMillion = value("2500000");
     const billionAndAHalf = value("1500000000");
@@ -145,6 +147,30 @@ describe("Compact", () => {
       const compacted = Compact.format(negative, 3, "floor", null);
 
       expect(compacted).toBe("-1.5M");
+    });
+
+    it("rounds a negative value toward zero", () => {
+      const compacted = Compact.format(minusJustUnderTwoMillion, 3, "floor", null);
+
+      expect(compacted).toBe("-1.99M");
+    });
+
+    it("rounds a negative value away from zero with ceil", () => {
+      const compacted = Compact.format(minusJustUnderTwoMillion, 3, "ceil", null);
+
+      expect(compacted).toBe("-2M");
+    });
+
+    it("keeps a negative value in its scale when rounding toward zero", () => {
+      const compacted = Compact.format(minusJustUnderAMillion, 3, "floor", null);
+
+      expect(compacted).toBe("-999K");
+    });
+
+    it("carries a negative value to the next scale with ceil", () => {
+      const compacted = Compact.format(minusJustUnderAMillion, 3, "ceil", null);
+
+      expect(compacted).toBe("-1M");
     });
 
     it("stays in decillions past them", () => {

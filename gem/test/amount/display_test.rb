@@ -39,6 +39,48 @@ class AmountDisplayTest < Minitest::Test
     assert_equal "$1.57", Amount.new("1.561", :USDC).ui(direction: :ceil)
   end
 
+  # Negatives round by magnitude: like their positive, with a minus sign.
+
+  def test_ui_negative_floor_rounds_toward_zero
+    assert_equal "$-1.56", Amount.new("-1.567", :USDC).ui
+  end
+
+  def test_ui_negative_ceil_rounds_away_from_zero
+    assert_equal "$-1.57", Amount.new("-1.561", :USDC).ui(direction: :ceil)
+  end
+
+  def test_ui_negative_rounding_to_zero_has_no_sign
+    assert_equal "$0.00", Amount.new("-0.001", :USDC).ui
+  end
+
+  def test_ui_negative_ceil_shows_the_smallest_unit
+    assert_equal "$-0.01", Amount.new("-0.001", :USDC).ui(direction: :ceil)
+  end
+
+  def test_ui_negative_display_unit_rounds_toward_zero
+    assert_equal "-31.10 g", Amount.new("-1", :GOLD).ui(unit: :gram)
+  end
+
+  def test_to_s_negative_rounds_toward_zero
+    assert_equal "USDC|-1.56", Amount.new("-1.567", :USDC).to_s
+  end
+
+  def test_to_s_negative_rounding_to_zero_has_no_sign
+    assert_equal "USDC|0.00", Amount.new("-0.001", :USDC).to_s
+  end
+
+  def test_round_negative_floor_toward_zero
+    assert_equal BigDecimal("-1.56"), Amount::Display.round(BigDecimal("-1.567"), 2, :floor)
+  end
+
+  def test_round_negative_ceil_away_from_zero
+    assert_equal BigDecimal("-1.57"), Amount::Display.round(BigDecimal("-1.561"), 2, :ceil)
+  end
+
+  def test_round_negative_to_tens_toward_zero
+    assert_equal BigDecimal("-120"), Amount::Display.round(BigDecimal("-129"), -1, :floor)
+  end
+
   # name => [expected, value, symbol]
   {
     "usdc" => ["1.50", "1.5", :USDC],

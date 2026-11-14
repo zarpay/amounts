@@ -123,22 +123,27 @@ class AmountCompactTest < Minitest::Test
     assert_equal "1T TOKENS", tokens(999_999_999_999).ui(compact: true, direction: :ceil)
   end
 
-  # floor goes toward negative infinity, as `ui` does for any negative amount
+  # Rounding is by magnitude, as `ui` rounds any negative amount: a negative
+  # compacts like its positive, with a minus sign.
 
   def test_negative_exact_value
     assert_equal "-1.5M TOKENS", tokens(-1_500_000).ui(compact: true)
   end
 
-  def test_negative_floor_rounds_away_from_zero
-    assert_equal "-2M TOKENS", tokens(-1_999_999).ui(compact: true)
+  def test_negative_floor_rounds_toward_zero
+    assert_equal "-1.99M TOKENS", tokens(-1_999_999).ui(compact: true)
   end
 
-  def test_negative_ceil_rounds_toward_zero
-    assert_equal "-1.99M TOKENS", tokens(-1_999_999).ui(compact: true, direction: :ceil)
+  def test_negative_ceil_rounds_away_from_zero
+    assert_equal "-2M TOKENS", tokens(-1_999_999).ui(compact: true, direction: :ceil)
   end
 
-  def test_negative_floor_rounds_into_the_next_scale
-    assert_equal "-1M TOKENS", tokens(-999_999).ui(compact: true)
+  def test_negative_floor_stays_in_its_scale
+    assert_equal "-999K TOKENS", tokens(-999_999).ui(compact: true)
+  end
+
+  def test_negative_ceil_rounds_into_the_next_scale
+    assert_equal "-1M TOKENS", tokens(-999_999).ui(compact: true, direction: :ceil)
   end
 
   def test_negative_below_one_thousand_is_formatted_normally
