@@ -1,6 +1,10 @@
 # Changelog
 
-## Unreleased
+The client is versioned in lockstep with the gem: `@zarpay/amounts` X.Y.Z
+mirrors the `amounts` gem X.Y.Z, and both ship from the same GitHub Release.
+Upgrade them together.
+
+## 0.3.0 - 2026-11-15
 
 ### Added
 

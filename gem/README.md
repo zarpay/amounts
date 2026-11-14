@@ -676,14 +676,20 @@ bundle exec rspec
 
 ## Releases
 
-RubyGems publishing is intended to run from GitHub Releases using RubyGems trusted publishing.
+The gem and the [`@zarpay/amounts`](../client) JavaScript client are versioned in lockstep and
+released together from one GitHub Release, both through trusted publishing.
 
 Workflow:
 
-- create and push a version tag such as `v0.0.1`
+- bump `Amount::VERSION` and `client/package.json` to the same version (CI fails when they
+  differ), and date both changelogs
+- create and push a version tag such as `v0.3.0`
 - publish a GitHub Release for that tag
-- GitHub Actions runs `.github/workflows/release.yml`
-- the workflow verifies the test suite and publishes the gem to RubyGems.org
+- GitHub Actions runs `.github/workflows/release.yml`, which verifies the test suite and
+  publishes the gem to RubyGems.org
+- and `.github/workflows/publish-npm.yml`, which verifies the tag against both versions, runs
+  the client's checks and publishes `@zarpay/amounts` to npm with provenance (skipping a
+  version that's already on npm)
 
 RubyGems setup:
 
@@ -693,9 +699,18 @@ RubyGems setup:
 - workflow filename: `release.yml`
 - GitHub Actions environment: `release`
 
-This uses OIDC trusted publishing, so no RubyGems API token needs to be stored in GitHub Actions. See the official RubyGems trusted publishing guide:
+npm setup:
+
+- the first version of `@zarpay/amounts` is published once by hand (`npm publish --access public`
+  from `client/`), since npm can only attach a trusted publisher to a package that exists
+- on npmjs.com, in the package's settings, add a trusted publisher: GitHub Actions, organization
+  `zarpay`, repository `amounts`, workflow filename `publish-npm.yml`, environment `release`
+
+This uses OIDC trusted publishing on both registries, so no API token needs to be stored in
+GitHub Actions. See the official guides:
 
 - https://guides.rubygems.org/trusted-publishing/
+- https://docs.npmjs.com/trusted-publishers
 
 ## Compared to `money`
 

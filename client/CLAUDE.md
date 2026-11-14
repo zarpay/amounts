@@ -21,6 +21,13 @@ regenerate `tests/fixtures/manifest.json` from `gem/` with
 `bundle exec ruby -Ilib ../client/tests/fixtures/export-manifest.rb`; CI fails
 when the committed fixture differs from the gem's export.
 
+## Versions and releases
+
+The client is versioned in lockstep with the gem: `package.json`'s version always equals
+`Amount::VERSION` (CI checks it), and one GitHub Release publishes both. Add entries to
+`CHANGELOG.md` under `## Unreleased`; don't bump the version, tag or publish — a maintainer
+does, and `.github/workflows/publish-npm.yml` publishes to npm by trusted publishing.
+
 ## Rules that shape the code
 
 The conventions are praxis-cli's (zarpay/praxis-cli `cli/CLAUDE.md` and

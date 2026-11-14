@@ -71,9 +71,12 @@ Detailed rules live in `.claude/rules/` and load when you touch the files they c
 
 ## Changelog and releases
 
-- Add an entry to `gem/CHANGELOG.md` under a `## Unreleased` heading (create it at the top if
-  missing), grouped as `### Added` / `### Changed` / `### Fixed`. Mark breaking changes
-  **Breaking:** and include migration notes.
-- Don't bump `Amount::VERSION` or move entries out of Unreleased. Versioning and releases are
-  done by a maintainer: a GitHub Release triggers `release.yml`, which publishes to RubyGems.
-- Never tag, release, publish the gem, or deploy the demo (`demo/.kamal`).
+- Add an entry to `gem/CHANGELOG.md` (and `client/CHANGELOG.md` for client changes) under a
+  `## Unreleased` heading (create it at the top if missing), grouped as `### Added` /
+  `### Changed` / `### Fixed`. Mark breaking changes **Breaking:** and include migration notes.
+- The gem and the client are versioned in lockstep: `Amount::VERSION` and
+  `client/package.json` always match (CI checks it), and one GitHub Release `vX.Y.Z` publishes
+  both: `release.yml` to RubyGems and `publish-npm.yml` to npm, each verifying the tag first.
+- Don't bump either version or move entries out of Unreleased. Versioning and releases are
+  done by a maintainer.
+- Never tag, release, publish the gem or the npm package, or deploy the demo (`demo/.kamal`).
