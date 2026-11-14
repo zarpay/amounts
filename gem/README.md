@@ -684,20 +684,21 @@ bundle exec rspec
 
 ## Releases
 
-The gem and the [`@zarpay/amounts`](../client) JavaScript client are versioned in lockstep and
-released together from one GitHub Release, both through trusted publishing.
+The gem and the [`@zarpay/amounts`](../client) JavaScript client have their own versions, and
+both publish through trusted publishing. The client's version is bumped only when the client
+changes; compatibility between the two is the manifest version, not the package versions.
 
 Workflow:
 
-- bump `Amount::VERSION` and `client/package.json` to the same version (CI fails when they
-  differ), and date both changelogs
-- create and push a version tag such as `v0.3.0`
+- bump `Amount::VERSION` (and `client/package.json` if the client changed), and date the
+  changelogs
+- create and push a version tag such as `v0.3.1`
 - publish a GitHub Release for that tag
 - GitHub Actions runs `.github/workflows/release.yml`, which verifies the test suite and
   publishes the gem to RubyGems.org
-- and `.github/workflows/publish-npm.yml`, which verifies the tag against both versions, runs
-  the client's checks and publishes `@zarpay/amounts` to npm with provenance (skipping a
-  version that's already on npm)
+- and `.github/workflows/publish-npm.yml`, which publishes `@zarpay/amounts` to npm with
+  provenance when `client/package.json` holds a version that isn't on npm yet, and does
+  nothing otherwise. Run it by hand to release a client change without a gem release.
 
 RubyGems setup:
 

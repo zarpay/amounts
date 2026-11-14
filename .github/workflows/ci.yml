@@ -187,17 +187,6 @@ jobs:
           bundle exec ruby -Ilib ../client/tests/fixtures/export-manifest.rb
           git diff --exit-code ../client/tests/fixtures/manifest.json
 
-      # The client and the gem are versioned in lockstep, and one GitHub
-      # Release publishes both, so their versions must never disagree.
-      - name: Client version matches the gem's
-        run: |
-          CLIENT="$(node -p "require('./package.json').version")"
-          GEM="$(ruby -e 'load "../gem/lib/amount/version.rb"; print Amount::VERSION')"
-          if [ "$CLIENT" != "$GEM" ]; then
-            echo "::error::client/package.json is $CLIENT but Amount::VERSION is $GEM; bump them together"
-            exit 1
-          fi
-
   demo:
     runs-on: ubuntu-latest
     defaults:

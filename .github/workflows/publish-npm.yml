@@ -1,8 +1,11 @@
 name: Publish npm package
 
-# The JavaScript client is versioned in lockstep with the gem: one GitHub
-# Release (vX.Y.Z) publishes both, the gem through release.yml and the client
-# through this workflow.
+# The JavaScript client has its own version, bumped only when the client
+# changes. This workflow runs on every GitHub Release (alongside release.yml,
+# which publishes the gem) and publishes the client only when
+# client/package.json holds a version that isn't on npm yet; otherwise it
+# does nothing. Run it by hand (workflow_dispatch) to release a client change
+# without a gem release.
 #
 # Authentication is npm trusted publishing (OIDC): no token is stored. The
 # trusted publisher on npmjs.com names this repository, this workflow file
@@ -12,6 +15,7 @@ name: Publish npm package
 on:
   release:
     types: [published]
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -30,7 +34,7 @@ jobs:
       - name: Check out source
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.release.tag_name }}
+          ref: ${{ github.event.release.tag_name || github.ref }}
           persist-credentials: false
 
       # Trusted publishing needs npm 11.5.1 or later, which ships with Node 24.
@@ -39,22 +43,11 @@ jobs:
         with:
           node-version: "24"
           registry-url: "https://registry.npmjs.org"
-          package-manager-cache: false
 
-      - name: Verify the tag matches both versions
-        run: |
-          TAG="${{ github.event.release.tag_name }}"
-          CLIENT="v$(node -p "require('./package.json').version")"
-          GEM="v$(ruby -e 'load "../gem/lib/amount/version.rb"; print Amount::VERSION')"
-          if [ "$TAG" != "$CLIENT" ] || [ "$TAG" != "$GEM" ]; then
-            echo "::error::tag $TAG must match client/package.json ($CLIENT) and Amount::VERSION ($GEM)"
-            exit 1
-          fi
-
-      # The first version of a new npm package has to be published by hand,
-      # since a trusted publisher can only be added to a package that exists.
-      # When the version is already on npm, the rest is skipped rather than
-      # failing the release.
+      # A release that doesn't change the client leaves its version alone, and
+      # the rest is skipped. (The client's first version was also published by
+      # hand, since a trusted publisher can only be added to a package that
+      # exists.)
       - name: Check whether this version is already published
         id: published
         run: |
@@ -94,4 +87,14 @@ jobs:
       # run twice. --provenance links the package to this workflow run.
       - name: Publish to npm
         if: steps.published.outputs.exists == 'false'
-        run: npm publish --access public --provenance --ignore-scripts
+        run: npm publish --access public --provenance --ignore-scripts --loglevel verbose
+
+      # npm writes the detail of a refused publish (which OIDC claim or policy
+      # it rejected) only to its debug log, which dies with the runner.
+      - name: Keep npm's debug log
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: npm-debug-log
+          path: ~/.npm/_logs/
+          retention-days: 14
