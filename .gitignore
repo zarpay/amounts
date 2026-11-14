@@ -21,3 +21,7 @@ demo/storage/*.sqlite3-journal
 demo/spec/examples.txt
 demo/coverage/
 
+
+# JS client
+client/node_modules/
+client/dist/

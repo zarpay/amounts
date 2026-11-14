@@ -1,5 +1,33 @@
 # Changelog
 
+## Unreleased
+
+### Added
+
+- `Amount.manifest(locales: [])` exports the registry as a JSON-ready Hash for
+  a client in another language to mirror: every type (with the
+  `Amount.register` option names), every default rate as an exact decimal
+  string, and for each requested locale every translation the core looks up,
+  already resolved. The new `@zarpay/amounts` JavaScript client is built from
+  it. Locales need I18n.
+- `Amount::Registry#default_rates` returns every registered default rate,
+  keyed by `[from, to]`.
+- `Amount::Compact.locale_format(locale)` is public.
+
+### Fixed
+
+- **Breaking:** `ui` and `to_s` round negative amounts by magnitude, like
+  their positive. `direction: :floor` (the default) now rounds toward zero and
+  `:ceil` away from it; before, `:floor` rounded toward negative infinity, so
+  a negative displayed more than it was (`-1.234` showed as `$-1.24`, and
+  `-0.001` as `$-0.01`). It now shows `$-1.23` and `$0.00`, and a value that
+  rounds to zero has no sign. Compact notation follows (`-1_999_999` is
+  `-1.99M`, was `-2M`). Positive amounts are unchanged. This matches `*`, `/`,
+  `to`, `split` and `allocate`, which already truncate toward zero. Migration:
+  code or tests that expect the old output for an inexact negative amount
+  should expect its positive's digits; pass `direction: :ceil` for the
+  larger magnitude.
+
 ## 0.2.0 - 2026-11-14
 
 ### Added

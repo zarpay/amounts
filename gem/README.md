@@ -422,6 +422,26 @@ Amount.of_usdc("1.5").as_json           # => "USDC|1.500000"
 { amount: Amount.of_usdc("1.5") }.to_json # => '{"amount":"USDC|1.500000"}'
 ```
 
+### JavaScript client
+
+`Amount.manifest` exports the registry for the
+[`@zarpay/amounts`](../client) JavaScript client, which mirrors the core on the
+web and in React Native: the same parsing, math, conversions, serialization
+and display, on `bigint` atomic values.
+
+```ruby
+render json: Amount.manifest(locales: I18n.available_locales)
+```
+
+```ts
+const amounts = Amounts.fromManifest(manifest);
+amounts.parse("USDC|1.500000").add(amounts.of("USDC", "0.25")).ui(); // "$1.75"
+```
+
+The manifest holds the types (with the `Amount.register` option names), the
+default rates as exact decimal strings, and for each requested locale every
+translation the core looks up. Locales need I18n.
+
 ## Registry API
 
 ```ruby
@@ -429,9 +449,11 @@ Amount.register(...)
 Amount.register_default_rate(:USD, :USDC, "1")
 Amount.registry.lookup(:USDC)
 Amount.registry.symbols
+Amount.registry.default_rates
 Amount.registry.clear!
 Amount.registry.lock!
 Amount.registry.locked?
+Amount.manifest(locales: %i[en de])
 ```
 
 ## ActiveRecord Integration
