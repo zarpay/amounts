@@ -33,6 +33,29 @@ holding.saved_change_to_amount?
 holding.amount_before_last_save
 ```
 
+## Bulk writes
+
+`insert_all`, `upsert_all` and their variants skip attribute writers and take column
+values only. `amount_column_values` turns attributes, with amounts by name, into those
+column values:
+
+```ruby
+Holding.amount_column_values(amount: "USDC|1.50", fee: 0.25, memo: "opening")
+# => { "amount_atomic" => 1500000, "amount_symbol" => "USDC", "fee_atomic" => 250000000, memo: "opening" }
+
+Holding.insert_all(rows.map { |row| Holding.amount_column_values(row) })
+GoldBar.upsert_all(manifest.map { |row| GoldBar.amount_column_values(row) }, unique_by: :serial)
+```
+
+- Each amount is cast as its writer would cast it, and replaced by its component
+  columns. Other keys pass through unchanged.
+- A `nil` amount still gives all of its columns, as `nil`. `insert_all` needs every row to
+  have the same keys, so pass `amount: nil` instead of leaving the key out.
+- Bulk writes skip validations, so a fixed-symbol amount in another symbol raises
+  `Amount::TypeMismatch` here. The writer records it as a validation error instead.
+- `unique_by:`, `update_only:` and `on_duplicate:` still name columns
+  (`amount_atomic`), not amounts.
+
 ## Subclasses and STI
 
 A subclass inherits its parent's amounts, with their readers, writers, scopes,

@@ -184,7 +184,32 @@ class AmountActiveRecordAttributeDefinitionTest < Minitest::Test
     assert_equal 300, grouped_sums["USD"]
   end
 
+  def test_column_values_of_multi_symbol_amount
+    assert_equal({ "amount_atomic" => 1_500_000, "amount_symbol" => "USDC" },
+                 definition(:amount).column_values(Amount.new("1.5", :USDC)))
+  end
+
+  def test_column_values_of_fixed_symbol_amount_omit_symbol_column
+    assert_equal({ "fee_atomic" => 250_000_000 }, definition(:fee).column_values(Amount.new("0.25", :SOL)))
+  end
+
+  def test_column_values_of_nil_multi_symbol_amount_keep_every_column
+    assert_equal({ "amount_atomic" => nil, "amount_symbol" => nil }, definition(:amount).column_values(nil))
+  end
+
+  def test_column_values_of_nil_fixed_symbol_amount
+    assert_equal({ "fee_atomic" => nil }, definition(:fee).column_values(nil))
+  end
+
+  def test_column_values_hold_atomic_as_integer
+    assert_kind_of Integer, definition(:amount).column_values(Amount.new(10**30, :SOL, from: :atomic))["amount_atomic"]
+  end
+
   private
+
+  def definition(name)
+    Holding.amount_attribute_definitions.fetch(name)
+  end
 
   def amount_written_holding
     Holding.new.tap { |holding| holding.amount = Amount.new("1.5", :USDC) }
