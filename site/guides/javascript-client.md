@@ -703,7 +703,9 @@ try {
 
 ## Keeping the two in step
 
-The client mirrors the gem release for release. Its test suite runs against
+The client mirrors the gem release for release, under the same version
+number: `@zarpay/amounts` 0.3.0 is the client for `amounts` 0.3.0, and one
+GitHub Release publishes both. Its test suite runs against
 a manifest the gem exported, and every expected value in it is the gem's
 own output for that registry. CI exports that manifest again on every
 commit and fails if it changed without the client following.

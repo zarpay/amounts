@@ -1,0 +1,97 @@
+name: Publish npm package
+
+# The JavaScript client is versioned in lockstep with the gem: one GitHub
+# Release (vX.Y.Z) publishes both, the gem through release.yml and the client
+# through this workflow.
+#
+# Authentication is npm trusted publishing (OIDC): no token is stored. The
+# trusted publisher on npmjs.com names this repository, this workflow file
+# (publish-npm.yml) and the `release` environment, so renaming any of them
+# breaks publishing until the npm settings are updated too.
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: read
+  id-token: write
+
+defaults:
+  run:
+    working-directory: client
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    environment: release
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.release.tag_name }}
+          persist-credentials: false
+
+      # Trusted publishing needs npm 11.5.1 or later, which ships with Node 24.
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          registry-url: "https://registry.npmjs.org"
+          package-manager-cache: false
+
+      - name: Verify the tag matches both versions
+        run: |
+          TAG="${{ github.event.release.tag_name }}"
+          CLIENT="v$(node -p "require('./package.json').version")"
+          GEM="v$(ruby -e 'load "../gem/lib/amount/version.rb"; print Amount::VERSION')"
+          if [ "$TAG" != "$CLIENT" ] || [ "$TAG" != "$GEM" ]; then
+            echo "::error::tag $TAG must match client/package.json ($CLIENT) and Amount::VERSION ($GEM)"
+            exit 1
+          fi
+
+      # The first version of a new npm package has to be published by hand,
+      # since a trusted publisher can only be added to a package that exists.
+      # When the version is already on npm, the rest is skipped rather than
+      # failing the release.
+      - name: Check whether this version is already published
+        id: published
+        run: |
+          VERSION="$(node -p "require('./package.json').version")"
+          if npm view "@zarpay/amounts@$VERSION" version >/dev/null 2>&1; then
+            echo "@zarpay/amounts@$VERSION is already on npm; nothing to publish."
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Install
+        if: steps.published.outputs.exists == 'false'
+        run: npm ci
+
+      - name: Lint
+        if: steps.published.outputs.exists == 'false'
+        run: npm run lint
+
+      - name: Format
+        if: steps.published.outputs.exists == 'false'
+        run: npm run format:check
+
+      - name: Typecheck
+        if: steps.published.outputs.exists == 'false'
+        run: npm run typecheck
+
+      - name: Test
+        if: steps.published.outputs.exists == 'false'
+        run: npm test
+
+      - name: Build
+        if: steps.published.outputs.exists == 'false'
+        run: npm run build
+
+      # The checks above already ran, so prepublishOnly is skipped rather than
+      # run twice. --provenance links the package to this workflow run.
+      - name: Publish to npm
+        if: steps.published.outputs.exists == 'false'
+        run: npm publish --access public --provenance --ignore-scripts
