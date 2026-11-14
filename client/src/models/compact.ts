@@ -46,9 +46,10 @@ const THOUSAND = Ratio.powerOfTen(3);
  *    `Oc`, `No` and decillion (`Dc`); past decillions it stays in them
  *    (`1500Dc`);
  * 2. rounded to `precision` significant digits (3 by default) in the
- *    display direction, so the default never rounds up: 1,999,999 is
- *    `1.99M`, never `2M`. When rounding up reaches the next scale, the
- *    next scale is used (999,999 ceils to `1M`, not `1000K`);
+ *    display direction, by magnitude, so the default never rounds away
+ *    from zero: 1,999,999 is `1.99M`, never `2M`, and -1,999,999 is
+ *    `-1.99M`. When `"ceil"` reaches the next scale, the next scale is
+ *    used (999,999 ceils to `1M`, not `1000K`);
  * 3. trimmed of trailing zeros, and written in the locale's number format;
  * 4. joined with its scale word: the locale's translation (pluralized with
  *    the compacted number) through the locale's compact format, else the

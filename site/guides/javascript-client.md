@@ -542,13 +542,22 @@ amounts.of("USDC", "1.231").ui({ direction: "ceil" });  // "$1.24"
 | Option | Default | Does |
 | --- | --- | --- |
 | `locale` | the client's | the locale's delimiter, separator, labels and templates |
-| `direction` | `"floor"` | round down, or `"ceil"` to round up |
+| `direction` | `"floor"` | round toward zero, or `"ceil"` away from it |
 | `decorated` | `true` | `false` returns the number without the label |
 | `trimZeros` | the type's | strip trailing zeros after rounding |
 | `unit` | — | show in one of the type's display units |
 | `compact` | `false` | `true` or `{ precision }` for `1.5M` notation |
 
-Rounding goes down by default, so a balance never shows as more than it is.
+Rounding is by magnitude, toward zero by default, so an amount never shows
+as more than it is, and a negative amount rounds like its positive:
+
+```ts
+amounts.of("USDC", "1.239").ui();                       // "$1.23"
+amounts.of("USDC", "-1.239").ui();                      // "$-1.23"
+amounts.of("USDC", "-1.239").ui({ direction: "ceil" }); // "$-1.24"
+amounts.of("USDC", "-0.001").ui();                      // "$0.00" — no sign on zero
+```
+
 The digits are written from the exact value, so an 18-decimal token shows
 every digit correctly.
 
@@ -596,7 +605,7 @@ For dashboards and cards:
 
 ```ts
 amounts.of("USD", "1500000").ui({ compact: true });                // "$1.5M"
-amounts.of("USD", "1999999").ui({ compact: true });                // "$1.99M" — never rounds up by default
+amounts.of("USD", "1999999").ui({ compact: true });                // "$1.99M" — never rounds away from zero by default
 amounts.of("USD", "1234567").ui({ compact: { precision: 2 } });    // "$1.2M"
 amounts.of("USD", "2500000").ui({ compact: true, locale: "de" });  // "$2,5 Millionen"
 ```

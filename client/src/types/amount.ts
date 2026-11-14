@@ -58,8 +58,10 @@ export interface AmountHash {
 }
 
 /**
- * Which way display rounding goes. `"floor"` (the default) rounds down so
- * an amount never displays as more than it is; `"ceil"` rounds up.
+ * Which way display rounding goes, by magnitude. `"floor"` (the default)
+ * rounds toward zero, so an amount never displays as more than it is;
+ * `"ceil"` rounds away from zero. A negative amount rounds like its
+ * positive: `-1.239` shows as `-1.23` by default and `-1.24` with `"ceil"`.
  */
 export type RoundingDirection = "floor" | "ceil";
 
@@ -82,11 +84,12 @@ export interface AmountUiOptions {
    */
   unit?: string;
   /**
-   * Round down (`"floor"`, the default) or up (`"ceil"`) to the display
-   * decimals.
+   * Round toward zero (`"floor"`, the default) or away from it (`"ceil"`)
+   * to the display decimals. Negative amounts round like their positive.
    *
    * @example
-   *   amounts.of("USDC", "1.231").ui({ direction: "ceil" });  // "$1.24"
+   *   amounts.of("USDC", "1.231").ui({ direction: "ceil" });   // "$1.24"
+   *   amounts.of("USDC", "-1.239").ui();                       // "$-1.23"
    */
   direction?: RoundingDirection;
   /**

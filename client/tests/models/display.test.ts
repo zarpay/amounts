@@ -46,18 +46,46 @@ describe("Display", () => {
         expect(text).toBe("$1.24");
       });
 
-      it("rounds a negative value down, away from zero, as the gem does", () => {
+      it("rounds a negative value toward zero, like its positive", () => {
         const usdc = display("USDC", "-1.234");
         const text = usdc.ui();
+
+        expect(text).toBe("$-1.23");
+      });
+
+      it("rounds a negative value away from zero with ceil", () => {
+        const usdc = display("USDC", "-1.239");
+        const text = usdc.ui({ direction: "ceil" });
 
         expect(text).toBe("$-1.24");
       });
 
-      it("rounds a tiny negative value up to zero with ceil", () => {
+      it("writes a tiny negative value that rounds to zero without a sign", () => {
+        const usdc = display("USDC", "-0.001");
+        const text = usdc.ui();
+
+        expect(text).toBe("$0.00");
+      });
+
+      it("shows a tiny negative value as the smallest unit with ceil", () => {
         const usdc = display("USDC", "-0.001");
         const text = usdc.ui({ direction: "ceil" });
 
-        expect(text).toBe("$0.00");
+        expect(text).toBe("$-0.01");
+      });
+
+      it("rounds a negative value in a display unit toward zero", () => {
+        const gold = display("GOLD", "-1");
+        const text = gold.ui({ unit: "gram" });
+
+        expect(text).toBe("-31.10 g");
+      });
+
+      it("compacts a negative value toward zero", () => {
+        const tokens = display("TOKENS", -1_999_999n);
+        const text = tokens.ui({ compact: true });
+
+        expect(text).toBe("-1.99M TOKENS");
       });
 
       it("writes every digit of a value past a Float's precision", () => {
@@ -448,11 +476,18 @@ describe("Display", () => {
       expect(text).toBe("USDC|1.23");
     });
 
-    it("rounds a negative value down", () => {
+    it("rounds a negative value toward zero", () => {
       const usdc = display("USDC", "-1.239");
       const text = usdc.toString();
 
-      expect(text).toBe("USDC|-1.24");
+      expect(text).toBe("USDC|-1.23");
+    });
+
+    it("writes a negative value that rounds to zero without a sign", () => {
+      const usdc = display("USDC", "-0.001");
+      const text = usdc.toString();
+
+      expect(text).toBe("USDC|0.00");
     });
 
     it("is never localized", () => {
